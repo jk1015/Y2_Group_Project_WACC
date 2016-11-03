@@ -6,15 +6,15 @@ options {
 
 program: BEGIN func* stat END;
 
-func: type ident OPEN_PARENTHESES param_list? CLOSE_PARENTHESES IS stat END;
+func: type IDENTIFIER OPEN_PARENTHESES param_list? CLOSE_PARENTHESES IS stat END;
 
 param_list: param (COMMA param)*;
 
-param: type ident;
+param: type IDENTIFIER;
 
 stat: SKIPPER
-  | type ident EQUALS assign_rhs
-  | assign_lhs EQUALS assign_rhs
+  | type IDENTIFIER EQ assign_rhs
+  | assign_lhs EQ assign_rhs
   | READ assign_lhs
   | FREE expr
   | RETURN expr
@@ -27,7 +27,7 @@ stat: SKIPPER
   | stat SEMICOLON stat
   ;
 
-assign_lhs: ident
+assign_lhs: IDENTIFIER
   | array_elem
   | pair_elem
   ;
@@ -36,7 +36,7 @@ assign_rhs: expr
   | array_liter
   | NEWPAIR OPEN_PARENTHESES expr COMMA expr CLOSE_PARENTHESES
   | pair_elem
-  | CALL ident OPEN_PARENTHESES (arg_list)? CLOSE_PARENTHESES
+  | CALL IDENTIFIER OPEN_PARENTHESES (arg_list)? CLOSE_PARENTHESES
   ;
 
   arg_list: expr (COMMA expr)*;
@@ -56,7 +56,7 @@ assign_rhs: expr
     | STRING_TYPE
     ;
 
-  array_type: type OPEN_SQUARE CLOSE_SQUARE;
+  array_type: (base_type | pair_type) (OPEN_SQUARE CLOSE_SQUARE)+;
 
   pair_type: PAIR OPEN_PARENTHESES pair_elem_type COMMA pair_elem_type CLOSE_PARENTHESES;
 
@@ -65,11 +65,11 @@ assign_rhs: expr
     | PAIR
     ;
 
-  expr: int_liter
-    | bool_liter
-    | char_liter
-    | str_liter
-    | pair_liter
+  expr: INT_LITERAL
+    | BOOL_LITERAL
+    | CHAR_LITERAL
+    | STRING_LITERAL
+    | PAIR_LITERAL
     | IDENTIFIER
     | array_elem
     | unary_oper expr
@@ -101,18 +101,4 @@ assign_rhs: expr
 
   array_elem: IDENTIFIER (OPEN_SQUARE expr CLOSE_SQUARE)+;
 
-  int_liter: int_sign? INTEGER;
-
-  int_sign: PLUS
-    | MINUS
-    ;
-
-  bool_liter: TRUE
-    | FALSE
-    ;
-
-  char_liter: SINGLE_QUOTE CHARACTER SINGLE_QUOTE;
-
   array_liter: OPEN_SQUARE (expr (COMMA expr)*)? CLOSE_SQUARE;
-
-  pair_liter: NULL;
