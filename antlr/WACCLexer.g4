@@ -22,6 +22,7 @@ ORD: 'ord';
 CHR: 'chr';
 // also '-'
 
+ASSIGN: '=';
 
 //brackets
 OPEN_PARENTHESES : '(' ;
@@ -98,13 +99,12 @@ fragment ALPHANUMERIC: (LETTER | DIGIT);
 //numbers
 fragment DIGIT : '0'..'9' ;
 
+//literals
 INTEGER: DIGIT+ ;
+CHAR_LITERAL: '\'' CHARACTER '\'' ;
+STRING_LITERAl: '"' CHARACTER* '"' ;
 
 IDENTIFIER: ('_' | LETTER) ('_' | ALPHANUMERIC)* ;
-
-CHAR_LITERAL: '\'' CHARACTER '\'' ;
-
-STRING_LITERAl: '"' CHARACTER* '"' ;
 
 
 
