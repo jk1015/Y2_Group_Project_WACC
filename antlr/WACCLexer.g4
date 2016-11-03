@@ -1,8 +1,5 @@
 lexer grammar WACCLexer;
 
-//whitespace
-WS: ' ' | '\n' | '\t' | '\r' ;
-
 //general operators (multiple uses)
 PLUS: '+' ;
 MINUS: '-' ;
@@ -84,8 +81,6 @@ STRING_TYPE: 'string' ;
 //null
 fragment NULL: 'null' ;
 
-COMMENT: '#' ~('\n')* '\n';
-
 //letters
 fragment LETTER: 'a'..'z' | 'A'..'Z';
 
@@ -107,3 +102,7 @@ CHAR_LITERAL: '\'' CHARACTER '\'' ;
 STRING_LITERAL: '"' CHARACTER* '"' ;
 
 IDENTIFIER: ('_' | LETTER) ('_' | ALPHANUMERIC)* ;
+
+//whitespace
+COMMENT: ('#' ~('\n')* '\n') -> skip;
+WS: (' ' | '\n' | '\t' | '\r') -> skip;

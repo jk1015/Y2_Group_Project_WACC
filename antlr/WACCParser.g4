@@ -13,8 +13,8 @@ param_list: param (COMMA param)*;
 param: type IDENTIFIER;
 
 stat: SKIPPER
-  | type IDENTIFIER EQ assign_rhs
-  | assign_lhs EQ assign_rhs
+  | type IDENTIFIER ASSIGN assign_rhs
+  | assign_lhs ASSIGN assign_rhs
   | READ assign_lhs
   | FREE expr
   | RETURN expr
