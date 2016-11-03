@@ -81,12 +81,8 @@ BOOL_TYPE: 'bool' ;
 CHAR_TYPE: 'char' ;
 STRING_TYPE: 'string' ;
 
-//bools
-TRUE: 'true' ;
-FALSE: 'false' ;
-
 //null
-NULL: 'null' ;
+fragment NULL: 'null' ;
 
 COMMENT: '#' ~('\n')* '\n';
 
@@ -104,15 +100,10 @@ fragment ALPHANUMERIC: (LETTER | DIGIT);
 fragment DIGIT : '0'..'9' ;
 
 //literals
-INTEGER: DIGIT+ ;
+INT_LITERAL: (PLUS | MINUS)? DIGIT+;
+BOOL_LITERAL: 'true' | 'false';
+PAIR_LITERAL: NULL;
 CHAR_LITERAL: '\'' CHARACTER '\'' ;
-STRING_LITERAl: '"' CHARACTER* '"' ;
+STRING_LITERAL: '"' CHARACTER* '"' ;
 
 IDENTIFIER: ('_' | LETTER) ('_' | ALPHANUMERIC)* ;
-
-
-
-
-
-
-
