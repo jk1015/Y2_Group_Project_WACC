@@ -3,9 +3,11 @@ lexer grammar WACCLexer;
 //whitespace
 WS: ' ' | '\n' | '\t' | '\r' ;
 
-//binary operators
+//general operators (multiple uses)
 PLUS: '+' ;
 MINUS: '-' ;
+
+//binary operators
 MULTIPLY: '*' ;
 DIVIDE: '/' ;
 MOD: '%' ;
@@ -23,7 +25,6 @@ NOT: '!';
 LEN: 'len';
 ORD: 'ord';
 CHR: 'chr';
-// also '-'
 
 ASSIGN: '=';
 
