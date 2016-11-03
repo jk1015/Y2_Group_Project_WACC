@@ -1,6 +1,6 @@
 lexer grammar WACCLexer;
 
-//operators
+//binary operators
 PLUS: '+' ;
 MINUS: '-' ;
 MULTIPLY: '*' ;
@@ -15,6 +15,14 @@ NEQ: '!=' ;
 AND: '&&' ;
 OR: '||' ;
 
+//unary operators
+NOT: '!';
+LEN: 'len';
+ORD: 'ord';
+CHR: 'chr';
+// also '-'
+
+
 //brackets
 OPEN_PARENTHESES : '(' ;
 CLOSE_PARENTHESES : ')' ;
@@ -24,9 +32,11 @@ OPEN_CURLY : '{' ;
 CLOSE_CURLY : '}' ;
 
 SINGLE_QUOTE : '\'' ;
-DOUBLE_QUOTE : '\"' ;
+DOUBLE_QUOTE : '"' ;
 
 SEMICOLON : ';' ;
+
+COMMA : ',' ;
 
 //blocks
 BEGIN: 'begin' ;
@@ -41,6 +51,7 @@ RETURN: 'return' ;
 EXIT: 'exit';
 PRINT: 'print';
 PRINTLN: 'println';
+CALL: 'call' ;
 
 //conditionals
 IF: 'if' ;
@@ -53,15 +64,49 @@ WHILE: 'while' ;
 DO: 'do' ;
 DONE: 'done' ;
 
+//pairs
+PAIR: 'pair' ;
+FST: 'fst' ;
+SND: 'snd' ;
+NEWPAIR: 'newpair' ;
+
+//types
+INT_TYPE: 'int' ;
+BOOL_TYPE: 'bool' ;
+CHAR_TYPE: 'char' ;
+STRING_TYPE: 'string' ;
+
 //bools
 TRUE: 'true' ;
 FALSE: 'false' ;
 
+//null
+NULL: 'null' ;
+
+COMMENT: '#' ~('\n')* '\n';
+
+//letters
+fragment LETTER: 'a'..'z' | 'A'..'Z';
+
+fragment ESCAPED_CHARACTER: '0' | 'b' | 't' | 'n' | 'f' | '"' | '\'' | '\\' ;
+
+fragment CHARACTER: ~('\\' | '\'' | '"' ) | ('\\' ESCAPED_CHARACTER);
+
+//alphanumeric
+fragment ALPHANUMERIC: (LETTER | DIGIT);
 
 //numbers
-fragment DIGIT : '0'..'9' ; 
+fragment DIGIT : '0'..'9' ;
 
 INTEGER: DIGIT+ ;
+
+IDENTIFIER: ('_' | LETTER) ('_' | ALPHANUMERIC)* ;
+
+CHAR_LITERAL: '\'' CHARACTER '\'' ;
+
+STRING_LITERAl: '"' CHARACTER* '"' ;
+
+
 
 
 
