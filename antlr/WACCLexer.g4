@@ -40,7 +40,7 @@ SEMICOLON : ';' ;
 COMMA : ',' ;
 
 //blocks
-BEGIN: 'begin' ;
+BEGIN: 'begin';
 END: 'end' ;
 IS: 'is' ;
 
