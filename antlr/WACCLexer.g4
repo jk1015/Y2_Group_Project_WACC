@@ -1,5 +1,8 @@
 lexer grammar WACCLexer;
 
+//whitespace
+WS: ' ' | '\n' | '\t' | '\r' ;
+
 //binary operators
 PLUS: '+' ;
 MINUS: '-' ;
