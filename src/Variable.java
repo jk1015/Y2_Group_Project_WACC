@@ -1,4 +1,4 @@
-
+import types.Type;
 
 public  class Variable {
     Type type;
@@ -7,7 +7,7 @@ public  class Variable {
         this.identifier = identifier;
         this.type = type;
     }
-    boolean checkType(Type a){
-        return type.checkType(a);
+    boolean checkType(Type t){
+        return type.checkType(t);
     };
 }
