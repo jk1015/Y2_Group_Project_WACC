@@ -8,7 +8,7 @@ public class Test {
         WACCLexer lexer = new WACCLexer(input);
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
         WACCParser parser = new WACCParser(tokenStream);
-        ParseTree tree = parser.prog();
+        ParseTree tree = parser.program();
         System.out.println(tree.toStringTree(parser));
     }
 }
