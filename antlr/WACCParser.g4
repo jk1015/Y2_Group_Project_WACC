@@ -4,7 +4,7 @@ options {
   tokenVocab=WACCLexer;
 }
 
-program: BEGIN func* stat END;
+program: BEGIN func* stat END EOF;
 
 func: type IDENTIFIER OPEN_PARENTHESES param_list? CLOSE_PARENTHESES IS stat END;
 
@@ -13,8 +13,8 @@ param_list: param (COMMA param)*;
 param: type IDENTIFIER;
 
 stat: SKIPPER
-  | type IDENTIFIER EQ assign_rhs
-  | assign_lhs EQ assign_rhs
+  | type IDENTIFIER ASSIGN assign_rhs
+  | assign_lhs ASSIGN assign_rhs
   | READ assign_lhs
   | FREE expr
   | RETURN expr
