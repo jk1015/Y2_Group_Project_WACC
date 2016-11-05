@@ -32,8 +32,8 @@ public class PairType implements Type {
     public boolean checkType(Type t) {
         if (t instanceof PairType) {
             PairType tPair = (PairType) t;
-            return tPair.getFirstType() == getSecondType()  &&
-                    tPair.getSecondType() == getSecondType();
+            return tPair.getFirst().checkType(first) &&
+                    tPair.getSecond().checkType(second);
         } else {
             return false;
         }

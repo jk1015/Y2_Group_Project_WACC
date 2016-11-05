@@ -22,7 +22,7 @@ public class ArrayType implements Type {
     public boolean checkType(Type t) {
         if (t instanceof ArrayType) {
             ArrayType arrayT = (ArrayType) t;
-            return arrayT.getContainedType() == getContainedType();
+            return arrayT.getContained().checkType(contained);
         } else {
             return false;
         }
