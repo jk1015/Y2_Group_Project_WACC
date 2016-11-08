@@ -125,36 +125,36 @@ callFunc: CALL ident OPEN_PARENTHESES (argList)? CLOSE_PARENTHESES;
 
 
 
-  unaryOper: NOT   #notUnOp
-    | LEN           #lenUnOp
-    | ORD           #ordUnOp
-    | CHR           #chrUnOp
-    | MINUS         #minusUnOp
+  unaryOper: NOT
+    | LEN
+    | ORD
+    | CHR
+    | MINUS
     ;
 
-  binaryOper1: MULTIPLY    #multiplyBinOp
-    | DIVIDE                #divideBinOp
-    | MOD                   #modBinOp
+  binaryOper1: MULTIPLY
+    | DIVIDE
+    | MOD
     ;
 
-  binaryOper2: PLUS        #plusBinOp
-    | MINUS                 #minusBinOp
+  binaryOper2: PLUS
+    | MINUS
     ;
 
-  binaryOper3: GT          #gtBinOp
-    | GEQ                   #geqBinOp
-    | LT                    #ltBinOp
-    | LEQ                   #leqBinOp
+  binaryOper3: GT
+    | GEQ
+    | LT
+    | LEQ
     ;
 
-  binaryOper4: EQ          #eqBinOp
-    | NEQ                   #neqBinOp
+  binaryOper4: EQ
+    | NEQ
     ;
 
-  binaryOper5: AND        #andBinOp
+  binaryOper5: AND
     ;
 
-  binaryOper6: OR        #orBinOp
+  binaryOper6: OR
     ;
 
   arrayElem: ident (OPEN_SQUARE expr CLOSE_SQUARE)+;
