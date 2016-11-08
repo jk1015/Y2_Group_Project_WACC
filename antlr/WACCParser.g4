@@ -15,9 +15,9 @@ param: type ident;
 ident: IDENTIFIER;
 
 stat: SKIPPER                           #skipStat
-  | type ident ASSIGN assignRHS        #initAssignStat
-  | assignLHS ASSIGN assignRHS        #assignStat
-  | READ assignLHS                     #readStat
+  | type ident ASSIGN assignRHS         #initAssignStat
+  | assignLHS ASSIGN assignRHS          #assignStat
+  | READ assignLHS                      #readStat
   | FREE expr                           #freeStat
   | RETURN expr                         #returnStat
   | EXIT expr                           #exitStat
@@ -46,117 +46,116 @@ newPair: NEWPAIR OPEN_PARENTHESES expr COMMA expr CLOSE_PARENTHESES;
 callFunc: CALL ident OPEN_PARENTHESES (argList)? CLOSE_PARENTHESES;
 
 
-  argList: expr (COMMA expr)*;
+argList: expr (COMMA expr)*;
 
-  pairElem: FST expr
-    | SND expr
-    ;
+pairElem: FST expr
+  | SND expr
+  ;
 
-  type: baseType
-    | arrayType
-    | pairType
-    ;
+type: baseType
+  | arrayType
+  | pairType
+  ;
 
-  baseType: INT_TYPE
-    | BOOL_TYPE
-    | CHAR_TYPE
-    | STRING_TYPE
-    ;
+baseType: INT_TYPE
+  | BOOL_TYPE
+  | CHAR_TYPE
+  | STRING_TYPE
+  ;
 
-  arrayType: (baseType | pairType) (OPEN_SQUARE CLOSE_SQUARE)+;
+arrayType: (baseType | pairType) (OPEN_SQUARE CLOSE_SQUARE)+;
 
-  pairType: PAIR OPEN_PARENTHESES pairElemType COMMA pairElemType CLOSE_PARENTHESES;
+pairType: PAIR OPEN_PARENTHESES pairElemType COMMA pairElemType CLOSE_PARENTHESES;
 
-  pairElemType: baseType
-    | arrayType
-    | PAIR
-    ;
+pairElemType: baseType
+  | arrayType
+  | PAIR
+  ;
 
-  expr: expr6;
+expr: expr6;
 
-  intLiter: INT_LITERAL;
+bracketsExpr: OPEN_PARENTHESES expr CLOSE_PARENTHESES;
 
-  boolLiter: BOOL_LITERAL;
+unaryExpr: unaryOper expr1;
 
-  charLiter: CHAR_LITERAL;
+baseExpr: intLiter
+  | boolLiter
+  | charLiter
+  | stringLiter
+  | pairLiter
+  | ident
+  | arrayElem
+  ;
 
-  stringLiter: STRING_LITERAL;
+expr1: expr1 binaryOper1 expr1
+  | baseExpr
+  | unaryExpr
+  | bracketsExpr
+  ;
 
-  pairLiter: PAIR_LITERAL;
+expr2: expr2 binaryOper2 expr2
+  | expr1
+  ;
 
-  bracketsExpr: OPEN_PARENTHESES expr CLOSE_PARENTHESES;
+expr3: expr3 binaryOper3 expr3
+  | expr2
+  ;
 
-  unaryExpr: unaryOper expr1;
+expr4: expr4 binaryOper4 expr4
+  | expr3
+  ;
 
-  baseExpr: intLiter
-    | boolLiter
-    | charLiter
-    | stringLiter
-    | pairLiter
-    | ident
-    | arrayElem
-    ;
+expr5: expr5 binaryOper5 expr5
+  | expr4
+  ;
 
-  expr1: expr1 binaryOper1 expr1
-    | baseExpr
-    | unaryExpr
-    | bracketsExpr
-    ;
+expr6: expr6 binaryOper6 expr6
+  | expr5
+  ;
 
-  expr2: expr2 binaryOper2 expr2
-    | expr1
-    ;
+unaryOper: NOT
+  | LEN
+  | ORD
+  | CHR
+  | MINUS
+  ;
 
-  expr3: expr3 binaryOper3 expr3
-    | expr2
-    ;
+binaryOper1: MULTIPLY
+  | DIVIDE
+  | MOD
+  ;
 
-  expr4: expr4 binaryOper4 expr4
-    | expr3
-    ;
+binaryOper2: PLUS
+  | MINUS
+  ;
 
-  expr5: expr5 binaryOper5 expr5
-    | expr4
-    ;
+binaryOper3: GT
+  | GEQ
+  | LT
+  | LEQ
+  ;
 
-  expr6: expr6 binaryOper6 expr6
-    | expr5
-    ;
+binaryOper4: EQ
+  | NEQ
+  ;
 
+binaryOper5: AND
+  ;
 
+binaryOper6: OR
+  ;
 
-  unaryOper: NOT
-    | LEN
-    | ORD
-    | CHR
-    | MINUS
-    ;
+arrayElem: ident (OPEN_SQUARE expr CLOSE_SQUARE)+;
 
-  binaryOper1: MULTIPLY
-    | DIVIDE
-    | MOD
-    ;
+arrayLiter: OPEN_SQUARE (expr (COMMA expr)*)? CLOSE_SQUARE;
 
-  binaryOper2: PLUS
-    | MINUS
-    ;
+intLiter: INT_LITERAL;
 
-  binaryOper3: GT
-    | GEQ
-    | LT
-    | LEQ
-    ;
+boolLiter: BOOL_LITERAL;
 
-  binaryOper4: EQ
-    | NEQ
-    ;
+charLiter: CHAR_LITERAL;
 
-  binaryOper5: AND
-    ;
+stringLiter: STRING_LITERAL;
 
-  binaryOper6: OR
-    ;
+pairLiter: PAIR_LITERAL;
 
-  arrayElem: ident (OPEN_SQUARE expr CLOSE_SQUARE)+;
-
-  arrayLiter: OPEN_SQUARE (expr (COMMA expr)*)? CLOSE_SQUARE;
