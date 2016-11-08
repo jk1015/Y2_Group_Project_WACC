@@ -1,41 +1,22 @@
 package types;
 
-/**
- * Created by ad5115 on 04/11/16.
- */
 public class PairType implements Type {
-    private Type first;
-    private Type second;
 
-    public PairType(Type first, Type second) {
-        this.first = first;
-        this.second = second;
-    }
-
-    public Type getFirst() {
-        return first;
-    }
-
-    public Type getSecond() {
-        return second;
-    }
-
-    public Class<? extends Type> getFirstType() {
-        return first.getClass();
-    }
-
-    public Class<? extends Type> getSecondType() {
-        return second.getClass();
-    }
-
-    @Override
-    public boolean checkType(Type t) {
-        if (t instanceof PairType) {
-            PairType tPair = (PairType) t;
-            return tPair.getFirst().checkType(first) &&
-                    tPair.getSecond().checkType(second);
-        } else {
-            return false;
-        }
-    }
+	private final Type type1;
+	private final Type type2;
+	
+	PairType(Type type1, Type type2) {
+		this.type1 = type1;
+		this.type2 = type2;
+	}
+	
+	@Override
+	public boolean checkType(Type pair2) {
+		if (pair2 instanceof PairType) {
+			return type1.checkType(((PairType)pair2).type1)
+					&& type2.checkType(((PairType)pair2).type2);
+		}
+		return false;
+	}
+	
 }
