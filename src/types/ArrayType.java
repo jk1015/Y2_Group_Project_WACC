@@ -1,30 +1,19 @@
 package types;
 
-/**
- * Created by ad5115 on 04/11/16.
- */
 public class ArrayType implements Type {
-    private Type contained;
 
-    public ArrayType(Type contained) {
-        this.contained = contained;
-    }
+	private final Type contentsType;
+	
+	ArrayType(Type contentsType) {
+		this.contentsType = contentsType;
+	}
+	
+	@Override
+	public boolean checkType(Type type2) {
+		if (type2 instanceof ArrayType) {
+			contentsType.checkType(((ArrayType)type2).contentsType);
+		}
+		return false;
+	}
 
-    public Type getContained() {
-        return contained;
-    }
-
-    public Class<? extends Type> getContainedType() {
-        return contained.getClass();
-    }
-
-    @Override
-    public boolean checkType(Type t) {
-        if (t instanceof ArrayType) {
-            ArrayType arrayT = (ArrayType) t;
-            return arrayT.getContained().checkType(contained);
-        } else {
-            return false;
-        }
-    }
 }
