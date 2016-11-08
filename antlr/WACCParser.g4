@@ -4,18 +4,18 @@ options {
   tokenVocab=WACCLexer;
 }
 
-program: BEGIN func* stat END EOF;
+program: BEGIN function* stat END EOF;
 
-func: type ident OPEN_PARENTHESES paramList? CLOSE_PARENTHESES IS stat END;
+function: type identifier OPEN_PARENTHESES paramList? CLOSE_PARENTHESES IS stat END;
 
 paramList: param (COMMA param)*;
 
-param: type ident;
+param: type identifier;
 
-ident: IDENTIFIER;
+identifier: IDENTIFIER;
 
 stat: SKIPPER                           #skipStat
-  | type ident ASSIGN assignRHS         #initAssignStat
+  | type identifier ASSIGN assignRHS    #initAssignStat
   | assignLHS ASSIGN assignRHS          #assignStat
   | READ assignLHS                      #readStat
   | FREE expr                           #freeStat
@@ -29,7 +29,7 @@ stat: SKIPPER                           #skipStat
   | stat SEMICOLON stat                 #seqStat
   ;
 
-assignLHS: ident
+assignLHS: identifier
   | arrayElem
   | pairElem
   ;
@@ -38,13 +38,12 @@ assignRHS: expr
   | arrayLiter
   | newPair
   | pairElem
-  | callFunc
+  | callFunction
   ;
 
 newPair: NEWPAIR OPEN_PARENTHESES expr COMMA expr CLOSE_PARENTHESES;
 
-callFunc: CALL ident OPEN_PARENTHESES (argList)? CLOSE_PARENTHESES;
-
+callFunction: CALL identifier OPEN_PARENTHESES (argList)? CLOSE_PARENTHESES;
 
 argList: expr (COMMA expr)*;
 
@@ -83,7 +82,7 @@ baseExpr: intLiter
   | charLiter
   | stringLiter
   | pairLiter
-  | ident
+  | identifier
   | arrayElem
   ;
 
@@ -145,7 +144,7 @@ binaryOper5: AND
 binaryOper6: OR
   ;
 
-arrayElem: ident (OPEN_SQUARE expr CLOSE_SQUARE)+;
+arrayElem: identifier (OPEN_SQUARE expr CLOSE_SQUARE)+;
 
 arrayLiter: OPEN_SQUARE (expr (COMMA expr)*)? CLOSE_SQUARE;
 
@@ -158,4 +157,3 @@ charLiter: CHAR_LITERAL;
 stringLiter: STRING_LITERAL;
 
 pairLiter: PAIR_LITERAL;
-
