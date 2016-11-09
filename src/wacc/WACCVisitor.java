@@ -235,7 +235,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
 
         boolean withinIntBounds = (convertedToken < integerLimit) && (convertedToken > -integerLimit);
         if (!withinIntBounds) {
-            // ERROR
+            throw new IntegerSizeException(ctx.getStart().getLine() + "");
         }
 
         return PrimType.INT;
