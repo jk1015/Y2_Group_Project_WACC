@@ -1,4 +1,4 @@
-package PACKAGE_NAME;
+package wacc;
 
 import antlr.WACCParser;
 import antlr.WACCParserBaseVisitor;

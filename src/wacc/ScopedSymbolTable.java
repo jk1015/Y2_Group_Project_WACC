@@ -1,3 +1,4 @@
+package wacc;
 import types.Type;
 
 import java.util.*;

@@ -1,3 +1,4 @@
+package wacc;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 import antlr.*;
