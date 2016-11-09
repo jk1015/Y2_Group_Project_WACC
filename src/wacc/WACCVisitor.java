@@ -8,11 +8,19 @@ import wacc.types.*;
  * Created by ad5115 on 08/11/16.
  */
 public class WACCVisitor extends WACCParserBaseVisitor<Type> {
-    @Override
-    public Type visitArgList(WACCParser.ArgListContext ctx) {
-        return super.visitArgList(ctx);
-    }
-
+	
+	private final ScopedSymbolTable symbolTable;
+	
+	public WACCVisitor() {
+		symbolTable = new ScopedSymbolTable();
+	}
+	
+	@Override
+	public Type visitBaseType(WACCParser.BaseTypeContext ctx) {
+		// Look contents and return type.
+		return null;
+	}
+	
     @Override
     public Type visitArrayLiter(WACCParser.ArrayLiterContext ctx) {
     	// Check array is valid
@@ -146,40 +154,6 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	// Return int
         return PrimType.INT;
     }
-
-    //These shouldn't be called
-    @Override
-    public Type visitBinaryOper1(WACCParser.BinaryOper1Context ctx) {
-        return super.visitBinaryOper1(ctx);
-    }
-
-    @Override
-    public Type visitBinaryOper2(WACCParser.BinaryOper2Context ctx) {
-        return super.visitBinaryOper2(ctx);
-    }
-    
-    @Override
-    public Type visitBinaryOper3(WACCParser.BinaryOper3Context ctx) {
-        return super.visitBinaryOper3(ctx);
-    }
-
-    @Override
-    public Type visitBinaryOper4(WACCParser.BinaryOper4Context ctx) {
-        return super.visitBinaryOper4(ctx);
-    }
-
-    @Override
-    public Type visitBinaryOper5(WACCParser.BinaryOper5Context ctx) {
-        return super.visitBinaryOper5(ctx);
-    }
-
-    @Override
-    public Type visitBinaryOper6(WACCParser.BinaryOper6Context ctx) {
-        return super.visitBinaryOper6(ctx);
-    }
-    
-    
-    
     
     @Override
     public Type visitUnaryExpr(WACCParser.UnaryExprContext ctx) {
@@ -191,12 +165,6 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     public Type visitPairLiter(WACCParser.PairLiterContext ctx) {
     	// Return null pair
         return super.visitPairLiter(ctx);
-    }
-
-    @Override
-    public Type visitParam(WACCParser.ParamContext ctx) {
-    	// Not called
-        return super.visitParam(ctx);
     }
 
     @Override
@@ -246,4 +214,49 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	// Check LHS and RHS match
         return super.visitAssignStat(ctx);
     }
+    
+    
+    @Override
+    public Type visitArgList(WACCParser.ArgListContext ctx) {
+    	// Not looked at?
+        return super.visitArgList(ctx);
+    }
+
+    @Override
+    public Type visitParam(WACCParser.ParamContext ctx) {
+    	// Not called
+        return super.visitParam(ctx);
+    }
+    
+    //These shouldn't be called
+    @Override
+    public Type visitBinaryOper1(WACCParser.BinaryOper1Context ctx) {
+        return super.visitBinaryOper1(ctx);
+    }
+
+    @Override
+    public Type visitBinaryOper2(WACCParser.BinaryOper2Context ctx) {
+        return super.visitBinaryOper2(ctx);
+    }
+    
+    @Override
+    public Type visitBinaryOper3(WACCParser.BinaryOper3Context ctx) {
+        return super.visitBinaryOper3(ctx);
+    }
+
+    @Override
+    public Type visitBinaryOper4(WACCParser.BinaryOper4Context ctx) {
+        return super.visitBinaryOper4(ctx);
+    }
+
+    @Override
+    public Type visitBinaryOper5(WACCParser.BinaryOper5Context ctx) {
+        return super.visitBinaryOper5(ctx);
+    }
+
+    @Override
+    public Type visitBinaryOper6(WACCParser.BinaryOper6Context ctx) {
+        return super.visitBinaryOper6(ctx);
+    }
+
 }
