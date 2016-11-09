@@ -1,7 +1,12 @@
 package wacc;
 
+import java.util.Iterator;
+import java.util.List;
+
 import antlr.WACCParser;
+import antlr.WACCParser.ExprContext;
 import antlr.WACCParserBaseVisitor;
+import wacc.exceptions.InvalidTypeException;
 import wacc.types.*;
 
 /**
@@ -24,7 +29,15 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     @Override
     public Type visitArrayLiter(WACCParser.ArrayLiterContext ctx) {
     	// Check array is valid
-        return super.visitArrayLiter(ctx);
+    	List<ExprContext> expr = ctx.expr();
+    	Iterator<ExprContext> iter = expr.iterator();
+    	Type t = visitExpr(iter.next());
+    	while (iter.hasNext()) {
+    		if (t != visitExpr(iter.next())) {
+    			throw new InvalidTypeException(ctx.getStart().getLine() + "");
+    		}
+    	}
+        return t;
     }
 
     @Override
