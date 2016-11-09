@@ -1,4 +1,8 @@
+<<<<<<< HEAD:src/Test.java
 
+=======
+package wacc;
+>>>>>>> origin/development:src/wacc/Test.java
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 import antlr.WACCLexer;

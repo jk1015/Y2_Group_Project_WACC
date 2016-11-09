@@ -4,101 +4,156 @@ options {
   tokenVocab=WACCLexer;
 }
 
-program: BEGIN func* stat END EOF;
+program: BEGIN function* stat END EOF;
 
-func: type IDENTIFIER OPEN_PARENTHESES param_list? CLOSE_PARENTHESES IS stat END;
+function: type identifier OPEN_PARENTHESES paramList? CLOSE_PARENTHESES IS stat END;
 
-param_list: param (COMMA param)*;
+paramList: param (COMMA param)*;
 
-param: type IDENTIFIER;
+param: type identifier;
 
-stat: SKIPPER
-  | type IDENTIFIER ASSIGN assign_rhs
-  | assign_lhs ASSIGN assign_rhs
-  | READ assign_lhs
-  | FREE expr
-  | RETURN expr
-  | EXIT expr
-  | PRINT expr
-  | PRINTLN expr
-  | IF expr THEN stat ELSE stat FI
-  | WHILE expr DO stat DONE
-  | BEGIN stat END
-  | stat SEMICOLON stat
+identifier: IDENTIFIER;
+
+stat: SKIPPER                           #skipStat
+  | type identifier ASSIGN assignRHS    #initAssignStat
+  | assignLHS ASSIGN assignRHS          #assignStat
+  | READ assignLHS                      #readStat
+  | FREE expr                           #freeStat
+  | RETURN expr                         #returnStat
+  | EXIT expr                           #exitStat
+  | PRINT expr                          #printStat
+  | PRINTLN expr                        #printlnStat
+  | IF expr THEN stat ELSE stat FI      #ifStat
+  | WHILE expr DO stat DONE             #whileStat
+  | BEGIN stat END                      #blockStat
+  | stat SEMICOLON stat                 #seqStat
   ;
 
-assign_lhs: IDENTIFIER
-  | array_elem
-  | pair_elem
+assignLHS: identifier
+  | arrayElem
+  | pairElem
   ;
 
-assign_rhs: expr
-  | array_liter
-  | NEWPAIR OPEN_PARENTHESES expr COMMA expr CLOSE_PARENTHESES
-  | pair_elem
-  | CALL IDENTIFIER OPEN_PARENTHESES (arg_list)? CLOSE_PARENTHESES
+assignRHS: expr
+  | arrayLiter
+  | newPair
+  | pairElem
+  | callFunction
   ;
 
-  arg_list: expr (COMMA expr)*;
+newPair: NEWPAIR OPEN_PARENTHESES expr COMMA expr CLOSE_PARENTHESES;
 
-  pair_elem: FST expr
-    | SND expr
-    ;
+callFunction: CALL identifier OPEN_PARENTHESES (argList)? CLOSE_PARENTHESES;
 
-  type: base_type
-    | array_type
-    | pair_type
-    ;
+argList: expr (COMMA expr)*;
 
-  base_type: INT_TYPE
-    | BOOL_TYPE
-    | CHAR_TYPE
-    | STRING_TYPE
-    ;
+pairElem: FST expr
+  | SND expr
+  ;
 
-  array_type: (base_type | pair_type) (OPEN_SQUARE CLOSE_SQUARE)+;
+type: baseType
+  | arrayType
+  | pairType
+  ;
 
-  pair_type: PAIR OPEN_PARENTHESES pair_elem_type COMMA pair_elem_type CLOSE_PARENTHESES;
+baseType: INT_TYPE
+  | BOOL_TYPE
+  | CHAR_TYPE
+  | STRING_TYPE
+  ;
 
-  pair_elem_type: base_type
-    | array_type
-    | PAIR
-    ;
+arrayType: (baseType | pairType) (OPEN_SQUARE CLOSE_SQUARE)+;
 
-  expr: INT_LITERAL
-    | BOOL_LITERAL
-    | CHAR_LITERAL
-    | STRING_LITERAL
-    | PAIR_LITERAL
-    | IDENTIFIER
-    | array_elem
-    | unary_oper expr
-    | expr binary_oper expr
-    | OPEN_PARENTHESES expr CLOSE_PARENTHESES
-    ;
+pairType: PAIR OPEN_PARENTHESES pairElemType COMMA pairElemType CLOSE_PARENTHESES;
 
-  unary_oper: NOT
-    | LEN
-    | ORD
-    | CHR
-    | MINUS
-    ;
+pairElemType: baseType
+  | arrayType
+  | PAIR
+  ;
 
-  binary_oper: PLUS
-    | MINUS
-    | MULTIPLY
-    | DIVIDE
-    | MOD
-    | GT
-    | GEQ
-    | LT
-    | LEQ
-    | EQ
-    | NEQ
-    | AND
-    | OR
-    ;
+expr: expr6;
 
-  array_elem: IDENTIFIER (OPEN_SQUARE expr CLOSE_SQUARE)+;
+bracketsExpr: OPEN_PARENTHESES expr CLOSE_PARENTHESES;
 
-  array_liter: OPEN_SQUARE (expr (COMMA expr)*)? CLOSE_SQUARE;
+unaryExpr: unaryOper expr1;
+
+baseExpr: intLiter
+  | boolLiter
+  | charLiter
+  | stringLiter
+  | pairLiter
+  | identifier
+  | arrayElem
+  ;
+
+expr1: expr1 binaryOper1 expr1
+  | baseExpr
+  | unaryExpr
+  | bracketsExpr
+  ;
+
+expr2: expr2 binaryOper2 expr2
+  | expr1
+  ;
+
+expr3: expr3 binaryOper3 expr3
+  | expr2
+  ;
+
+expr4: expr4 binaryOper4 expr4
+  | expr3
+  ;
+
+expr5: expr5 binaryOper5 expr5
+  | expr4
+  ;
+
+expr6: expr6 binaryOper6 expr6
+  | expr5
+  ;
+
+unaryOper: NOT
+  | LEN
+  | ORD
+  | CHR
+  | MINUS
+  ;
+
+binaryOper1: MULTIPLY
+  | DIVIDE
+  | MOD
+  ;
+
+binaryOper2: PLUS
+  | MINUS
+  ;
+
+binaryOper3: GT
+  | GEQ
+  | LT
+  | LEQ
+  ;
+
+binaryOper4: EQ
+  | NEQ
+  ;
+
+binaryOper5: AND
+  ;
+
+binaryOper6: OR
+  ;
+
+arrayElem: identifier (OPEN_SQUARE expr CLOSE_SQUARE)+;
+
+arrayLiter: OPEN_SQUARE (expr (COMMA expr)*)? CLOSE_SQUARE;
+
+intLiter: INT_LITERAL;
+
+boolLiter: BOOL_LITERAL;
+
+charLiter: CHAR_LITERAL;
+
+stringLiter: STRING_LITERAL;
+
+pairLiter: PAIR_LITERAL;
