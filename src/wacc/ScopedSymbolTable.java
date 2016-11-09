@@ -1,5 +1,5 @@
 package wacc;
-import types.Type;
+import wacc.types.Type;
 
 import java.util.*;
 

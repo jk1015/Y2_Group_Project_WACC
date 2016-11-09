@@ -1,4 +1,4 @@
-package types;
+package wacc.types;
 
 import java.util.Iterator;
 import java.util.LinkedList;

@@ -1,4 +1,4 @@
-package types;
+package wacc.types;
 
 public enum PrimType implements Type {
 	BOOL, CHAR, INT, STRING;

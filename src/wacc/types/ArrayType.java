@@ -1,4 +1,4 @@
-package types;
+package wacc.types;
 
 public class ArrayType implements Type {
 
