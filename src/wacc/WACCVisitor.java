@@ -20,26 +20,14 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
 		symbolTable = new ScopedSymbolTable();
 	}
 	
+	// James
+	
 	@Override
 	public Type visitBaseType(WACCParser.BaseTypeContext ctx) {
 		// Look contents and return type.
 		return null;
 	}
 	
-    @Override
-    public Type visitArrayLiter(WACCParser.ArrayLiterContext ctx) {
-    	// Check array is valid
-    	List<ExprContext> expr = ctx.expr();
-    	Iterator<ExprContext> iter = expr.iterator();
-    	Type t = visitExpr(iter.next());
-    	while (iter.hasNext()) {
-    		if (t != visitExpr(iter.next())) {
-    			throw new InvalidTypeException(ctx.getStart().getLine() + "");
-    		}
-    	}
-        return t;
-    }
-
     @Override
     public Type visitArrayElem(WACCParser.ArrayElemContext ctx) {
     	// Make sure expression is int
@@ -67,6 +55,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     @Override
     public Type visitFunction(WACCParser.FunctionContext ctx) {
     	// Add to symbol table, check validity of children under new scope
+    	//Check that statement contains a return
         return super.visitFunction(ctx);
     }
 
@@ -114,12 +103,8 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         return super.visitExpr1(ctx);
     }
 
-    @Override
-    public Type visitStringLiter(WACCParser.StringLiterContext ctx) {
-    	// Return string type
-        return PrimType.STRING;
-    }
-
+    // Max
+    
     @Override
     public Type visitWhileStat(WACCParser.WhileStatContext ctx) {
     	// Check condition is boolean, check children are valid.
@@ -163,29 +148,13 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     }
 
     @Override
-    public Type visitIntLiter(WACCParser.IntLiterContext ctx) {
-    	// Return int
-        return PrimType.INT;
-    }
-    
-    @Override
     public Type visitUnaryExpr(WACCParser.UnaryExprContext ctx) {
     	// Examine expression and operator for validity
         return super.visitUnaryExpr(ctx);
     }
 
-    @Override
-    public Type visitPairLiter(WACCParser.PairLiterContext ctx) {
-    	// Return null pair
-        return super.visitPairLiter(ctx);
-    }
-
-    @Override
-    public Type visitCharLiter(WACCParser.CharLiterContext ctx) {
-    	// Return char
-        return PrimType.CHAR;
-    }
-
+    // Anant
+    
     @Override
     public Type visitPairElem(WACCParser.PairElemContext ctx) {
         // Check child is pair, go to correct child
@@ -211,12 +180,6 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     }
 
     @Override
-    public Type visitBoolLiter(WACCParser.BoolLiterContext ctx) {
-    	// Return bool
-        return PrimType.BOOL;
-    }
-
-    @Override
     public Type visitPairType(WACCParser.PairTypeContext ctx) {
     	// Return the pair type
         return super.visitPairType(ctx);
@@ -227,13 +190,6 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	// Check LHS and RHS match
         return super.visitAssignStat(ctx);
     }
-    
-    
-    @Override
-    public Type visitArgList(WACCParser.ArgListContext ctx) {
-    	// Not looked at?
-        return super.visitArgList(ctx);
-    }
 
     @Override
     public Type visitParam(WACCParser.ParamContext ctx) {
@@ -241,8 +197,62 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         return super.visitParam(ctx);
     }
     
+    // Jas
+    
+    @Override
+    public Type visitPairLiter(WACCParser.PairLiterContext ctx) {
+    	// Return null pair
+        return super.visitPairLiter(ctx);
+    }
+    
+    @Override
+    public Type visitArrayLiter(WACCParser.ArrayLiterContext ctx) {
+    	// Check array is valid
+    	List<ExprContext> expr = ctx.expr();
+    	Iterator<ExprContext> iter = expr.iterator();
+    	Type t = visitExpr(iter.next());
+    	while (iter.hasNext()) {
+    		if (t != visitExpr(iter.next())) {
+    			throw new InvalidTypeException(ctx.getStart().getLine() + "");
+    		}
+    	}
+        return t;
+    }
+    
+    @Override
+    public Type visitStringLiter(WACCParser.StringLiterContext ctx) {
+    	// Return string type
+        return PrimType.STRING;
+    }
+
+    @Override
+    public Type visitIntLiter(WACCParser.IntLiterContext ctx) {
+    	// Return int, check size
+        return PrimType.INT;
+    }
+    
+    @Override
+    public Type visitCharLiter(WACCParser.CharLiterContext ctx) {
+    	// Return char
+        return PrimType.CHAR;
+    }
+    
+    @Override
+    public Type visitBoolLiter(WACCParser.BoolLiterContext ctx) {
+    	// Return bool
+        return PrimType.BOOL;
+    }
+    
+    
+    @Override
+    public Type visitArgList(WACCParser.ArgListContext ctx) {
+    	// Not looked at?
+        return super.visitArgList(ctx);
+    }
+    
     //These shouldn't be called
     @Override
+
     public Type visitBinaryOper1(WACCParser.BinaryOper1Context ctx) {
         return super.visitBinaryOper1(ctx);
     }
