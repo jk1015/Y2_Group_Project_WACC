@@ -6,6 +6,7 @@ import java.util.List;
 import antlr.WACCParser;
 import antlr.WACCParser.ExprContext;
 import antlr.WACCParserBaseVisitor;
+import wacc.exceptions.IntegerSizeException;
 import wacc.exceptions.InvalidTypeException;
 import wacc.types.*;
 
@@ -227,7 +228,16 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
 
     @Override
     public Type visitIntLiter(WACCParser.IntLiterContext ctx) {
-    	// Return int, check size
+    	// Return int, check
+        String intToken = ctx.getText();
+        int convertedToken = Integer.parseInt(intToken);
+        int integerLimit = (int)(Math.pow(2,32));
+
+        boolean withinIntBounds = (convertedToken < integerLimit) && (convertedToken > -integerLimit);
+        if (!withinIntBounds) {
+            // ERROR
+        }
+
         return PrimType.INT;
     }
     
