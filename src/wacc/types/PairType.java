@@ -5,7 +5,7 @@ public class PairType implements Type {
 	private final Type type1;
 	private final Type type2;
 	
-	PairType(Type type1, Type type2) {
+	public PairType(Type type1, Type type2) {
 		this.type1 = type1;
 		this.type2 = type2;
 	}

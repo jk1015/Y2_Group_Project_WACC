@@ -158,37 +158,57 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     @Override
     public Type visitPairElem(WACCParser.PairElemContext ctx) {
         // Check child is pair, go to correct child
+
+
     	return super.visitPairElem(ctx);
     }
 
     @Override
     public Type visitIfStat(WACCParser.IfStatContext ctx) {
     	// Check condition is boolean, check statements are valid.
-        return super.visitIfStat(ctx);
+        if (visitExpr(ctx.expr()) != PrimType.BOOL){
+            throw new InvalidTypeException(ctx.getStart().getLine() + "");
+        }
+        return visitChildren(ctx);
     }
 
     @Override
     public Type visitNewPair(WACCParser.NewPairContext ctx) {
     	// Return the pair type of the two children.
-        return super.visitNewPair(ctx);
+        Type fst = visitExpr(ctx.expr(0));
+        Type snd = visitExpr(ctx.expr(1));
+
+        return new PairType(fst,snd);
     }
 
     @Override
     public Type visitExitStat(WACCParser.ExitStatContext ctx) {
     	// Check child is int
-        return super.visitExitStat(ctx);
+        Type exit = visitExpr(ctx.expr());
+        if (exit != PrimType.INT){
+            throw new InvalidTypeException(ctx.getStart().getLine() + "");
+        }
+        return exit;
     }
 
     @Override
     public Type visitPairType(WACCParser.PairTypeContext ctx) {
     	// Return the pair type
-        return super.visitPairType(ctx);
+        Type fst = visitPairElemType(ctx.pairElemType(0));
+        Type snd = visitPairElemType(ctx.pairElemType(1));
+
+        return new PairType(fst,snd);
     }
 
     @Override
     public Type visitAssignStat(WACCParser.AssignStatContext ctx) {
     	// Check LHS and RHS match
-        return super.visitAssignStat(ctx);
+        Type lhs = visitAssignLHS(ctx.assignLHS());
+        Type rhs = visitAssignRHS(ctx.assignRHS());
+        if (lhs != rhs) {
+            throw new InvalidTypeException(ctx.getStart().getLine() + "");
+        }
+        return lhs;
     }
 
     @Override

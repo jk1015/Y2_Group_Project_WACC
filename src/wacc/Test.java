@@ -1,13 +1,7 @@
-<<<<<<< HEAD:src/Test.java
-
-=======
 package wacc;
->>>>>>> origin/development:src/wacc/Test.java
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
-import antlr.WACCLexer;
-import antlr.WACCParser;
-
+import antlr.*;
 
 public class Test {
     public static void main(String[] args) throws Exception{
@@ -16,10 +10,7 @@ public class Test {
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
         WACCParser parser = new WACCParser(tokenStream);
         ParseTree tree = parser.program();
-        //System.out.println(tree.toStringTree(parser));
-        System.out.println("---------");
-        WACCVisitor visitor = new WACCVisitor();
-        visitor.visit(tree);
-        System.out.println("---------");
+        System.out.println(tree.toStringTree(parser));
     }
 }
+
