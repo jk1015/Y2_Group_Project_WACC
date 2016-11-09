@@ -10,7 +10,7 @@ public class ScopedSymbolTable {
     private Map<String, Type> currentScope;
 
     public ScopedSymbolTable() {
-        Map symbolTable = new HashMap<>();
+        Map<String, Type> symbolTable = new HashMap<String, Type>();
         this.currentScope = symbolTable;
         this.scopes = new LinkedList<>();
         this.scopes.addFirst(symbolTable);
@@ -35,7 +35,7 @@ public class ScopedSymbolTable {
     }
 
     public void enterNewScope() {
-        Map newScope = new HashMap<>();
+        Map<String, Type> newScope = new HashMap<String, Type>();
         scopes.addFirst(newScope);
         currentScope = newScope;
     }
