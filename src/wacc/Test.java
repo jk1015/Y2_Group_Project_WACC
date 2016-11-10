@@ -35,7 +35,6 @@ public class Test {
             case SYNTAX_ERROR:      exit(100); break;
             case SEMANTIC_ERROR:    exit(200); break;
         }
-        exit(0);
     }
 }
 
