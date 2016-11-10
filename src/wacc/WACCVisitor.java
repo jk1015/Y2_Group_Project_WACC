@@ -117,7 +117,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     @Override
     public Type visitIdentifier(WACCParser.IdentifierContext ctx) {
     	// Returns type from symbol table.
-    	return symbolTable.get(ctx.IDENTIFIER().toString());
+    	return symbolTable.get(ctx.getText());
     }
 
     @Override
@@ -136,7 +136,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	// Check type against rhs, add to symbol table
         Type type = visit(ctx.type());
         if (type.checkType(visit(ctx.assignRHS()))) {
-        	String ident = ctx.identifier().IDENTIFIER().toString();
+        	String ident = ctx.identifier().getText();
         	symbolTable.add(ident, type);
         }
         throw new InvalidTypeException();
@@ -156,12 +156,6 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     public Type visitParamList(WACCParser.ParamListContext ctx) {
     	// This probably is never called
         return super.visitParamList(ctx);
-    }
-
-    @Override
-    public Type visitReadStat(WACCParser.ReadStatContext ctx) {
-    	// Check LHS is variable, array or pair, and can take input
-        return super.visitReadStat(ctx);
     }
 
     @Override
