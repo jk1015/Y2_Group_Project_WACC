@@ -182,13 +182,13 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
             throw new InvalidTypeException(ctx.getStart().getLine() + "");
         }
 
-        symbolTable.enterNewScope();
         List<WACCParser.StatContext> stat = ctx.stat();
         Iterator<WACCParser.StatContext> iter = stat.iterator();
         while (iter.hasNext()) {
+            symbolTable.enterNewScope();
             visit(iter.next());
+            symbolTable.exitScope();
         }
-        symbolTable.exitScope();
 
         return null;
     }
@@ -198,8 +198,9 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	// Return the pair type of the two children.
         Type fst = visitExpr(ctx.expr(0));
         Type snd = visitExpr(ctx.expr(1));
+        Type pair = new PairType(fst,snd);
 
-        return new PairType(fst,snd);
+        return pair;
     }
 
     @Override
@@ -229,13 +230,15 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         if (lhs != rhs) {
             throw new InvalidTypeException(ctx.getStart().getLine() + "");
         }
-        return lhs;
+        return null;
     }
 
     @Override
     public Type visitParam(WACCParser.ParamContext ctx) {
     	// Not called
-        return super.visitParam(ctx);
+        // just in case we need it
+        Type param = visitType(ctx.type());
+        return param;
     }
     
     // Jas
