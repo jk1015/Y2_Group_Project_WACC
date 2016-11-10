@@ -14,6 +14,10 @@ public class FunctionType implements Type {
 		}
 	}
 	
+	public Type getReturnType() {
+		return argList.get(0);
+	}
+	
 	@Override
 	public boolean checkType(Type type2) {
 		if (type2 instanceof FunctionType) {
