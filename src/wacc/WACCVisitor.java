@@ -7,6 +7,8 @@ import antlr.WACCParser;
 import antlr.WACCParser.ExprContext;
 import antlr.WACCParserBaseVisitor;
 import wacc.exceptions.InvalidTypeException;
+import wacc.exceptions.RedeclaredVariableException;
+import wacc.exceptions.UndeclaredVariableException;
 import wacc.types.*;
 
 /**
@@ -117,7 +119,11 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     @Override
     public Type visitIdentifier(WACCParser.IdentifierContext ctx) {
     	// Returns type from symbol table.
-    	return symbolTable.get(ctx.getText());
+    	try {
+        	return symbolTable.get(ctx.getText());
+    	} catch (UndeclaredVariableException e) {
+    		throw new UndeclaredVariableException(ctx, e.getMessage());
+    	}
     }
 
     @Override
@@ -137,7 +143,11 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         Type type = visit(ctx.type());
         if (type.checkType(visit(ctx.assignRHS()))) {
         	String ident = ctx.identifier().getText();
-        	symbolTable.add(ident, type);
+        	try {
+            	symbolTable.add(ident, type);
+        	} catch (RedeclaredVariableException e) {
+        		throw new RedeclaredVariableException(ctx, e.getMessage());
+        	}
         }
         throw new InvalidTypeException();
     }
