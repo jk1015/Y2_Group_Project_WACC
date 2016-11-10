@@ -256,7 +256,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     public Type visitArrayType(WACCParser.ArrayTypeContext ctx) {
     	// Returns array version of child type
     	int arrayDepth = ctx.CLOSE_SQUARE().size();
-    	Type type = visitChildren(ctx);
+    	Type type = visit(ctx.getChild(0));
         for (int i = 0; i < arrayDepth; i++) {
         	type = new ArrayType(type);
         }
@@ -268,6 +268,8 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	// Check type against rhs, add to symbol table
         Type type = visit(ctx.type());
         Type rhs = visit(ctx.assignRHS());
+        //System.out.println(type);
+        //System.out.println(rhs);
         if (type.checkType(rhs)) {
         	String ident = ctx.identifier().getText();
         	try {
@@ -275,7 +277,9 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         	} catch (RedeclaredVariableException e) {
         		throw new RedeclaredVariableException(ctx, e.getMessage());
         	}
+        	return null;
         }
+        //System.out.println("hello");
         throw new InvalidTypeException(ctx, type, rhs);
     }
 
@@ -398,7 +402,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	// Check LHS and RHS match
         Type lhs = visitAssignLHS(ctx.assignLHS());
         Type rhs = visitAssignRHS(ctx.assignRHS());
-        if (lhs != rhs) {
+        if (!lhs.checkType(rhs)) {
             throw new InvalidTypeException(ctx, rhs, lhs);
         }
         return null;
@@ -416,8 +420,8 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     
     @Override
     public Type visitPairLiter(WACCParser.PairLiterContext ctx) {
-    	// Return null pair
-        return super.visitPairLiter(ctx);
+    	// Return null
+        return new NullType();
     }
     
     @Override
@@ -428,11 +432,11 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	Type t = visitExpr(iter.next());
     	while (iter.hasNext()) {
     		Type type = visitExpr(iter.next());
-    		if (t != type) {
+    		if (!t.checkType(type)) {
     			throw new InvalidTypeException(ctx, t, type);
     		}
     	}
-        return t;
+        return new ArrayType(t);
     }
     
     @Override

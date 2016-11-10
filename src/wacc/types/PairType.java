@@ -20,6 +20,9 @@ public class PairType implements Type {
 
 	@Override
 	public boolean checkType(Type pair2) {
+		if (pair2 instanceof NullType) {
+			return true;
+		}
 		if (pair2 instanceof PairType) {
 			return type1.checkType(((PairType)pair2).type1)
 					&& type2.checkType(((PairType)pair2).type2);

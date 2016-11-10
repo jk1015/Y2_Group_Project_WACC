@@ -15,7 +15,7 @@ public class ArrayType implements Type {
 	@Override
 	public boolean checkType(Type type2) {
 		if (type2 instanceof ArrayType) {
-			contentsType.checkType(((ArrayType)type2).contentsType);
+			 return contentsType.checkType(((ArrayType)type2).contentsType);
 		}
 		return false;
 	}
