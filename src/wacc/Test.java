@@ -2,6 +2,9 @@ package wacc;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 import antlr.*;
+import wacc.exceptions.WACCCompilerException;
+import wacc.exceptions.WACCSemanticErrorException;
+import wacc.exceptions.WACCSyntaxErrorException;
 
 import static java.lang.System.exit;
 
@@ -12,13 +15,26 @@ public class Test {
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
         WACCParser parser = new WACCParser(tokenStream);
         ParseTree tree = parser.program();
+        WACCVisitor semanticAnalysis = new WACCVisitor();
+
+        CompilerStatus compilerStatus = CompilerStatus.SUCCESS;
+
         try {
-            WACCVisitor semanticAnalysis = new WACCVisitor();
             semanticAnalysis.visit(tree);
-        } catch (Exception e) {
+        } catch (WACCCompilerException e) {
             System.out.println(e);
+            if (e instanceof WACCSyntaxErrorException) {
+                compilerStatus = CompilerStatus.SYNTAX_ERROR;
+            } else if (e instanceof WACCSemanticErrorException) {
+                compilerStatus = CompilerStatus.SEMANTIC_ERROR;
+            }
         }
 
+        switch (compilerStatus) {
+            case SUCCESS:           exit(0); break;
+            case SYNTAX_ERROR:      exit(100); break;
+            case SEMANTIC_ERROR:    exit(200); break;
+        }
         exit(0);
     }
 }

@@ -3,7 +3,7 @@ package wacc.exceptions;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 @SuppressWarnings("serial")
-public class UndeclaredVariableException extends WACCCompilerException {
+public class UndeclaredVariableException extends WACCSemanticErrorException {
 
 	public UndeclaredVariableException() {
 		super();

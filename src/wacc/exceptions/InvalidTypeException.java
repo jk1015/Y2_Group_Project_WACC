@@ -5,7 +5,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import wacc.types.Type;
 
 @SuppressWarnings("serial")
-public class InvalidTypeException extends WACCCompilerException {
+public class InvalidTypeException extends WACCSemanticErrorException {
 
 	public InvalidTypeException() {
 		super();

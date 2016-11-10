@@ -134,7 +134,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     @Override
     public Type visitReturnStat(WACCParser.ReturnStatContext ctx) {
     	if (currentFunction == "") {
-    		throw new ReturnSyntaxError(ctx, "Return called outside of function");
+    		throw new InvalidReturnException(ctx, "Return called outside of function");
     	}
     	Type retType = ((FunctionType) symbolTable.get(currentFunction)).getReturnType();
     	if(visit(ctx.expr()) !=  retType) {

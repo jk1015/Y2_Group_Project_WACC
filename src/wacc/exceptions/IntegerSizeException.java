@@ -3,7 +3,7 @@ package wacc.exceptions;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 @SuppressWarnings("serial")
-public class IntegerSizeException extends WACCCompilerException {
+public class IntegerSizeException extends WACCSyntaxErrorException {
 
 	public IntegerSizeException() {
 		super();
