@@ -4,7 +4,7 @@ public class ArrayType implements Type {
 
 	private final Type contentsType;
 	
-	ArrayType(Type contentsType) {
+	public ArrayType(Type contentsType) {
 		this.contentsType = contentsType;
 	}
 	

@@ -8,7 +8,7 @@ public class FunctionType implements Type {
 
 	private final List<Type> argList = new LinkedList<Type>();
 	
-	FunctionType(Type ... types) {
+	public FunctionType(Type ... types) {
 		for (Type type : types) {
 			argList.add(type);
 		}
