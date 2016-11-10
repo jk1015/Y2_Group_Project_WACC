@@ -1,17 +1,17 @@
 package wacc;
 
-import java.util.Iterator;
-import java.util.List;
-
 import antlr.WACCLexer;
 import antlr.WACCParser;
 import antlr.WACCParser.ExprContext;
 import antlr.WACCParserBaseVisitor;
 import wacc.exceptions.IntegerSizeException;
-import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import wacc.exceptions.InvalidTypeException;
+import wacc.exceptions.RedeclaredVariableException;
+import wacc.exceptions.UndeclaredVariableException;
 import wacc.types.*;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Created by ad5115 on 08/11/16.
@@ -112,31 +112,58 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     @Override
     public Type visitWhileStat(WACCParser.WhileStatContext ctx) {
     	// Check condition is boolean, check children are valid.
-        return super.visitWhileStat(ctx);
+    	Type type = visit(ctx.expr());
+    	if (type.checkType(PrimType.BOOL)) {
+    		return visit(ctx.stat());
+    	}
+        throw new InvalidTypeException(ctx, PrimType.BOOL, type);
     }
 
     @Override
     public Type visitIdentifier(WACCParser.IdentifierContext ctx) {
-    	// This should never be called
-        return super.visitIdentifier(ctx);
+    	// Returns type from symbol table.
+    	try {
+        	return symbolTable.get(ctx.getText());
+    	} catch (UndeclaredVariableException e) {
+    		throw new UndeclaredVariableException(ctx, e.getMessage());
+    	}
     }
 
     @Override
     public Type visitArrayType(WACCParser.ArrayTypeContext ctx) {
     	// Returns array version of child type
-        return super.visitArrayType(ctx);
+    	int arrayDepth = ctx.CLOSE_SQUARE().size();
+    	Type type = visitChildren(ctx);
+        for (int i = 0; i < arrayDepth; i++) {
+        	type = new ArrayType(type);
+        }
+        return type;
     }
 
     @Override
     public Type visitInitAssignStat(WACCParser.InitAssignStatContext ctx) {
     	// Check type against rhs, add to symbol table
-        return super.visitInitAssignStat(ctx);
+        Type type = visit(ctx.type());
+        Type rhs = visit(ctx.assignRHS());
+        if (type.checkType(rhs)) {
+        	String ident = ctx.identifier().getText();
+        	try {
+            	symbolTable.add(ident, type);
+        	} catch (RedeclaredVariableException e) {
+        		throw new RedeclaredVariableException(ctx, e.getMessage());
+        	}
+        }
+        throw new InvalidTypeException(ctx, type, rhs);
     }
 
     @Override
     public Type visitFreeStat(WACCParser.FreeStatContext ctx) {
     	// Check type is pair or array
-        return super.visitFreeStat(ctx);
+        Type type = visit(ctx.expr());
+        if ((type instanceof ArrayType) || (type instanceof PairType)) {
+        	return type;
+        }
+        throw new InvalidTypeException(ctx, "Expected pair or array, got " + type);
     }
 
     @Override
@@ -146,15 +173,34 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     }
 
     @Override
-    public Type visitReadStat(WACCParser.ReadStatContext ctx) {
-    	// Check LHS is variable, array or pair, and can take input
-        return super.visitReadStat(ctx);
-    }
-
-    @Override
     public Type visitUnaryExpr(WACCParser.UnaryExprContext ctx) {
     	// Examine expression and operator for validity
-        return super.visitUnaryExpr(ctx);
+        Type funType;
+        Type retType;
+        TerminalNode op = (TerminalNode)ctx.unaryOper().getChild(0);
+        Type type = visit(ctx.expr1());
+        
+        switch (op.getSymbol().getType()) {
+        case WACCLexer.NOT: funType = PrimType.BOOL;
+        					retType = PrimType.BOOL; break;
+        case WACCLexer.LEN: funType = PrimType.STRING;
+        					retType = PrimType.INT; break;
+        case WACCLexer.ORD: funType = PrimType.CHAR; 
+        					retType = PrimType.INT; break;
+        case WACCLexer.CHR: funType = PrimType.INT; 
+        					retType = PrimType.CHAR; break;
+        case WACCLexer.MINUS:
+        					funType = PrimType.INT;
+        					retType = PrimType.INT; break;
+        default: throw new IllegalArgumentException(
+        		"visitUnaryExpr somehow found non-existent function");
+        }
+        
+        if (!type.checkType(funType)) {
+            throw new InvalidTypeException(ctx, funType, type);
+        }
+        
+        return retType;
     }
 
     // Anant

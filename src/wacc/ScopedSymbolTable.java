@@ -1,4 +1,6 @@
 package wacc;
+import wacc.exceptions.RedeclaredVariableException;
+import wacc.exceptions.UndeclaredVariableException;
 import wacc.types.Type;
 
 import java.util.*;
@@ -19,7 +21,8 @@ public class ScopedSymbolTable {
 
     public void add(String name, Type elem) {
         if (currentScope.containsKey(name)) {
-            // ERROR
+            throw new RedeclaredVariableException(
+            		"Variable " + name + " has already been declared in this scope.");
         }
         currentScope.put(name, elem);
     }
@@ -32,7 +35,8 @@ public class ScopedSymbolTable {
                 return scope.get(name);
             }
         }
-        return null;
+        throw new UndeclaredVariableException(
+        		"Identifier " + name + " has not been declared yet.");
     }
 
     public void enterNewScope() {

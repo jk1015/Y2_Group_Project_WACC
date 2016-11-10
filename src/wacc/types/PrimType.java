@@ -10,4 +10,15 @@ public enum PrimType implements Type {
 		}
 		return false;
 	}
+	
+	@Override
+	public String toString() {
+		switch(this) {
+		case BOOL: return "bool";
+		case CHAR: return "char";
+		case INT: return "int";
+		case STRING: return "string";
+		default: throw new IllegalArgumentException();
+		}
+	}
 }
