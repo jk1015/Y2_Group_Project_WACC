@@ -9,7 +9,15 @@ public class PairType implements Type {
 		this.type1 = type1;
 		this.type2 = type2;
 	}
-	
+
+	public Type getType1() {
+		return type1;
+	}
+
+	public Type getType2() {
+		return type2;
+	}
+
 	@Override
 	public boolean checkType(Type pair2) {
 		if (pair2 instanceof PairType) {

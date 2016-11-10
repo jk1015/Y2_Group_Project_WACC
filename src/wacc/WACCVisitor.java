@@ -3,9 +3,12 @@ package wacc;
 import java.util.Iterator;
 import java.util.List;
 
+import antlr.WACCLexer;
 import antlr.WACCParser;
 import antlr.WACCParser.ExprContext;
 import antlr.WACCParserBaseVisitor;
+import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import wacc.exceptions.InvalidTypeException;
 import wacc.types.*;
 
@@ -158,9 +161,18 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     @Override
     public Type visitPairElem(WACCParser.PairElemContext ctx) {
         // Check child is pair, go to correct child
+        Type pairType = visit(ctx.expr());
+        if (!(pairType instanceof PairType)) {
+            throw new InvalidTypeException(ctx.getStart().getLine() + "");
+        }
 
+        TerminalNode pairElement = (TerminalNode) ctx.getChild(0);
 
-    	return super.visitPairElem(ctx);
+        if (pairElement.getSymbol().getType() == WACCLexer.FST) {
+            return ((PairType) pairType).getType1();
+        } else {
+            return ((PairType) pairType).getType2();
+        }
     }
 
     @Override
@@ -169,7 +181,16 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         if (visitExpr(ctx.expr()) != PrimType.BOOL){
             throw new InvalidTypeException(ctx.getStart().getLine() + "");
         }
-        return visitChildren(ctx);
+
+        symbolTable.enterNewScope();
+        List<WACCParser.StatContext> stat = ctx.stat();
+        Iterator<WACCParser.StatContext> iter = stat.iterator();
+        while (iter.hasNext()) {
+            visit(iter.next());
+        }
+        symbolTable.exitScope();
+
+        return null;
     }
 
     @Override
