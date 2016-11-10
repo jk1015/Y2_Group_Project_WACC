@@ -108,31 +108,48 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     @Override
     public Type visitWhileStat(WACCParser.WhileStatContext ctx) {
     	// Check condition is boolean, check children are valid.
-        return super.visitWhileStat(ctx);
+    	if (visit(ctx.expr()).checkType(PrimType.BOOL)) {
+    		return visit(ctx.stat());
+    	}
+        throw new InvalidTypeException();
     }
 
     @Override
     public Type visitIdentifier(WACCParser.IdentifierContext ctx) {
-    	// This should never be called
-        return super.visitIdentifier(ctx);
+    	// Returns type from symbol table.
+    	return symbolTable.get(ctx.IDENTIFIER().toString());
     }
 
     @Override
     public Type visitArrayType(WACCParser.ArrayTypeContext ctx) {
     	// Returns array version of child type
-        return super.visitArrayType(ctx);
+    	int arrayDepth = ctx.CLOSE_SQUARE().size();
+    	Type type = visitChildren(ctx);
+        for (int i = 0; i < arrayDepth; i++) {
+        	type = new ArrayType(type);
+        }
+        return type;
     }
 
     @Override
     public Type visitInitAssignStat(WACCParser.InitAssignStatContext ctx) {
     	// Check type against rhs, add to symbol table
-        return super.visitInitAssignStat(ctx);
+        Type type = visit(ctx.type());
+        if (type.checkType(visit(ctx.assignRHS()))) {
+        	String ident = ctx.identifier().IDENTIFIER().toString();
+        	symbolTable.add(ident, type);
+        }
+        throw new InvalidTypeException();
     }
 
     @Override
     public Type visitFreeStat(WACCParser.FreeStatContext ctx) {
     	// Check type is pair or array
-        return super.visitFreeStat(ctx);
+        Type type = visit(ctx.expr());
+        if ((type instanceof ArrayType) || (type instanceof PairType)) {
+        	return type;
+        }
+        throw new InvalidTypeException();
     }
 
     @Override
@@ -150,7 +167,12 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     @Override
     public Type visitUnaryExpr(WACCParser.UnaryExprContext ctx) {
     	// Examine expression and operator for validity
-        return super.visitUnaryExpr(ctx);
+        Type funType = visit(ctx.unaryOper());
+        Type type = visit(ctx.expr1());
+        if (funType.checkType(new FunctionType(type, type))) {
+        	return type;
+        }
+        throw new InvalidTypeException();
     }
 
     // Anant
