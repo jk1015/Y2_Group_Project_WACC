@@ -196,9 +196,9 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	if(rhsType != lhsType) {
     		throw new InvalidTypeException("");
     	} else if (rhsType == PrimType.CHAR) {
-    		return PrimType.CHAR;
+    		return PrimType.BOOL;
     	} else if (rhsType == PrimType.INT) {
-    		return PrimType.INT;
+    		return PrimType.BOOL;
     	}
     	throw new InvalidTypeException("");
     }
@@ -232,7 +232,16 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     }
 
     // Max
-    
+
+
+    @Override
+    public Type visitBlockStat(@NotNull WACCParser.BlockStatContext ctx) {
+        symbolTable.enterNewScope();
+        super.visitBlockStat(ctx);
+        symbolTable.exitScope();
+        return null;
+    }
+
     @Override
     public Type visitWhileStat(WACCParser.WhileStatContext ctx) {
     	// Check condition is boolean, check children are valid.
