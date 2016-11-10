@@ -1,5 +1,6 @@
 package wacc;
 import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.antlr.v4.runtime.tree.*;
 import antlr.*;
 import wacc.exceptions.WACCCompilerException;
@@ -21,12 +22,14 @@ public class Test {
 
         try {
             semanticAnalysis.visit(tree);
-        } catch (WACCCompilerException e) {
-            System.out.println(e);
-            if (e instanceof WACCSyntaxErrorException) {
-                compilerStatus = CompilerStatus.SYNTAX_ERROR;
-            } else if (e instanceof WACCSemanticErrorException) {
+        } catch (Exception e) {
+            if (e instanceof WACCCompilerException) {
+                System.out.println(e);
+            }
+            if (e instanceof WACCSemanticErrorException) {
                 compilerStatus = CompilerStatus.SEMANTIC_ERROR;
+            } else {
+                compilerStatus = CompilerStatus.SYNTAX_ERROR;
             }
         }
 
