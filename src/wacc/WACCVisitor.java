@@ -5,11 +5,8 @@ import antlr.WACCParser;
 import antlr.WACCParser.ExprContext;
 import antlr.WACCParserBaseVisitor;
 import org.antlr.v4.runtime.tree.ParseTree;
-import wacc.exceptions.IntegerSizeException;
+import wacc.exceptions.*;
 import org.antlr.v4.runtime.tree.TerminalNode;
-import wacc.exceptions.InvalidTypeException;
-import wacc.exceptions.RedeclaredVariableException;
-import wacc.exceptions.UndeclaredVariableException;
 import wacc.types.*;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -69,7 +66,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	FunctionType fType = (FunctionType) symbolTable.get(ctx.getChild(1).getText());
     	Type retType = fType.getReturnType();
     	
-    	List<Type> types = new ArrayList<Type>();
+    	List<Type> types = new ArrayList<>();
     	if (ctx.getChildCount() == 5) {
     		ParseTree argList = ctx.getChild(4);
     		for(int i = 0; i < argList.getChildCount(); i += 2) {
@@ -78,10 +75,11 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	}
     	
     	types.add(0, retType);
+
+        Type calledFunctionType = new FunctionType((Type[]) types.toArray());
     	
-    	if (!fType.checkType(new FunctionType((Type[]) types.toArray()))) { 
-    		//THROW ERROR
-    		return null;
+    	if (!fType.checkType(calledFunctionType)) {
+    		throw new InvalidTypeException(ctx, fType, calledFunctionType);
     	}
     	
     	return retType;
@@ -135,8 +133,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     @Override
     public Type visitReturnStat(WACCParser.ReturnStatContext ctx) {
     	if (currentFunction == "") {
-    		//THROW ERROR
-    		return null;
+    		throw new ReturnSyntaxError(ctx, "Return called outside of function");
     	}
     	Type retType = ((FunctionType) symbolTable.get(currentFunction)).getReturnType();
     	if(visit(ctx.expr()) !=  retType) {
