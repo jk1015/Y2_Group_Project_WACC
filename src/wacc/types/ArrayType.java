@@ -7,7 +7,11 @@ public class ArrayType implements Type {
 	public ArrayType(Type contentsType) {
 		this.contentsType = contentsType;
 	}
-	
+
+	public Type getContentsType() {
+		return contentsType;
+	}
+
 	@Override
 	public boolean checkType(Type type2) {
 		if (type2 instanceof ArrayType) {
