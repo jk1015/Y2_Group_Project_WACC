@@ -9,3 +9,5 @@ if (ARGV.empty?) then
 else
   puts `#{cmd} < #{ARGV[0]}`
 end
+
+exit $?.exitstatus

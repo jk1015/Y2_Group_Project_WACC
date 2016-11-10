@@ -22,13 +22,12 @@ public class Test {
 
         try {
             semanticAnalysis.visit(tree);
-        } catch (Exception e) {
-            if (e instanceof WACCCompilerException) {
-                System.out.println(e);
-            }
+        } catch (Exception e)  {
+            System.out.println(e);
             if (e instanceof WACCSemanticErrorException) {
                 compilerStatus = CompilerStatus.SEMANTIC_ERROR;
-            } else {
+            }
+            if (e instanceof WACCSyntaxErrorException) {
                 compilerStatus = CompilerStatus.SYNTAX_ERROR;
             }
         }
