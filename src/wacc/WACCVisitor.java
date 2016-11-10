@@ -3,6 +3,9 @@ package wacc;
 import java.util.Iterator;
 import java.util.List;
 
+import org.antlr.v4.runtime.tree.TerminalNode;
+
+import antlr.WACCLexer;
 import antlr.WACCParser;
 import antlr.WACCParser.ExprContext;
 import antlr.WACCParserBaseVisitor;
@@ -173,12 +176,32 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     @Override
     public Type visitUnaryExpr(WACCParser.UnaryExprContext ctx) {
     	// Examine expression and operator for validity
-        Type funType = visit(ctx.unaryOper());
+        Type funType;
+        Type retType;
+        TerminalNode op = (TerminalNode)ctx.unaryOper().getChild(0);
         Type type = visit(ctx.expr1());
-        if (funType.checkType(new FunctionType(type, type))) {
-        	return type;
+        
+        switch (op.getSymbol().getType()) {
+        case WACCLexer.NOT: funType = PrimType.BOOL;
+        					retType = PrimType.BOOL; break;
+        case WACCLexer.LEN: funType = PrimType.STRING;
+        					retType = PrimType.INT; break;
+        case WACCLexer.ORD: funType = PrimType.CHAR; 
+        					retType = PrimType.INT; break;
+        case WACCLexer.CHR: funType = PrimType.INT; 
+        					retType = PrimType.CHAR; break;
+        case WACCLexer.MINUS:
+        					funType = PrimType.INT;
+        					retType = PrimType.INT; break;
+        default: throw new IllegalArgumentException(
+        		"visitUnaryExpr somehow found non-existent function");
         }
-        throw new InvalidTypeException();
+        
+        if (!type.checkType(funType)) {
+            throw new InvalidTypeException(ctx, funType, type);
+        }
+        
+        return retType;
     }
 
     // Anant
