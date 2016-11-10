@@ -19,4 +19,8 @@ public class PairType implements Type {
 		return false;
 	}
 	
+	@Override
+	public String toString() {
+		return "(" + type1 + ", " + type2 + ")";
+	}
 }

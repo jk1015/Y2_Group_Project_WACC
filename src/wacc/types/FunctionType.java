@@ -31,4 +31,24 @@ public class FunctionType implements Type {
 		return false;
 	}
 
+	@Override
+	public String toString() {
+		Iterator<Type> iter = argList.iterator();
+		if (!iter.hasNext()) {
+			return "function";
+		}
+		String msg = iter.next() + " function";
+		if (!iter.hasNext()) {
+			return msg;
+		}
+		msg += "(";
+		while (iter.hasNext()) {
+			msg += iter.next();
+			if (iter.hasNext()) {
+				msg += ", ";
+			}
+		}
+		msg += ")";
+		return msg;
+	}
 }
