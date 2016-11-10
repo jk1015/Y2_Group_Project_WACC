@@ -1,14 +1,25 @@
 package wacc.exceptions;
 
-import org.antlr.v4.runtime.misc.ParseCancellationException;
+import org.antlr.v4.runtime.ParserRuleContext;
 
-public class IntegerSizeException extends ParseCancellationException {
+@SuppressWarnings("serial")
+public class IntegerSizeException extends WACCCompilerException {
 
-    public IntegerSizeException() {
-        super();
-    }
+	public IntegerSizeException() {
+		super();
+	}
 
-    public IntegerSizeException(String msg) {
-        super(msg);
-    }
+	public IntegerSizeException(ParserRuleContext ctx, String msg) {
+		super(ctx, msg);
+	}
+
+	public IntegerSizeException(ParserRuleContext ctx) {
+		super(ctx);
+	}
+
+	public IntegerSizeException(String msg) {
+		super(msg);
+	}
+
+    
 }

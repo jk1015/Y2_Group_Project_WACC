@@ -210,7 +210,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         // Check child is pair, go to correct child
         Type pairType = visit(ctx.expr());
         if (!(pairType instanceof PairType)) {
-            throw new InvalidTypeException(ctx.getStart().getLine() + "");
+            throw new InvalidTypeException(ctx, "Expected pair, got type " + pairType);
         }
 
         TerminalNode pairElement = (TerminalNode) ctx.getChild(0);
@@ -225,8 +225,9 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     @Override
     public Type visitIfStat(WACCParser.IfStatContext ctx) {
     	// Check condition is boolean, check statements are valid.
-        if (visitExpr(ctx.expr()) != PrimType.BOOL){
-            throw new InvalidTypeException(ctx.getStart().getLine() + "");
+    	Type type = visitExpr(ctx.expr());
+        if (type != PrimType.BOOL){
+            throw new InvalidTypeException(ctx, PrimType.BOOL, type);
         }
 
         List<WACCParser.StatContext> stat = ctx.stat();
@@ -255,7 +256,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	// Check child is int
         Type exit = visitExpr(ctx.expr());
         if (exit != PrimType.INT){
-            throw new InvalidTypeException(ctx.getStart().getLine() + "");
+            throw new InvalidTypeException(ctx, PrimType.INT, exit);
         }
         return exit;
     }
@@ -275,7 +276,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         Type lhs = visitAssignLHS(ctx.assignLHS());
         Type rhs = visitAssignRHS(ctx.assignRHS());
         if (lhs != rhs) {
-            throw new InvalidTypeException(ctx.getStart().getLine() + "");
+            throw new InvalidTypeException(ctx, rhs, lhs);
         }
         return null;
     }
@@ -303,8 +304,9 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	Iterator<ExprContext> iter = expr.iterator();
     	Type t = visitExpr(iter.next());
     	while (iter.hasNext()) {
-    		if (t != visitExpr(iter.next())) {
-    			throw new InvalidTypeException(ctx.getStart().getLine() + "");
+    		Type type = visitExpr(iter.next());
+    		if (t != type) {
+    			throw new InvalidTypeException(ctx, t, type);
     		}
     	}
         return t;
@@ -325,7 +327,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
 
         boolean withinIntBounds = (convertedToken < integerLimit) && (convertedToken > -integerLimit);
         if (!withinIntBounds) {
-            throw new IntegerSizeException(ctx.getStart().getLine() + "");
+            throw new IntegerSizeException("Integer " + convertedToken + " larger than WACCMAXINT");
         }
 
         return PrimType.INT;
