@@ -4,6 +4,7 @@ import antlr.WACCLexer;
 import antlr.WACCParser;
 import antlr.WACCParser.ExprContext;
 import antlr.WACCParserBaseVisitor;
+import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.ParseTree;
 import wacc.exceptions.*;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -395,6 +396,11 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         Type snd = visitPairElemType(ctx.pairElemType(1));
 
         return new PairType(fst,snd);
+    }
+
+    @Override
+    public Type visitPairNullType(@NotNull WACCParser.PairNullTypeContext ctx) {
+        return new NullType();
     }
 
     @Override

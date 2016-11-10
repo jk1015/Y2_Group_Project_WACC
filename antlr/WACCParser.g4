@@ -68,8 +68,10 @@ pairType: PAIR OPEN_PARENTHESES pairElemType COMMA pairElemType CLOSE_PARENTHESE
 
 pairElemType: baseType
   | arrayType
-  | PAIR
+  | pairNullType
   ;
+
+pairNullType: PAIR;
 
 expr: expr6;
 
