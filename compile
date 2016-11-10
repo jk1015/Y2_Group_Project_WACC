@@ -3,4 +3,9 @@
 # You are free to change the language used for this script,
 # but do *not* change its name.
 
-puts "TODO: setup this script to call your WACC compiler"
+cmd = 'java -cp bin:lib/antlr-4.4-complete.jar wacc.Test'
+if (ARGV.empty?) then
+  puts `#{cmd}`
+else
+  puts `#{cmd} < #{ARGV[0]}`
+end
