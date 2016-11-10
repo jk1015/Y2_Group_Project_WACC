@@ -3,10 +3,13 @@ package wacc;
 import java.util.Iterator;
 import java.util.List;
 
+import antlr.WACCLexer;
 import antlr.WACCParser;
 import antlr.WACCParser.ExprContext;
 import antlr.WACCParserBaseVisitor;
 import wacc.exceptions.IntegerSizeException;
+import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import wacc.exceptions.InvalidTypeException;
 import wacc.types.*;
 
@@ -159,43 +162,84 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     @Override
     public Type visitPairElem(WACCParser.PairElemContext ctx) {
         // Check child is pair, go to correct child
-    	return super.visitPairElem(ctx);
+        Type pairType = visit(ctx.expr());
+        if (!(pairType instanceof PairType)) {
+            throw new InvalidTypeException(ctx.getStart().getLine() + "");
+        }
+
+        TerminalNode pairElement = (TerminalNode) ctx.getChild(0);
+
+        if (pairElement.getSymbol().getType() == WACCLexer.FST) {
+            return ((PairType) pairType).getType1();
+        } else {
+            return ((PairType) pairType).getType2();
+        }
     }
 
     @Override
     public Type visitIfStat(WACCParser.IfStatContext ctx) {
     	// Check condition is boolean, check statements are valid.
-        return super.visitIfStat(ctx);
+        if (visitExpr(ctx.expr()) != PrimType.BOOL){
+            throw new InvalidTypeException(ctx.getStart().getLine() + "");
+        }
+
+        List<WACCParser.StatContext> stat = ctx.stat();
+        Iterator<WACCParser.StatContext> iter = stat.iterator();
+        while (iter.hasNext()) {
+            symbolTable.enterNewScope();
+            visit(iter.next());
+            symbolTable.exitScope();
+        }
+
+        return null;
     }
 
     @Override
     public Type visitNewPair(WACCParser.NewPairContext ctx) {
     	// Return the pair type of the two children.
-        return super.visitNewPair(ctx);
+        Type fst = visitExpr(ctx.expr(0));
+        Type snd = visitExpr(ctx.expr(1));
+        Type pair = new PairType(fst,snd);
+
+        return pair;
     }
 
     @Override
     public Type visitExitStat(WACCParser.ExitStatContext ctx) {
     	// Check child is int
-        return super.visitExitStat(ctx);
+        Type exit = visitExpr(ctx.expr());
+        if (exit != PrimType.INT){
+            throw new InvalidTypeException(ctx.getStart().getLine() + "");
+        }
+        return exit;
     }
 
     @Override
     public Type visitPairType(WACCParser.PairTypeContext ctx) {
     	// Return the pair type
-        return super.visitPairType(ctx);
+        Type fst = visitPairElemType(ctx.pairElemType(0));
+        Type snd = visitPairElemType(ctx.pairElemType(1));
+
+        return new PairType(fst,snd);
     }
 
     @Override
     public Type visitAssignStat(WACCParser.AssignStatContext ctx) {
     	// Check LHS and RHS match
-        return super.visitAssignStat(ctx);
+        Type lhs = visitAssignLHS(ctx.assignLHS());
+        Type rhs = visitAssignRHS(ctx.assignRHS());
+        if (lhs != rhs) {
+            throw new InvalidTypeException(ctx.getStart().getLine() + "");
+        }
+        return null;
     }
 
     @Override
     public Type visitParam(WACCParser.ParamContext ctx) {
     	// Not called
-        return super.visitParam(ctx);
+        // just in case we need it
+        Type param = visitType(ctx.type());
+        return param;
     }
     
     // Jas
