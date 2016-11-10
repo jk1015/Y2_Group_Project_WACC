@@ -110,10 +110,11 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     @Override
     public Type visitWhileStat(WACCParser.WhileStatContext ctx) {
     	// Check condition is boolean, check children are valid.
-    	if (visit(ctx.expr()).checkType(PrimType.BOOL)) {
+    	Type type = visit(ctx.expr());
+    	if (type.checkType(PrimType.BOOL)) {
     		return visit(ctx.stat());
     	}
-        throw new InvalidTypeException();
+        throw new InvalidTypeException(ctx, PrimType.BOOL, type);
     }
 
     @Override
@@ -141,7 +142,8 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     public Type visitInitAssignStat(WACCParser.InitAssignStatContext ctx) {
     	// Check type against rhs, add to symbol table
         Type type = visit(ctx.type());
-        if (type.checkType(visit(ctx.assignRHS()))) {
+        Type rhs = visit(ctx.assignRHS());
+        if (type.checkType(rhs)) {
         	String ident = ctx.identifier().getText();
         	try {
             	symbolTable.add(ident, type);
@@ -149,7 +151,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         		throw new RedeclaredVariableException(ctx, e.getMessage());
         	}
         }
-        throw new InvalidTypeException();
+        throw new InvalidTypeException(ctx, type, rhs);
     }
 
     @Override
@@ -159,7 +161,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         if ((type instanceof ArrayType) || (type instanceof PairType)) {
         	return type;
         }
-        throw new InvalidTypeException();
+        throw new InvalidTypeException(ctx, "Expected pair or array, got " + type);
     }
 
     @Override
