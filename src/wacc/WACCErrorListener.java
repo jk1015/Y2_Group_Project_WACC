@@ -14,6 +14,6 @@ public class WACCErrorListener extends BaseErrorListener {
     public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, 
                             String msg, RecognitionException e)
             throws ParseCancellationException {
-        throw new WACCSyntaxErrorException("line " + line + ":" + charPositionInLine + " " + msg);
+        throw new WACCSyntaxErrorException(line + ":" + charPositionInLine + ": " + msg);
     }
 }
