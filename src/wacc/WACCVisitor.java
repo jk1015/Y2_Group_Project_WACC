@@ -62,12 +62,12 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
 
     @Override
     public Type visitCallFunction(WACCParser.CallFunctionContext ctx) {
-    	FunctionType fType = (FunctionType) symbolTable.get(ctx.getChild(1).getText());
+    	FunctionType fType = symbolTable.getFunction(ctx.getChild(1).getText());
     	Type retType = fType.getReturnType();
     	
     	List<Type> types = new ArrayList<>();
     	if (ctx.getChildCount() == 5) {
-    		ParseTree argList = ctx.getChild(4);
+    		WACCParser.ArgListContext argList = ctx.argList();
     		for(int i = 0; i < argList.getChildCount(); i += 2) {
     			types.add(visit(argList.getChild(i)));
     		}
@@ -121,8 +121,8 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         }
         FunctionType fType = new FunctionType(typesArray);
         
-        symbolTable.add(fName, fType);
-        
+        symbolTable.addFunction(fName, fType);
+
         symbolTable.enterNewScope();
         for(int i = 0; i < types.size(); i++) {
         	symbolTable.add(idents.get(i), types.get(i));
@@ -146,7 +146,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	if (currentFunction == "") {
     		throw new InvalidReturnException(ctx, "Return called outside of function");
     	}
-    	Type retType = ((FunctionType) symbolTable.get(currentFunction)).getReturnType();
+    	Type retType = (symbolTable.getFunction(currentFunction)).getReturnType();
     	if(!visit(ctx.expr()).checkType(retType)) {
     		throw new InvalidTypeException("");
     	}

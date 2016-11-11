@@ -1,6 +1,7 @@
 package wacc;
 import wacc.exceptions.RedeclaredVariableException;
 import wacc.exceptions.UndeclaredVariableException;
+import wacc.types.FunctionType;
 import wacc.types.Type;
 
 import java.util.*;
@@ -27,6 +28,11 @@ public class ScopedSymbolTable {
         currentScope.put(name, elem);
     }
 
+    public void addFunction(String name, FunctionType elem) {
+        String funcName = '@' + name;
+        add(funcName, elem);
+    }
+
     public Type get(String name){
         Iterator<Map<String, Type>> it = scopes.iterator();
         while (it.hasNext()) {
@@ -37,6 +43,11 @@ public class ScopedSymbolTable {
         }
         throw new UndeclaredVariableException(
         		"Identifier " + name + " has not been declared yet.");
+    }
+
+    public FunctionType getFunction(String name){
+        String funcName = '@' + name;
+        return (FunctionType) get(funcName);
     }
 
     public void enterNewScope() {
