@@ -162,7 +162,6 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     @Override
     public Type visitExpr6(WACCParser.Expr6Context ctx) {
     	//OR (||)
-        //System.out.println("hello6");
     	if(ctx.getChildCount() == 1) {
     		return visitChildren(ctx);
     	}
@@ -179,7 +178,6 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     @Override
     public Type visitExpr5(WACCParser.Expr5Context ctx) {
     	//AND (&&)
-        //System.out.println("hello5");
     	if(ctx.getChildCount() == 1) {
     		return visitChildren(ctx);
     	}
@@ -196,7 +194,6 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     @Override
     public Type visitExpr4(WACCParser.Expr4Context ctx) {
     	//EQ (==) NEQ(!=)
-        //System.out.println("hello4");
     	if(ctx.getChildCount() == 1) {
     		return visitChildren(ctx);
     	}
@@ -211,7 +208,6 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     @Override
     public Type visitExpr3(WACCParser.Expr3Context ctx) {
     	// GT (>) LT (<) GEQ (>=) LEQ (<=)
-        //System.out.println("hello3");
     	if(ctx.getChildCount() == 1) {
     		return visitChildren(ctx);
     	}
