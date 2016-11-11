@@ -61,7 +61,6 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
 
         while (iterator.hasNext()) {
             Type childType = visit(iterator.next());
-            //System.out.println(childType);
             if(!PrimType.INT.checkType(childType)) {
                 throw new InvalidTypeException();
             }
@@ -73,13 +72,6 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
 
     	ArrayType arrayType = (ArrayType) symbolTable.get(ctx.getChild(0).getText());
         return arrayType.getContentsType();
-    }
-
-    @Override
-    public Type visitUnaryOper(WACCParser.UnaryOperContext ctx) {
-    	// Return valid type
-    	// Should not be called
-        return super.visitUnaryOper(ctx);
     }
 
     @Override
@@ -107,12 +99,6 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     }
 
     @Override
-    public Type visitSkipStat(WACCParser.SkipStatContext ctx) {
-    	// End of tree
-        return super.visitSkipStat(ctx);
-    }
-
-    @Override
     public Type visitFunction(WACCParser.FunctionContext ctx) {
     	// Add to symbol table, check validity of children under new scope
     	//Check that statement contains a return
@@ -136,8 +122,12 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         	typesArray[i] = types.get(i - 1);
         }
         FunctionType fType = new FunctionType(typesArray);
-        
-        symbolTable.addFunction(fName, fType);
+
+        try {
+            symbolTable.addFunction(fName, fType);
+        } catch (RedeclaredFunctionException e) {
+            throw new RedeclaredFunctionException(ctx, e.getMessage());
+        }
 
         symbolTable.enterNewScope();
         for(int i = 0; i < types.size(); i++) {
@@ -298,9 +288,6 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	return PrimType.INT;
     }
 
-    // Max
-
-
     @Override
     public Type visitBlockStat(@NotNull WACCParser.BlockStatContext ctx) {
         symbolTable.enterNewScope();
@@ -349,8 +336,6 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         Type type = visit(ctx.type());
         lhsRequiredType = type;
         Type rhs = visit(ctx.assignRHS());
-        //System.out.println(type);
-        //System.out.println(rhs);
         if (type.checkType(rhs)) {
         	String ident = ctx.identifier().getText();
         	try {
@@ -360,7 +345,6 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         	}
         	return null;
         }
-        //System.out.println("hello");
         throw new InvalidTypeException(ctx, type, rhs);
     }
 
@@ -372,12 +356,6 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         	return type;
         }
         throw new InvalidTypeException(ctx, "Expected pair or array, got " + type);
-    }
-
-    @Override
-    public Type visitParamList(WACCParser.ParamListContext ctx) {
-    	// This probably is never called
-        return super.visitParamList(ctx);
     }
 
     @Override
@@ -410,8 +388,6 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         
         return retType;
     }
-
-    // Anant
     
     @Override
     public Type visitPairElem(WACCParser.PairElemContext ctx) {
@@ -509,6 +485,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         return null;
     }
 
+    //TODO
     @Override
     public Type visitParam(WACCParser.ParamContext ctx) {
     	// Not called
@@ -516,8 +493,6 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         Type param = visitType(ctx.type());
         return param;
     }
-    
-    // Jas
     
     @Override
     public Type visitPairLiter(WACCParser.PairLiterContext ctx) {
@@ -562,7 +537,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
                 if (symbolTable.hasFunction(name)) {
                     throw new InvalidTypeException(name + " is only defined for type " + fType);
                 }
-                throw new UndeclaredVariableException(name + " is undefined should be of type " + fType);
+                throw new UndeclaredFunctionException(name + " is undefined should be of type " + fType);
             }
 
         }
@@ -589,47 +564,8 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     
     @Override
     public Type visitBoolLiter(WACCParser.BoolLiterContext ctx) {
-    	// Return bool
+        // Return bool
         return PrimType.BOOL;
-    }
-    
-    
-    @Override
-    public Type visitArgList(WACCParser.ArgListContext ctx) {
-    	// Not looked at?
-        return super.visitArgList(ctx);
-    }
-    
-    //These shouldn't be called
-    @Override
-
-    public Type visitBinaryOper1(WACCParser.BinaryOper1Context ctx) {
-        return super.visitBinaryOper1(ctx);
-    }
-
-    @Override
-    public Type visitBinaryOper2(WACCParser.BinaryOper2Context ctx) {
-        return super.visitBinaryOper2(ctx);
-    }
-    
-    @Override
-    public Type visitBinaryOper3(WACCParser.BinaryOper3Context ctx) {
-        return super.visitBinaryOper3(ctx);
-    }
-
-    @Override
-    public Type visitBinaryOper4(WACCParser.BinaryOper4Context ctx) {
-        return super.visitBinaryOper4(ctx);
-    }
-
-    @Override
-    public Type visitBinaryOper5(WACCParser.BinaryOper5Context ctx) {
-        return super.visitBinaryOper5(ctx);
-    }
-
-    @Override
-    public Type visitBinaryOper6(WACCParser.BinaryOper6Context ctx) {
-        return super.visitBinaryOper6(ctx);
     }
 
 }

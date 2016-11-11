@@ -1,4 +1,5 @@
 package wacc;
+import wacc.exceptions.RedeclaredFunctionException;
 import wacc.exceptions.RedeclaredVariableException;
 import wacc.exceptions.UndeclaredVariableException;
 import wacc.types.FunctionType;
@@ -30,7 +31,11 @@ public class ScopedSymbolTable {
 
     public void addFunction(String name, FunctionType elem) {
         String funcName = '\\' + name;
-        add(funcName, elem);
+        try {
+            add(funcName, elem);
+        } catch (RedeclaredVariableException e) {
+            throw new RedeclaredFunctionException("Function " + name + " has already been declared");
+        }
     }
 
     public Type get(String name){
