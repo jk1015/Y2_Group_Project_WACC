@@ -3,6 +3,7 @@ package wacc;
 import antlr.WACCLexer;
 import antlr.WACCParser;
 import antlr.WACCParser.ExprContext;
+import antlr.WACCParser.ReadStatContext;
 import antlr.WACCParserBaseVisitor;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -416,6 +417,15 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     }
 
     @Override
+	public Type visitReadStat(ReadStatContext ctx) {
+		Type type = visitChildren(ctx);
+		if (type.checkType(PrimType.BOOL) || type instanceof PairType) {
+			throw new InvalidTypeException(ctx, "Can't read into booleans or pairs.");
+		}
+		return type;
+	}
+
+	@Override
     public Type visitExitStat(WACCParser.ExitStatContext ctx) {
     	// Check child is int
         Type exit = visitExpr(ctx.expr());
