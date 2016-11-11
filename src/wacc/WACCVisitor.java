@@ -20,6 +20,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
 	private ScopedSymbolTable symbolTable;
 	private String currentFunction; 
 	private boolean hasReturn;
+    private boolean hasExit;
     private HashMap<String, FunctionType> calledFunctions;
     private Type lhsRequiredType;
 	
@@ -27,6 +28,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
 		symbolTable = new ScopedSymbolTable();
 		currentFunction = "";
 		hasReturn = false;
+        hasExit = false;
         calledFunctions = new HashMap<>();
 	}
 	
@@ -163,6 +165,9 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         for(ParseTree stat: ctx.stat()) {
             if(hasReturn) {
                 throw new InvalidReturnException(ctx, "Dead code following return");
+            }
+            if(hasExit) {
+                throw new WACCSyntaxErrorException(ctx, "Dead code following exit");
             }
             visit(stat);
         }
@@ -472,6 +477,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         if (!exit.checkType(PrimType.INT)){
             throw new InvalidTypeException(ctx, PrimType.INT, exit);
         }
+        hasExit = true;
         return exit;
     }
 
