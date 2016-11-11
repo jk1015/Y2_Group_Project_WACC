@@ -42,15 +42,31 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     @Override
     public Type visitArrayElem(WACCParser.ArrayElemContext ctx) {
     	// Make sure expression is int
+
+        /*
     	for(int i = 2; i <= ctx.getChildCount(); i += 3) {
     		if(!visit(ctx.getChild(i)).checkType(PrimType.INT)) {
     			throw new InvalidTypeException("");
     		}
-    	}
+    	}*/
+
+    	List<ExprContext> expr = ctx.expr();
+        Iterator<ExprContext> iterator = expr.iterator();
+
+        while (iterator.hasNext()) {
+            Type childType = visit(iterator.next());
+            //System.out.println(childType);
+            if(!PrimType.INT.checkType(childType)) {
+                throw new InvalidTypeException();
+            }
+        }
+
     	if (!(symbolTable.get(ctx.getChild(0).getText()) instanceof ArrayType)) {
     		throw new InvalidTypeException("");
     	}
-        return super.visitArrayElem(ctx);
+
+    	ArrayType arrayType = (ArrayType) symbolTable.get(ctx.getChild(0).getText());
+        return arrayType.getContentsType();
     }
 
     @Override
@@ -139,6 +155,21 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         
         return fType;
         
+    }
+
+    @Override
+    public Type visitPrintlnStat(@NotNull WACCParser.PrintlnStatContext ctx) {
+        return visit(ctx.expr());
+    }
+
+    @Override
+    public Type visitPrintStat(@NotNull WACCParser.PrintStatContext ctx) {
+        return visit(ctx.expr());
+    }
+
+    @Override
+    public Type visitReadStat(@NotNull WACCParser.ReadStatContext ctx) {
+        return visit(ctx.assignLHS());
     }
 
     @Override
@@ -344,7 +375,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         Type retType;
         TerminalNode op = (TerminalNode)ctx.unaryOper().getChild(0);
         Type type = visit(ctx.expr1());
-        
+
         switch (op.getSymbol().getType()) {
         case WACCLexer.NOT: funType = PrimType.BOOL;
         					retType = PrimType.BOOL; break;
@@ -444,7 +475,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	// Check LHS and RHS match
         Type lhs = visitAssignLHS(ctx.assignLHS());
         Type rhs = visitAssignRHS(ctx.assignRHS());
-        if (!lhs.checkType(rhs)) {
+        if (!rhs.checkType(lhs)) {
             throw new InvalidTypeException(ctx, rhs, lhs);
         }
         return null;
