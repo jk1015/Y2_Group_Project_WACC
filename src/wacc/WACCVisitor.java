@@ -137,7 +137,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     		throw new InvalidReturnException(ctx, "Return called outside of function");
     	}
     	Type retType = ((FunctionType) symbolTable.get(currentFunction)).getReturnType();
-    	if(visit(ctx.expr()) !=  retType) {
+    	if(!visit(ctx.expr()).checkType(retType)) {
     		throw new InvalidTypeException("");
     	}
     	return retType;
@@ -151,9 +151,11 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	}
     	Type rhsType = visit(ctx.getChild(0));
     	Type lhsType = visit(ctx.getChild(2));
-    	if(rhsType != PrimType.BOOL || lhsType != PrimType.BOOL) {
-    		throw new InvalidTypeException("");
-    	}
+    	if(!rhsType.checkType(PrimType.BOOL)) {
+    		throw new InvalidTypeException(ctx, PrimType.BOOL, rhsType);
+    	} else if (!lhsType.checkType(PrimType.BOOL)) {
+            throw new InvalidTypeException(ctx, PrimType.BOOL, lhsType);
+        }
     	return PrimType.BOOL;
     }
 
@@ -165,7 +167,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	}
     	Type rhsType = visit(ctx.getChild(0));
     	Type lhsType = visit(ctx.getChild(2));
-    	if(rhsType != PrimType.BOOL || lhsType != PrimType.BOOL) {
+    	if(!rhsType.checkType(PrimType.BOOL) || !lhsType.checkType(PrimType.BOOL)) {
     		throw new InvalidTypeException("");
     	}
     	return PrimType.BOOL;
@@ -179,7 +181,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	}
     	Type rhsType = visit(ctx.getChild(0));
     	Type lhsType = visit(ctx.getChild(2));
-    	if(rhsType != lhsType) {
+    	if(!rhsType.checkType(lhsType)) {
     		throw new InvalidTypeException("");
     	}
     	return PrimType.BOOL;
@@ -195,9 +197,9 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	Type lhsType = visit(ctx.getChild(2));
     	if(rhsType != lhsType) {
     		throw new InvalidTypeException("");
-    	} else if (rhsType == PrimType.CHAR) {
+    	} else if (rhsType.checkType(PrimType.CHAR)) {
     		return PrimType.BOOL;
-    	} else if (rhsType == PrimType.INT) {
+    	} else if (rhsType.checkType(PrimType.INT)) {
     		return PrimType.BOOL;
     	}
     	throw new InvalidTypeException("");
@@ -211,7 +213,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	}
     	Type rhsType = visit(ctx.getChild(0));
     	Type lhsType = visit(ctx.getChild(2));
-    	if(rhsType != PrimType.INT || lhsType != PrimType.INT) {
+    	if(!rhsType.checkType(PrimType.INT) || !lhsType.checkType(PrimType.INT)) {
     		throw new InvalidTypeException("");
     	}
     	return PrimType.INT;
@@ -225,7 +227,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	}
     	Type rhsType = visit(ctx.getChild(0));
     	Type lhsType = visit(ctx.getChild(2));
-    	if(rhsType != PrimType.INT || lhsType != PrimType.INT) {
+    	if(!rhsType.checkType(PrimType.INT) || !lhsType.checkType(PrimType.INT)) {
     		throw new InvalidTypeException("");
     	}
     	return PrimType.INT;
