@@ -1,25 +1,26 @@
 package wacc;
-import org.antlr.v4.runtime.*;
-import org.antlr.v4.runtime.tree.*;
-import antlr.*;
-import wacc.exceptions.WACCCompilerException;
-import wacc.exceptions.WACCSemanticErrorException;
-import wacc.exceptions.WACCSyntaxErrorException;
 
 import static java.lang.System.exit;
 
 import java.io.IOException;
+import java.io.InputStream;
 
-public class Test {
-    public static void main(String[] args) {
+import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.tree.ParseTree;
+
+import antlr.WACCLexer;
+import antlr.WACCParser;
+import wacc.exceptions.WACCCompilerException;
+import wacc.exceptions.WACCSemanticErrorException;
+import wacc.exceptions.WACCSyntaxErrorException;
+
+public class Backend {
+	
+	public CompilerStatus run(InputStream in) throws IOException {
         ANTLRInputStream input = null;
-		try {
-			input = new ANTLRInputStream(System.in);
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.err.println("Bad input.");
-			exit(-1);
-		}
+		input = new ANTLRInputStream(in);
 
         WACCLexer lexer = new WACCLexer(input);
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
@@ -50,7 +51,7 @@ public class Test {
         	System.err.println(e);
         	compilerStatus = CompilerStatus.SEMANTIC_ERROR;
         }
-        exit(compilerStatus.code());
-    }
+        return compilerStatus;
+	}
+	
 }
-
