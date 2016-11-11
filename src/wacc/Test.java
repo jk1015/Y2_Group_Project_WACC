@@ -12,10 +12,24 @@ import static java.lang.System.exit;
 public class Test {
     public static void main(String[] args) throws Exception{
         ANTLRInputStream input = new ANTLRInputStream(System.in);
+
         WACCLexer lexer = new WACCLexer(input);
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
+
         WACCParser parser = new WACCParser(tokenStream);
-        ParseTree tree = parser.program();
+        parser.removeErrorListeners();
+        parser.addErrorListener(WACCErrorListener.INSTANCE);
+
+        ParseTree tree = new ParserRuleContext();
+
+        try {
+            tree = parser.program();
+        } catch (WACCCompilerException e) {
+            System.out.println(e);
+            exit(100);
+        }
+
+
         WACCVisitor semanticAnalysis = new WACCVisitor();
 
         CompilerStatus compilerStatus = CompilerStatus.SUCCESS;
@@ -24,11 +38,11 @@ public class Test {
             semanticAnalysis.visit(tree);
         } catch (Exception e)  {
             System.out.println(e);
-            if (e instanceof WACCSemanticErrorException) {
-                compilerStatus = CompilerStatus.SEMANTIC_ERROR;
-            }
             if (e instanceof WACCSyntaxErrorException) {
                 compilerStatus = CompilerStatus.SYNTAX_ERROR;
+            }
+            if (e instanceof WACCSemanticErrorException) {
+                compilerStatus = CompilerStatus.SEMANTIC_ERROR;
             }
         }
 

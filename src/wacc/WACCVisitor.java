@@ -495,16 +495,24 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         try {
             convertedToken = Integer.parseInt(intToken);
         } catch (NumberFormatException e) {
+<<<<<<< HEAD
             System.out.println("thrown from visitIntLiter 1");
             throw new IntegerSizeException("Integer " + intToken + " larger than WACCMAXINT");
+=======
+            throw new IntegerSizeException(ctx, "Integer " + intToken + " larger than WACCMAXINT");
+>>>>>>> origin/development
         }
 
         int integerLimit = (int)(Math.pow(2,32));
 
         boolean withinIntBounds = (convertedToken < integerLimit) && (convertedToken > -integerLimit);
         if (!withinIntBounds) {
+<<<<<<< HEAD
             System.out.println("thrown from visitIntLiter 2");
             throw new IntegerSizeException("Integer " + intToken + " larger than WACCMAXINT");
+=======
+            throw new IntegerSizeException("Integer " + intToken + " larger than WACC_MAX_INT");
+>>>>>>> origin/development
         }
 
         return PrimType.INT;
