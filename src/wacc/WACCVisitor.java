@@ -310,6 +310,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     		symbolTable.enterNewScope();
             visit(ctx.stat());
             symbolTable.exitScope();
+            return null;
     	}
         throw new InvalidTypeException(ctx, PrimType.BOOL, type);
     }
