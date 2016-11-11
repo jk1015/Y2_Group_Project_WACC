@@ -458,6 +458,10 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	// Check array is valid
     	List<ExprContext> expr = ctx.expr();
     	Iterator<ExprContext> iter = expr.iterator();
+        if (expr.size() == 0) {
+            return new NullType();
+        }
+
     	Type t = visitExpr(iter.next());
     	while (iter.hasNext()) {
     		Type type = visitExpr(iter.next());
