@@ -17,11 +17,12 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
 	
 	private final ScopedSymbolTable symbolTable;
 	private String currentFunction; 
-	
+	private boolean hasReturn;
 	
 	public WACCVisitor() {
 		symbolTable = new ScopedSymbolTable();
 		currentFunction = "";
+		hasReturn = false;
 	}
 	
 	// James
@@ -72,9 +73,13 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     		}
     	}
     	
-    	types.add(0, retType);
+    	Type[] typesArray = new Type[types.size() + 1];
+        typesArray[0] = retType;
+        for(int i = 1; i < typesArray.length; i++) {
+        	typesArray[i] = types.get(i - 1);
+        }
 
-        Type calledFunctionType = new FunctionType((Type[]) types.toArray());
+        Type calledFunctionType = new FunctionType(typesArray);
     	
     	if (!fType.checkType(calledFunctionType)) {
     		throw new InvalidTypeException(ctx, fType, calledFunctionType);
@@ -89,28 +94,32 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         return super.visitSkipStat(ctx);
     }
 
-    
-    //ADD RETURN CHECKING
     @Override
     public Type visitFunction(WACCParser.FunctionContext ctx) {
     	// Add to symbol table, check validity of children under new scope
     	//Check that statement contains a return
+    	
+    	hasReturn = false;
+    	
         String fName = ctx.getChild(1).getText();
         Type returnType = visit(ctx.getChild(0));
         List<String> idents = new ArrayList<String>();
         List<Type> types = new ArrayList<Type>();
         
         if (ctx.getChildCount() == 8) {
-        	ParseTree paramList = ctx.getChild(4);
+        	ParseTree paramList = ctx.paramList();
         	for(int i = 0; i < paramList.getChildCount(); i += 2) {
         		types.add(visit(paramList.getChild(i).getChild(0)));
         		idents.add(paramList.getChild(i).getChild(1).getText());
         	}
         }
         
-        types.add(0, returnType);
-        FunctionType fType = new FunctionType((Type[]) types.toArray());
-        types.remove(0);
+        Type[] typesArray = new Type[types.size() + 1];
+        typesArray[0] = returnType;
+        for(int i = 1; i < typesArray.length; i++) {
+        	typesArray[i] = types.get(i - 1);
+        }
+        FunctionType fType = new FunctionType(typesArray);
         
         symbolTable.add(fName, fType);
         
@@ -123,6 +132,10 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         visit(ctx.getChild(ctx.getChildCount() - 2));
         currentFunction = prevFunction;
         symbolTable.exitScope();
+        
+        if(!hasReturn) {
+        	throw new InvalidReturnException(ctx, "Function does not return along all execution branches");
+        }
         
         return fType;
         
@@ -137,9 +150,10 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	if(!visit(ctx.expr()).checkType(retType)) {
     		throw new InvalidTypeException("");
     	}
+    	hasReturn = true;
     	return retType;
     }
-
+    
     @Override
     public Type visitBracketsExpr(@NotNull WACCParser.BracketsExprContext ctx) {
         return visit(ctx.getChild(1));
@@ -380,18 +394,17 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     @Override
     public Type visitIfStat(WACCParser.IfStatContext ctx) {
     	// Check condition is boolean, check statements are valid.
+    	
+    	boolean alreadyReturns = hasReturn;
+    	
     	Type type = visitExpr(ctx.expr());
-        if (type != PrimType.BOOL){
+        if (!PrimType.BOOL.checkType(type)){
             throw new InvalidTypeException(ctx, PrimType.BOOL, type);
         }
-
-        List<WACCParser.StatContext> stat = ctx.stat();
-        Iterator<WACCParser.StatContext> iter = stat.iterator();
-        while (iter.hasNext()) {
-            symbolTable.enterNewScope();
-            visit(iter.next());
-            symbolTable.exitScope();
-        }
+        visit(ctx.stat(0));
+        boolean tempReturn = hasReturn;
+        visit(ctx.stat(1));
+        hasReturn = (tempReturn && hasReturn) || alreadyReturns; 
 
         return null;
     }
