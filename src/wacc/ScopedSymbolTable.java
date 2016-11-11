@@ -29,7 +29,7 @@ public class ScopedSymbolTable {
     }
 
     public void addFunction(String name, FunctionType elem) {
-        String funcName = '@' + name;
+        String funcName = '\\' + name;
         add(funcName, elem);
     }
 
@@ -46,7 +46,7 @@ public class ScopedSymbolTable {
     }
 
     public FunctionType getFunction(String name){
-        String funcName = '@' + name;
+        String funcName = '\\' + name;
         return (FunctionType) get(funcName);
     }
 
