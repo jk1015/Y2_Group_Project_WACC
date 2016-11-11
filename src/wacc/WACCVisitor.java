@@ -495,20 +495,11 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     public Type visitIntLiter(WACCParser.IntLiterContext ctx) {
     	// Return int, check
         String intToken = ctx.getText();
-        int convertedToken;
         try {
-            convertedToken = Integer.parseInt(intToken);
+            Integer.parseInt(intToken);
         } catch (NumberFormatException e) {
             throw new IntegerSizeException(ctx, "Integer " + intToken + " larger than WACCMAXINT");
         }
-
-        int integerLimit = (int)(Math.pow(2,32));
-
-        boolean withinIntBounds = (convertedToken < integerLimit) && (convertedToken > -integerLimit);
-        if (!withinIntBounds) {
-            throw new IntegerSizeException("Integer " + intToken + " larger than WACC_MAX_INT");
-        }
-
         return PrimType.INT;
     }
     
