@@ -46,10 +46,12 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	// Make sure expression is int
     	for(int i = 2; i <= ctx.getChildCount(); i += 3) {
     		if(visit(ctx.getChild(1)) != PrimType.INT) {
+                System.out.println("thrown from visitArrayElem 1");
     			throw new InvalidTypeException("");
     		}
     	}
     	if (!(symbolTable.get(ctx.getChild(0).getText()) instanceof ArrayType)) {
+            System.out.println("thrown from visitArrayElem 2");
     		throw new InvalidTypeException("");
     	}
         return super.visitArrayElem(ctx);
@@ -80,6 +82,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         Type calledFunctionType = new FunctionType((Type[]) types.toArray());
     	
     	if (!fType.checkType(calledFunctionType)) {
+            System.out.println("thrown from visitCallFunction");
     		throw new InvalidTypeException(ctx, fType, calledFunctionType);
     	}
     	
@@ -134,10 +137,12 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     @Override
     public Type visitReturnStat(WACCParser.ReturnStatContext ctx) {
     	if (currentFunction == "") {
+            System.out.println("thrown from visitReturn 1");
     		throw new InvalidReturnException(ctx, "Return called outside of function");
     	}
     	Type retType = ((FunctionType) symbolTable.get(currentFunction)).getReturnType();
     	if(visit(ctx.expr()) !=  retType) {
+            System.out.println("thrown from visitReturn 2");
     		throw new InvalidTypeException("");
     	}
     	return retType;
@@ -152,6 +157,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	Type rhsType = visit(ctx.getChild(0));
     	Type lhsType = visit(ctx.getChild(2));
     	if(rhsType != PrimType.BOOL || lhsType != PrimType.BOOL) {
+            System.out.println("thrown from visitEXpr6");
     		throw new InvalidTypeException("");
     	}
     	return PrimType.BOOL;
@@ -166,6 +172,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	Type rhsType = visit(ctx.getChild(0));
     	Type lhsType = visit(ctx.getChild(2));
     	if(rhsType != PrimType.BOOL || lhsType != PrimType.BOOL) {
+            System.out.println("thrown from visitExpr5");
     		throw new InvalidTypeException("");
     	}
     	return PrimType.BOOL;
@@ -179,7 +186,10 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	}
     	Type rhsType = visit(ctx.getChild(0));
     	Type lhsType = visit(ctx.getChild(2));
-    	if(rhsType != lhsType) {
+        //System.out.println(rhsType);
+        //System.out.println(lhsType);
+    	if(!rhsType.checkType(lhsType)) {
+            System.out.println("thrown from visitExpr4");
     		throw new InvalidTypeException("");
     	}
     	return PrimType.BOOL;
@@ -193,13 +203,15 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	}
     	Type rhsType = visit(ctx.getChild(0));
     	Type lhsType = visit(ctx.getChild(2));
-    	if(rhsType != lhsType) {
+    	if(!rhsType.checkType(lhsType)) {
+            System.out.println("thrown from visitExpr3 1");
     		throw new InvalidTypeException("");
     	} else if (rhsType == PrimType.CHAR) {
     		return PrimType.BOOL;
     	} else if (rhsType == PrimType.INT) {
     		return PrimType.BOOL;
     	}
+        System.out.println("thrown from visitExpr3 2");
     	throw new InvalidTypeException("");
     }
 
@@ -212,6 +224,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	Type rhsType = visit(ctx.getChild(0));
     	Type lhsType = visit(ctx.getChild(2));
     	if(rhsType != PrimType.INT || lhsType != PrimType.INT) {
+            System.out.println("thrown from visitExpr2");
     		throw new InvalidTypeException("");
     	}
     	return PrimType.INT;
@@ -225,7 +238,8 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	}
     	Type rhsType = visit(ctx.getChild(0));
     	Type lhsType = visit(ctx.getChild(2));
-    	if(rhsType != PrimType.INT || lhsType != PrimType.INT) {
+    	if(!rhsType.checkType(PrimType.INT) || !lhsType.checkType(PrimType.INT)) {
+            System.out.println("thrown from visitExpr1");
     		throw new InvalidTypeException("");
     	}
     	return PrimType.INT;
@@ -249,6 +263,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	if (type.checkType(PrimType.BOOL)) {
     		return visit(ctx.stat());
     	}
+        System.out.println("thrown from visitWhileStat");
         throw new InvalidTypeException(ctx, PrimType.BOOL, type);
     }
 
@@ -258,6 +273,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	try {
         	return symbolTable.get(ctx.getText());
     	} catch (UndeclaredVariableException e) {
+            System.out.println("thrown from visitIdentifier");
     		throw new UndeclaredVariableException(ctx, e.getMessage());
     	}
     }
@@ -285,11 +301,13 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         	try {
             	symbolTable.add(ident, type);
         	} catch (RedeclaredVariableException e) {
+                System.out.println("thrown from visitInitAssign 1");
         		throw new RedeclaredVariableException(ctx, e.getMessage());
         	}
         	return null;
         }
         //System.out.println("hello");
+        System.out.println("thrown from visitInitAssign 2");
         throw new InvalidTypeException(ctx, type, rhs);
     }
 
@@ -300,6 +318,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         if ((type instanceof ArrayType) || (type instanceof PairType)) {
         	return type;
         }
+        System.out.println("thrown from visitFreeStat");
         throw new InvalidTypeException(ctx, "Expected pair or array, got " + type);
     }
 
@@ -334,6 +353,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         }
         
         if (!type.checkType(funType)) {
+            System.out.println("thrown from visitUaryExpr");
             throw new InvalidTypeException(ctx, funType, type);
         }
         
@@ -347,6 +367,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         // Check child is pair, go to correct child
         Type pairType = visit(ctx.expr());
         if (!(pairType instanceof PairType)) {
+            System.out.println("thrown from visitPairElem");
             throw new InvalidTypeException(ctx, "Expected pair, got type " + pairType);
         }
 
@@ -364,6 +385,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	// Check condition is boolean, check statements are valid.
     	Type type = visitExpr(ctx.expr());
         if (type != PrimType.BOOL){
+            System.out.println("thrown from visitIfStat");
             throw new InvalidTypeException(ctx, PrimType.BOOL, type);
         }
 
@@ -391,8 +413,11 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     @Override
     public Type visitExitStat(WACCParser.ExitStatContext ctx) {
     	// Check child is int
+        System.out.println("got in exit");
         Type exit = visitExpr(ctx.expr());
+        System.out.println(exit);
         if (exit != PrimType.INT){
+            System.out.println("thrown from visitExitStat");
             throw new InvalidTypeException(ctx, PrimType.INT, exit);
         }
         return exit;
@@ -418,6 +443,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         Type lhs = visitAssignLHS(ctx.assignLHS());
         Type rhs = visitAssignRHS(ctx.assignRHS());
         if (!lhs.checkType(rhs)) {
+            System.out.println("thrown from visitAssignStat");
             throw new InvalidTypeException(ctx, rhs, lhs);
         }
         return null;
@@ -448,6 +474,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	while (iter.hasNext()) {
     		Type type = visitExpr(iter.next());
     		if (!t.checkType(type)) {
+                System.out.println("thrown from visitArrayLiter");
     			throw new InvalidTypeException(ctx, t, type);
     		}
     	}
@@ -468,6 +495,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         try {
             convertedToken = Integer.parseInt(intToken);
         } catch (NumberFormatException e) {
+            System.out.println("thrown from visitIntLiter 1");
             throw new IntegerSizeException("Integer " + intToken + " larger than WACCMAXINT");
         }
 
@@ -475,6 +503,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
 
         boolean withinIntBounds = (convertedToken < integerLimit) && (convertedToken > -integerLimit);
         if (!withinIntBounds) {
+            System.out.println("thrown from visitIntLiter 2");
             throw new IntegerSizeException("Integer " + intToken + " larger than WACCMAXINT");
         }
 
