@@ -19,7 +19,6 @@ public class Compiler {
     			in = new FileInputStream(args[0]);
     		}
     		status = backend.run(in);
-    		System.out.println("Syntax and Semantic checking successful.");
     	} catch (FileNotFoundException e) {
     		System.err.println("File \"" + args[0] + "\" not found.");
     		exit(-1);
@@ -28,7 +27,10 @@ public class Compiler {
     		System.err.println(e);
     		exit(-1);
     	}
-    	exit(status.code());
+    	if (status.code() != 0) {
+    		exit(status.code());
+    	}
+		System.out.println("Syntax and Semantic checking successful.");
     }
     
 }
