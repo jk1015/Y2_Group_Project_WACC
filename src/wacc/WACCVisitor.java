@@ -9,6 +9,8 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import wacc.exceptions.*;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import wacc.types.*;
+
+import javax.swing.plaf.basic.BasicInternalFrameTitlePane;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -142,10 +144,16 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	}
     	return retType;
     }
-    
+
+    @Override
+    public Type visitBracketsExpr(@NotNull WACCParser.BracketsExprContext ctx) {
+        return visit(ctx.getChild(1));
+    }
+
     @Override
     public Type visitExpr6(WACCParser.Expr6Context ctx) {
     	//OR (||)
+        //System.out.println("hello6");
     	if(ctx.getChildCount() == 1) {
     		return visitChildren(ctx);
     	}
@@ -162,27 +170,31 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     @Override
     public Type visitExpr5(WACCParser.Expr5Context ctx) {
     	//AND (&&)
+        //System.out.println("hello5");
     	if(ctx.getChildCount() == 1) {
     		return visitChildren(ctx);
     	}
     	Type rhsType = visit(ctx.getChild(0));
     	Type lhsType = visit(ctx.getChild(2));
-    	if(!rhsType.checkType(PrimType.BOOL) || !lhsType.checkType(PrimType.BOOL)) {
-    		throw new InvalidTypeException("");
-    	}
+        if(!rhsType.checkType(PrimType.BOOL)) {
+            throw new InvalidTypeException(ctx, PrimType.BOOL, rhsType);
+        } else if (!lhsType.checkType(PrimType.BOOL)) {
+            throw new InvalidTypeException(ctx, PrimType.BOOL, lhsType);
+        }
     	return PrimType.BOOL;
     }
     
     @Override
     public Type visitExpr4(WACCParser.Expr4Context ctx) {
     	//EQ (==) NEQ(!=)
+        //System.out.println("hello4");
     	if(ctx.getChildCount() == 1) {
     		return visitChildren(ctx);
     	}
     	Type rhsType = visit(ctx.getChild(0));
     	Type lhsType = visit(ctx.getChild(2));
     	if(!rhsType.checkType(lhsType)) {
-    		throw new InvalidTypeException("");
+    		throw new InvalidTypeException(ctx, rhsType, lhsType);
     	}
     	return PrimType.BOOL;
     }
@@ -190,46 +202,54 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     @Override
     public Type visitExpr3(WACCParser.Expr3Context ctx) {
     	// GT (>) LT (<) GEQ (>=) LEQ (<=)
+        //System.out.println("hello3");
     	if(ctx.getChildCount() == 1) {
     		return visitChildren(ctx);
     	}
     	Type rhsType = visit(ctx.getChild(0));
     	Type lhsType = visit(ctx.getChild(2));
     	if(rhsType != lhsType) {
-    		throw new InvalidTypeException("");
+            // to do check
+    		throw new InvalidTypeException(ctx);
     	} else if (rhsType.checkType(PrimType.CHAR)) {
     		return PrimType.BOOL;
     	} else if (rhsType.checkType(PrimType.INT)) {
     		return PrimType.BOOL;
     	}
-    	throw new InvalidTypeException("");
+    	throw new InvalidTypeException(ctx);
     }
 
     @Override
     public Type visitExpr2(WACCParser.Expr2Context ctx) {
     	// PLUS (+) MINUS (-)
+        //System.out.println("hello2");
     	if(ctx.getChildCount() == 1) {
     		return visitChildren(ctx);
     	}
     	Type rhsType = visit(ctx.getChild(0));
     	Type lhsType = visit(ctx.getChild(2));
-    	if(!rhsType.checkType(PrimType.INT) || !lhsType.checkType(PrimType.INT)) {
-    		throw new InvalidTypeException("");
-    	}
+        if(!rhsType.checkType(PrimType.INT)) {
+            throw new InvalidTypeException(ctx, PrimType.INT, rhsType);
+        } else if (!lhsType.checkType(PrimType.INT)) {
+            throw new InvalidTypeException(ctx, PrimType.INT, lhsType);
+        }
     	return PrimType.INT;
     }
 
     @Override
     public Type visitExpr1(WACCParser.Expr1Context ctx) {
     	// MULTIPLY (*) DIVIDE (/) MOD (%) also other expr types
+        //System.out.println("hello1");
     	if(ctx.getChildCount() == 1) {
     		return visitChildren(ctx);
     	}
     	Type rhsType = visit(ctx.getChild(0));
     	Type lhsType = visit(ctx.getChild(2));
-    	if(!rhsType.checkType(PrimType.INT) || !lhsType.checkType(PrimType.INT)) {
-    		throw new InvalidTypeException("");
-    	}
+        if(!rhsType.checkType(PrimType.INT)) {
+            throw new InvalidTypeException(ctx, PrimType.INT, rhsType);
+        } else if (!lhsType.checkType(PrimType.INT)) {
+            throw new InvalidTypeException(ctx, PrimType.INT, lhsType);
+        }
     	return PrimType.INT;
     }
 
@@ -394,7 +414,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     public Type visitExitStat(WACCParser.ExitStatContext ctx) {
     	// Check child is int
         Type exit = visitExpr(ctx.expr());
-        if (exit != PrimType.INT){
+        if (!exit.checkType(PrimType.INT)){
             throw new InvalidTypeException(ctx, PrimType.INT, exit);
         }
         return exit;

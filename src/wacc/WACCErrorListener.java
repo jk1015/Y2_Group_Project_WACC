@@ -6,9 +6,6 @@ import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 import wacc.exceptions.WACCSyntaxErrorException;
 
-/**
- * Created by jaspreet on 11/11/16.
- */
 public class WACCErrorListener extends BaseErrorListener {
 
     public static final WACCErrorListener INSTANCE = new WACCErrorListener();
