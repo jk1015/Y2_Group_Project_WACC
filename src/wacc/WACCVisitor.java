@@ -186,11 +186,6 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     }
 
     @Override
-    public Type visitReadStat(@NotNull WACCParser.ReadStatContext ctx) {
-        return visit(ctx.assignLHS());
-    }
-
-    @Override
     public Type visitReturnStat(WACCParser.ReturnStatContext ctx) {
     	if (currentFunction == "") {
     		throw new MainProgramReturnException(ctx, "Return called outside of function");
@@ -473,11 +468,11 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
 
     @Override
 	public Type visitReadStat(ReadStatContext ctx) {
-		Type type = visitChildren(ctx);
+		Type type = visit(ctx.assignLHS());
 		if (type.checkType(PrimType.BOOL) || type instanceof PairType) {
 			throw new InvalidTypeException(ctx, "Can't read into booleans or pairs.");
 		}
-		return type;
+		return null;
 	}
 
 	@Override
@@ -567,6 +562,9 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         for(String name: functionNames) {
             FunctionType fType = calledFunctions.get(name);
             if(!fType.checkType(symbolTable.getFunction(name))) {
+                if (symbolTable.hasFunction(name)) {
+                    throw new InvalidTypeException(name + " is only defined for type " + fType);
+                }
                 throw new UndeclaredVariableException(name + " is undefined should be of type " + fType);
             }
 

@@ -50,6 +50,23 @@ public class ScopedSymbolTable {
         return (FunctionType) get(funcName);
     }
 
+    public boolean hasName(String name) {
+        Iterator<Map<String, Type>> it = scopes.iterator();
+        while (it.hasNext()) {
+            Map<String, Type> scope = it.next();
+            if (scope.containsKey(name)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public boolean hasFunction(String name) {
+        return hasName('\\' + name);
+    }
+
+
     public void enterNewScope() {
         Map<String, Type> newScope = new HashMap<String, Type>();
         scopes.addFirst(newScope);
