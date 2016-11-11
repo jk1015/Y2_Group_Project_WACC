@@ -34,7 +34,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
 			case WACCLexer.BOOL_TYPE: return PrimType.BOOL;
 			case WACCLexer.INT_TYPE: return PrimType.INT;
 			case WACCLexer.CHAR_TYPE: return PrimType.CHAR;
-			case WACCLexer.STRING_TYPE: return PrimType.STRING;
+			case WACCLexer.STRING_TYPE: return new ArrayType(PrimType.CHAR);
 		}
 		return null;
 	}
@@ -43,7 +43,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     public Type visitArrayElem(WACCParser.ArrayElemContext ctx) {
     	// Make sure expression is int
     	for(int i = 2; i <= ctx.getChildCount(); i += 3) {
-    		if(visit(ctx.getChild(1)) != PrimType.INT) {
+    		if(!visit(ctx.getChild(i)).checkType(PrimType.INT)) {
     			throw new InvalidTypeException("");
     		}
     	}
@@ -348,7 +348,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         switch (op.getSymbol().getType()) {
         case WACCLexer.NOT: funType = PrimType.BOOL;
         					retType = PrimType.BOOL; break;
-        case WACCLexer.LEN: funType = PrimType.STRING;
+        case WACCLexer.LEN: funType = new ArrayType(new NullType());
         					retType = PrimType.INT; break;
         case WACCLexer.ORD: funType = PrimType.CHAR; 
         					retType = PrimType.INT; break;
@@ -360,8 +360,8 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         default: throw new IllegalArgumentException(
         		"visitUnaryExpr somehow found non-existent function");
         }
-        
-        if (!type.checkType(funType)) {
+
+        if (!funType.checkType(type)) {
             throw new InvalidTypeException(ctx, funType, type);
         }
         
@@ -488,7 +488,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     @Override
     public Type visitStringLiter(WACCParser.StringLiterContext ctx) {
     	// Return string type
-        return PrimType.STRING;
+        return new ArrayType(PrimType.CHAR);
     }
 
     @Override
