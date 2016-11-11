@@ -13,9 +13,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-/**
- * Created by ad5115 on 08/11/16.
- */
 public class WACCVisitor extends WACCParserBaseVisitor<Type> {
 	
 	private final ScopedSymbolTable symbolTable;
