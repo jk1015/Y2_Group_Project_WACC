@@ -1,4 +1,5 @@
 #!/usr/bin/ruby
+#./testsuite ../wacc_examples &> output.txt
 
 def testFile(fileName, errCode)
   cmd = `./compile #{fileName}`
@@ -23,6 +24,9 @@ def testDirectory(dirName, errCode)
     if (File.directory?(fullName)) then
       count += testDirectory(fullName, errCode)
     else
+      if (File.extname(fileName) != ".wacc") then
+        next
+      end
       if (!testFile(fullName, errCode)) then
         count += 1
       end
