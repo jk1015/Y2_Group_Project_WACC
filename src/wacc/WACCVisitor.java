@@ -23,103 +23,55 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
 	private boolean hasReturn;
     private HashMap<String, FunctionType> calledFunctions;
     private Type lhsRequiredType;
-	
+
 	public WACCVisitor() {
 		symbolTable = new ScopedSymbolTable();
 		currentFunction = "";
 		hasReturn = false;
         calledFunctions = new HashMap<>();
 	}
-	
-	// James
-	
-	@Override
-	public Type visitBaseType(WACCParser.BaseTypeContext ctx) {
-		int type = ((TerminalNode) ctx.getChild(0)).getSymbol().getType();
-		switch (type) { 
-			case WACCLexer.BOOL_TYPE: return PrimType.BOOL;
-			case WACCLexer.INT_TYPE: return PrimType.INT;
-			case WACCLexer.CHAR_TYPE: return PrimType.CHAR;
-			case WACCLexer.STRING_TYPE: return new ArrayType(PrimType.CHAR);
-		}
-		return null;
-	}
-	
+
     @Override
-    public Type visitArrayElem(WACCParser.ArrayElemContext ctx) {
-    	// Make sure expression is int
+    public Type visitProgram(@NotNull WACCParser.ProgramContext ctx) {
+        super.visitProgram(ctx);
 
-        /*
-    	for(int i = 2; i <= ctx.getChildCount(); i += 3) {
-    		if(!visit(ctx.getChild(i)).checkType(PrimType.INT)) {
-    			throw new InvalidTypeException("");
-    		}
-    	}*/
+        Set<String> functionNames = calledFunctions.keySet();
 
-    	List<ExprContext> expr = ctx.expr();
-        Iterator<ExprContext> iterator = expr.iterator();
-
-        while (iterator.hasNext()) {
-            Type childType = visit(iterator.next());
-            if(!PrimType.INT.checkType(childType)) {
-                throw new InvalidTypeException();
+        for(String name: functionNames) {
+            FunctionType fType = calledFunctions.get(name);
+            if(!fType.checkType(symbolTable.getFunction(name))) {
+                if (symbolTable.hasFunction(name)) {
+                    throw new InvalidTypeException(name + " is only defined for type " + fType);
+                }
+                throw new UndeclaredFunctionException(name + " is undefined should be of type " + fType);
             }
+
         }
-
-    	if (!(symbolTable.get(ctx.getChild(0).getText()) instanceof ArrayType)) {
-    		throw new InvalidTypeException("");
-    	}
-
-    	ArrayType arrayType = (ArrayType) symbolTable.get(ctx.getChild(0).getText());
-        return arrayType.getContentsType();
-    }
-
-    @Override
-    public Type visitCallFunction(WACCParser.CallFunctionContext ctx)  {
-    	
-    	List<Type> types = new ArrayList<>();
-    	if (ctx.getChildCount() == 5) {
-    		WACCParser.ArgListContext argList = ctx.argList();
-    		for(int i = 0; i < argList.getChildCount(); i += 2) {
-    			types.add(visit(argList.getChild(i)));
-    		}
-    	}
-    	
-    	Type[] typesArray = new Type[types.size() + 1];
-        typesArray[0] = lhsRequiredType;
-        for(int i = 1; i < typesArray.length; i++) {
-        	typesArray[i] = types.get(i - 1);
-        }
-
-        FunctionType calledFunctionType = new FunctionType(typesArray);
-    	
-    	calledFunctions.put(ctx.identifier().getText(), calledFunctionType);
-    	
-    	return lhsRequiredType;
+        return null;
     }
 
     @Override
     public Type visitFunction(WACCParser.FunctionContext ctx) {
-    	// Add to symbol table, check validity of children under new scope
-    	//Check that statement contains a return
-    	
+        // Add to symbol table, check validity of children under new scope
+        //Check that statement contains a return
+
         String fName = ctx.getChild(1).getText();
         Type returnType = visit(ctx.getChild(0));
         List<String> idents = new ArrayList<String>();
         List<Type> types = new ArrayList<Type>();
-        
+
         if (ctx.getChildCount() == 8) {
-        	ParseTree paramList = ctx.paramList();
-        	for(int i = 0; i < paramList.getChildCount(); i += 2) {
-        		types.add(visit(paramList.getChild(i).getChild(0)));
-        		idents.add(paramList.getChild(i).getChild(1).getText());
-        	}
+            ParseTree paramList = ctx.paramList();
+            for(int i = 0; i < paramList.getChildCount(); i += 2) {
+                types.add(visit(paramList.getChild(i).getChild(0)));
+                idents.add(paramList.getChild(i).getChild(1).getText());
+            }
         }
-        
+
         Type[] typesArray = new Type[types.size() + 1];
         typesArray[0] = returnType;
         for(int i = 1; i < typesArray.length; i++) {
-        	typesArray[i] = types.get(i - 1);
+            typesArray[i] = types.get(i - 1);
         }
         FunctionType fType = new FunctionType(typesArray);
 
@@ -131,22 +83,61 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
 
         symbolTable.enterNewScope();
         for(int i = 0; i < types.size(); i++) {
-        	symbolTable.add(idents.get(i), types.get(i));
+            symbolTable.add(idents.get(i), types.get(i));
         }
         String prevFunction = this.currentFunction;
         currentFunction = fName;
         visit(ctx.getChild(ctx.getChildCount() - 2));
         currentFunction = prevFunction;
         symbolTable.exitScope();
-        
+
         if(!hasReturn) {
-        	throw new InvalidReturnException(ctx, "Function does not return along all execution branches");
+            throw new InvalidReturnException(ctx, "Function does not return along all execution branches");
         }
 
         hasReturn = false;
 
         return fType;
-        
+
+    }
+
+    @Override
+    public Type visitCallFunction(WACCParser.CallFunctionContext ctx)  {
+
+        List<Type> types = new ArrayList<>();
+        if (ctx.getChildCount() == 5) {
+            WACCParser.ArgListContext argList = ctx.argList();
+            for(int i = 0; i < argList.getChildCount(); i += 2) {
+                types.add(visit(argList.getChild(i)));
+            }
+        }
+
+        Type[] typesArray = new Type[types.size() + 1];
+        typesArray[0] = lhsRequiredType;
+        for(int i = 1; i < typesArray.length; i++) {
+            typesArray[i] = types.get(i - 1);
+        }
+
+        FunctionType calledFunctionType = new FunctionType(typesArray);
+
+        calledFunctions.put(ctx.identifier().getText(), calledFunctionType);
+
+        return lhsRequiredType;
+    }
+
+    // STATEMENTS
+
+    @Override
+    public Type visitReturnStat(WACCParser.ReturnStatContext ctx) {
+        if (currentFunction == "") {
+            throw new MainProgramReturnException(ctx, "Return called outside of function");
+        }
+        Type retType = (symbolTable.getFunction(currentFunction)).getReturnType();
+        if(!visit(ctx.expr()).checkType(retType)) {
+            throw new InvalidTypeException("");
+        }
+        hasReturn = true;
+        return retType;
     }
 
     @Override
@@ -161,8 +152,84 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     }
 
     @Override
-    public Type visitPrintlnStat(@NotNull WACCParser.PrintlnStatContext ctx) {
-        return visit(ctx.expr());
+    public Type visitInitAssignStat(WACCParser.InitAssignStatContext ctx) {
+        // Check type against rhs, add to symbol table
+        Type type = visit(ctx.type());
+        lhsRequiredType = type;
+        Type rhs = visit(ctx.assignRHS());
+        if (type.checkType(rhs)) {
+            String ident = ctx.identifier().getText();
+            try {
+                symbolTable.add(ident, type);
+            } catch (RedeclaredVariableException e) {
+                throw new RedeclaredVariableException(ctx, e.getMessage());
+            }
+            return null;
+        }
+        throw new InvalidTypeException(ctx, type, rhs);
+    }
+
+    @Override
+    public Type visitAssignStat(WACCParser.AssignStatContext ctx) {
+        // Check LHS and RHS match
+        Type lhs = visitAssignLHS(ctx.assignLHS());
+        lhsRequiredType = lhs;
+        Type rhs = visitAssignRHS(ctx.assignRHS());
+        if (!rhs.checkType(lhs)) {
+            throw new InvalidTypeException(ctx, rhs, lhs);
+        }
+        return null;
+    }
+
+    @Override
+    public Type visitBlockStat(@NotNull WACCParser.BlockStatContext ctx) {
+        symbolTable.enterNewScope();
+        super.visitBlockStat(ctx);
+        symbolTable.exitScope();
+        return null;
+    }
+
+    @Override
+    public Type visitWhileStat(WACCParser.WhileStatContext ctx) {
+        // Check condition is boolean, check children are valid.
+        Type type = visit(ctx.expr());
+        if (type.checkType(PrimType.BOOL)) {
+            symbolTable.enterNewScope();
+            visit(ctx.stat());
+            symbolTable.exitScope();
+            return null;
+        }
+        throw new InvalidTypeException(ctx, PrimType.BOOL, type);
+    }
+
+    @Override
+    public Type visitIfStat(WACCParser.IfStatContext ctx) {
+        // Check condition is boolean, check statements are valid.
+
+        Type type = visitExpr(ctx.expr());
+        if (!PrimType.BOOL.checkType(type)){
+            throw new InvalidTypeException(ctx, PrimType.BOOL, type);
+        }
+        symbolTable.enterNewScope();
+        visit(ctx.stat(0));
+        symbolTable.exitScope();
+        boolean tempReturn = hasReturn;
+        hasReturn = false;
+        symbolTable.enterNewScope();
+        visit(ctx.stat(1));
+        symbolTable.exitScope();
+        hasReturn = tempReturn && hasReturn;
+
+        return null;
+    }
+
+    @Override
+    public Type visitReadStat(ReadStatContext ctx) {
+        Type type = visit(ctx.assignLHS());
+        if (type.checkType(PrimType.BOOL) || type instanceof PairType) {
+            throw new InvalidTypeException(ctx, "Can't read into booleans or pairs.");
+        }
+        return null;
     }
 
     @Override
@@ -171,18 +238,66 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     }
 
     @Override
-    public Type visitReturnStat(WACCParser.ReturnStatContext ctx) {
-    	if (currentFunction == "") {
-    		throw new MainProgramReturnException(ctx, "Return called outside of function");
-    	}
-    	Type retType = (symbolTable.getFunction(currentFunction)).getReturnType();
-    	if(!visit(ctx.expr()).checkType(retType)) {
-    		throw new InvalidTypeException("");
-    	}
-    	hasReturn = true;
-    	return retType;
+    public Type visitPrintlnStat(@NotNull WACCParser.PrintlnStatContext ctx) {
+        return visit(ctx.expr());
     }
-    
+
+    @Override
+    public Type visitFreeStat(WACCParser.FreeStatContext ctx) {
+        // Check type is pair or array
+        Type type = visit(ctx.expr());
+        if ((type instanceof ArrayType) || (type instanceof PairType)) {
+            return type;
+        }
+        throw new InvalidTypeException(ctx, "Expected pair or array, got " + type);
+    }
+
+    @Override
+    public Type visitExitStat(WACCParser.ExitStatContext ctx) {
+        // Check child is int
+        Type exit = visitExpr(ctx.expr());
+        if (!exit.checkType(PrimType.INT)){
+            throw new InvalidTypeException(ctx, PrimType.INT, exit);
+        }
+        if(currentFunction != "") {
+            hasReturn = true;
+        }
+        return exit;
+    }
+
+    // EXPRESSIONS
+
+    @Override
+    public Type visitUnaryExpr(WACCParser.UnaryExprContext ctx) {
+        // Examine expression and operator for validity
+        Type funType;
+        Type retType;
+        TerminalNode op = (TerminalNode)ctx.unaryOper().getChild(0);
+        Type type = visit(ctx.expr1());
+
+        switch (op.getSymbol().getType()) {
+            case WACCLexer.NOT: funType = PrimType.BOOL;
+                retType = PrimType.BOOL; break;
+            case WACCLexer.LEN: funType = new ArrayType(new NullType());
+                retType = PrimType.INT; break;
+            case WACCLexer.ORD: funType = PrimType.CHAR;
+                retType = PrimType.INT; break;
+            case WACCLexer.CHR: funType = PrimType.INT;
+                retType = PrimType.CHAR; break;
+            case WACCLexer.MINUS:
+                funType = PrimType.INT;
+                retType = PrimType.INT; break;
+            default: throw new IllegalArgumentException(
+                    "visitUnaryExpr somehow found non-existent function");
+        }
+
+        if (!funType.checkType(type)) {
+            throw new InvalidTypeException(ctx, funType, type);
+        }
+
+        return retType;
+    }
+
     @Override
     public Type visitBracketsExpr(@NotNull WACCParser.BracketsExprContext ctx) {
         return visit(ctx.getChild(1));
@@ -219,7 +334,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         }
     	return PrimType.BOOL;
     }
-    
+
     @Override
     public Type visitExpr4(WACCParser.Expr4Context ctx) {
     	//EQ (==) NEQ(!=)
@@ -288,218 +403,14 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	return PrimType.INT;
     }
 
-    @Override
-    public Type visitBlockStat(@NotNull WACCParser.BlockStatContext ctx) {
-        symbolTable.enterNewScope();
-        super.visitBlockStat(ctx);
-        symbolTable.exitScope();
-        return null;
-    }
+    // LITERALS
 
-    @Override
-    public Type visitWhileStat(WACCParser.WhileStatContext ctx) {
-    	// Check condition is boolean, check children are valid.
-    	Type type = visit(ctx.expr());
-    	if (type.checkType(PrimType.BOOL)) {
-    		symbolTable.enterNewScope();
-            visit(ctx.stat());
-            symbolTable.exitScope();
-            return null;
-    	}
-        throw new InvalidTypeException(ctx, PrimType.BOOL, type);
-    }
-
-    @Override
-    public Type visitIdentifier(WACCParser.IdentifierContext ctx) {
-    	// Returns type from symbol table.
-    	try {
-        	return symbolTable.get(ctx.getText());
-    	} catch (UndeclaredVariableException e) {
-    		throw new UndeclaredVariableException(ctx, e.getMessage());
-    	}
-    }
-
-    @Override
-    public Type visitArrayType(WACCParser.ArrayTypeContext ctx) {
-    	// Returns array version of child type
-    	int arrayDepth = ctx.CLOSE_SQUARE().size();
-    	Type type = visit(ctx.getChild(0));
-        for (int i = 0; i < arrayDepth; i++) {
-        	type = new ArrayType(type);
-        }
-        return type;
-    }
-
-    @Override
-    public Type visitInitAssignStat(WACCParser.InitAssignStatContext ctx) {
-    	// Check type against rhs, add to symbol table
-        Type type = visit(ctx.type());
-        lhsRequiredType = type;
-        Type rhs = visit(ctx.assignRHS());
-        if (type.checkType(rhs)) {
-        	String ident = ctx.identifier().getText();
-        	try {
-            	symbolTable.add(ident, type);
-        	} catch (RedeclaredVariableException e) {
-        		throw new RedeclaredVariableException(ctx, e.getMessage());
-        	}
-        	return null;
-        }
-        throw new InvalidTypeException(ctx, type, rhs);
-    }
-
-    @Override
-    public Type visitFreeStat(WACCParser.FreeStatContext ctx) {
-    	// Check type is pair or array
-        Type type = visit(ctx.expr());
-        if ((type instanceof ArrayType) || (type instanceof PairType)) {
-        	return type;
-        }
-        throw new InvalidTypeException(ctx, "Expected pair or array, got " + type);
-    }
-
-    @Override
-    public Type visitUnaryExpr(WACCParser.UnaryExprContext ctx) {
-    	// Examine expression and operator for validity
-        Type funType;
-        Type retType;
-        TerminalNode op = (TerminalNode)ctx.unaryOper().getChild(0);
-        Type type = visit(ctx.expr1());
-
-        switch (op.getSymbol().getType()) {
-        case WACCLexer.NOT: funType = PrimType.BOOL;
-        					retType = PrimType.BOOL; break;
-        case WACCLexer.LEN: funType = new ArrayType(new NullType());
-        					retType = PrimType.INT; break;
-        case WACCLexer.ORD: funType = PrimType.CHAR; 
-        					retType = PrimType.INT; break;
-        case WACCLexer.CHR: funType = PrimType.INT; 
-        					retType = PrimType.CHAR; break;
-        case WACCLexer.MINUS:
-        					funType = PrimType.INT;
-        					retType = PrimType.INT; break;
-        default: throw new IllegalArgumentException(
-        		"visitUnaryExpr somehow found non-existent function");
-        }
-
-        if (!funType.checkType(type)) {
-            throw new InvalidTypeException(ctx, funType, type);
-        }
-        
-        return retType;
-    }
-    
-    @Override
-    public Type visitPairElem(WACCParser.PairElemContext ctx) {
-        // Check child is pair, go to correct child
-        Type pairType = visit(ctx.expr());
-        if (!(pairType instanceof PairType)) {
-            throw new InvalidTypeException(ctx, "Expected pair, got type " + pairType);
-        }
-
-        TerminalNode pairElement = (TerminalNode) ctx.getChild(0);
-
-        if (pairElement.getSymbol().getType() == WACCLexer.FST) {
-            return ((PairType) pairType).getType1();
-        } else {
-            return ((PairType) pairType).getType2();
-        }
-    }
-
-    @Override
-    public Type visitIfStat(WACCParser.IfStatContext ctx) {
-    	// Check condition is boolean, check statements are valid.
-    	
-    	Type type = visitExpr(ctx.expr());
-        if (!PrimType.BOOL.checkType(type)){
-            throw new InvalidTypeException(ctx, PrimType.BOOL, type);
-        }
-        symbolTable.enterNewScope();
-        visit(ctx.stat(0));
-        symbolTable.exitScope();
-        boolean tempReturn = hasReturn;
-        hasReturn = false;
-        symbolTable.enterNewScope();
-        visit(ctx.stat(1));
-        symbolTable.exitScope();
-        hasReturn = tempReturn && hasReturn;
-
-        return null;
-    }
-
-    @Override
-    public Type visitNewPair(WACCParser.NewPairContext ctx) {
-    	// Return the pair type of the two children.
-        Type fst = visitExpr(ctx.expr(0));
-        Type snd = visitExpr(ctx.expr(1));
-        Type pair = new PairType(fst,snd);
-
-        return pair;
-    }
-
-    @Override
-	public Type visitReadStat(ReadStatContext ctx) {
-		Type type = visit(ctx.assignLHS());
-		if (type.checkType(PrimType.BOOL) || type instanceof PairType) {
-			throw new InvalidTypeException(ctx, "Can't read into booleans or pairs.");
-		}
-		return null;
-	}
-
-	@Override
-    public Type visitExitStat(WACCParser.ExitStatContext ctx) {
-    	// Check child is int
-        Type exit = visitExpr(ctx.expr());
-        if (!exit.checkType(PrimType.INT)){
-            throw new InvalidTypeException(ctx, PrimType.INT, exit);
-        }
-        if(currentFunction != "") {
-            hasReturn = true;
-        }
-        return exit;
-    }
-
-    @Override
-    public Type visitPairType(WACCParser.PairTypeContext ctx) {
-    	// Return the pair type
-        Type fst = visitPairElemType(ctx.pairElemType(0));
-        Type snd = visitPairElemType(ctx.pairElemType(1));
-
-        return new PairType(fst,snd);
-    }
-
-    @Override
-    public Type visitPairNullType(@NotNull WACCParser.PairNullTypeContext ctx) {
-        return new NullType();
-    }
-
-    @Override
-    public Type visitAssignStat(WACCParser.AssignStatContext ctx) {
-    	// Check LHS and RHS match
-        Type lhs = visitAssignLHS(ctx.assignLHS());
-        lhsRequiredType = lhs;
-        Type rhs = visitAssignRHS(ctx.assignRHS());
-        if (!rhs.checkType(lhs)) {
-            throw new InvalidTypeException(ctx, rhs, lhs);
-        }
-        return null;
-    }
-
-    //TODO
-    @Override
-    public Type visitParam(WACCParser.ParamContext ctx) {
-    	// Not called
-        // just in case we need it
-        Type param = visitType(ctx.type());
-        return param;
-    }
-    
     @Override
     public Type visitPairLiter(WACCParser.PairLiterContext ctx) {
     	// Return null
         return new NullType();
     }
-    
+
     @Override
     public Type visitArrayLiter(WACCParser.ArrayLiterContext ctx) {
     	// Check array is valid
@@ -518,30 +429,11 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	}
         return new ArrayType(t);
     }
-    
+
     @Override
     public Type visitStringLiter(WACCParser.StringLiterContext ctx) {
     	// Return string type
         return new ArrayType(PrimType.CHAR);
-    }
-
-    @Override
-    public Type visitProgram(@NotNull WACCParser.ProgramContext ctx) {
-        super.visitProgram(ctx);
-
-        Set<String> functionNames = calledFunctions.keySet();
-
-        for(String name: functionNames) {
-            FunctionType fType = calledFunctions.get(name);
-            if(!fType.checkType(symbolTable.getFunction(name))) {
-                if (symbolTable.hasFunction(name)) {
-                    throw new InvalidTypeException(name + " is only defined for type " + fType);
-                }
-                throw new UndeclaredFunctionException(name + " is undefined should be of type " + fType);
-            }
-
-        }
-        return null;
     }
 
     @Override
@@ -555,17 +447,124 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         }
         return PrimType.INT;
     }
-    
+
     @Override
     public Type visitCharLiter(WACCParser.CharLiterContext ctx) {
     	// Return char
         return PrimType.CHAR;
     }
-    
+
     @Override
     public Type visitBoolLiter(WACCParser.BoolLiterContext ctx) {
         // Return bool
         return PrimType.BOOL;
+    }
+
+    // TYPES
+
+    @Override
+    public Type visitBaseType(WACCParser.BaseTypeContext ctx) {
+        int type = ((TerminalNode) ctx.getChild(0)).getSymbol().getType();
+        switch (type) {
+            case WACCLexer.BOOL_TYPE: return PrimType.BOOL;
+            case WACCLexer.INT_TYPE: return PrimType.INT;
+            case WACCLexer.CHAR_TYPE: return PrimType.CHAR;
+            case WACCLexer.STRING_TYPE: return new ArrayType(PrimType.CHAR);
+        }
+        return null;
+    }
+
+    @Override
+    public Type visitArrayType(WACCParser.ArrayTypeContext ctx) {
+        // Returns array version of child type
+        int arrayDepth = ctx.CLOSE_SQUARE().size();
+        Type type = visit(ctx.getChild(0));
+        for (int i = 0; i < arrayDepth; i++) {
+            type = new ArrayType(type);
+        }
+        return type;
+    }
+
+    @Override
+    public Type visitPairType(WACCParser.PairTypeContext ctx) {
+        // Return the pair type
+        Type fst = visitPairElemType(ctx.pairElemType(0));
+        Type snd = visitPairElemType(ctx.pairElemType(1));
+
+        return new PairType(fst,snd);
+    }
+
+    @Override
+    public Type visitPairNullType(@NotNull WACCParser.PairNullTypeContext ctx) {
+        return new NullType();
+    }
+
+    // OTHER
+
+    @Override
+    public Type visitArrayElem(WACCParser.ArrayElemContext ctx) {
+        // Make sure expression is int
+
+        /*
+    	for(int i = 2; i <= ctx.getChildCount(); i += 3) {
+    		if(!visit(ctx.getChild(i)).checkType(PrimType.INT)) {
+    			throw new InvalidTypeException("");
+    		}
+    	}*/
+
+        List<ExprContext> expr = ctx.expr();
+        Iterator<ExprContext> iterator = expr.iterator();
+
+        while (iterator.hasNext()) {
+            Type childType = visit(iterator.next());
+            if(!PrimType.INT.checkType(childType)) {
+                throw new InvalidTypeException();
+            }
+        }
+
+        if (!(symbolTable.get(ctx.getChild(0).getText()) instanceof ArrayType)) {
+            throw new InvalidTypeException("");
+        }
+
+        ArrayType arrayType = (ArrayType) symbolTable.get(ctx.getChild(0).getText());
+        return arrayType.getContentsType();
+    }
+
+    @Override
+    public Type visitPairElem(WACCParser.PairElemContext ctx) {
+        // Check child is pair, go to correct child
+        Type pairType = visit(ctx.expr());
+        if (!(pairType instanceof PairType)) {
+            throw new InvalidTypeException(ctx, "Expected pair, got type " + pairType);
+        }
+
+        TerminalNode pairElement = (TerminalNode) ctx.getChild(0);
+
+        if (pairElement.getSymbol().getType() == WACCLexer.FST) {
+            return ((PairType) pairType).getType1();
+        } else {
+            return ((PairType) pairType).getType2();
+        }
+    }
+
+    @Override
+    public Type visitIdentifier(WACCParser.IdentifierContext ctx) {
+        // Returns type from symbol table.
+        try {
+            return symbolTable.get(ctx.getText());
+        } catch (UndeclaredVariableException e) {
+            throw new UndeclaredVariableException(ctx, e.getMessage());
+        }
+    }
+
+    @Override
+    public Type visitNewPair(WACCParser.NewPairContext ctx) {
+        // Return the pair type of the two children.
+        Type fst = visitExpr(ctx.expr(0));
+        Type snd = visitExpr(ctx.expr(1));
+        Type pair = new PairType(fst,snd);
+
+        return pair;
     }
 
 }

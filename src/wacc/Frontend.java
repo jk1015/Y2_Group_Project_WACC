@@ -16,7 +16,7 @@ import wacc.exceptions.WACCCompilerException;
 import wacc.exceptions.WACCSemanticErrorException;
 import wacc.exceptions.WACCSyntaxErrorException;
 
-public class Backend {
+public class Frontend {
 	
 	public CompilerStatus run(InputStream in) throws IOException {
         ANTLRInputStream input = null;

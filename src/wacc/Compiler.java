@@ -9,7 +9,7 @@ import java.io.InputStream;
 public class Compiler {
 	
     public static void main(String[] args) {
-    	Backend backend = new Backend();
+    	Frontend frontend = new Frontend();
     	InputStream in;
     	CompilerStatus status = CompilerStatus.SUCCESS;
     	try {
@@ -18,7 +18,7 @@ public class Compiler {
     		} else {
     			in = new FileInputStream(args[0]);
     		}
-    		status = backend.run(in);
+    		status = frontend.run(in);
     	} catch (FileNotFoundException e) {
     		System.err.println("File \"" + args[0] + "\" not found.");
     		exit(-1);
