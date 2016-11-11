@@ -60,8 +60,9 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         List<String> idents = new ArrayList<String>();
         List<Type> types = new ArrayList<Type>();
 
-        if (ctx.getChildCount() == 8) {
-            ParseTree paramList = ctx.paramList();
+        ParseTree paramList = ctx.paramList();
+        
+        if (paramList != null) {
             for(int i = 0; i < paramList.getChildCount(); i += 2) {
                 types.add(visit(paramList.getChild(i).getChild(0)));
                 idents.add(paramList.getChild(i).getChild(1).getText());
@@ -105,8 +106,10 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     public Type visitCallFunction(WACCParser.CallFunctionContext ctx)  {
 
         List<Type> types = new ArrayList<>();
-        if (ctx.getChildCount() == 5) {
-            WACCParser.ArgListContext argList = ctx.argList();
+        
+        WACCParser.ArgListContext argList = ctx.argList();
+        
+        if (argList != null) {
             for(int i = 0; i < argList.getChildCount(); i += 2) {
                 types.add(visit(argList.getChild(i)));
             }
