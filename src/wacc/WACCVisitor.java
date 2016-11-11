@@ -307,7 +307,9 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	// Check condition is boolean, check children are valid.
     	Type type = visit(ctx.expr());
     	if (type.checkType(PrimType.BOOL)) {
-    		return visit(ctx.stat());
+    		symbolTable.enterNewScope();
+            visit(ctx.stat());
+            symbolTable.exitScope();
     	}
         throw new InvalidTypeException(ctx, PrimType.BOOL, type);
     }
@@ -430,9 +432,13 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         if (!PrimType.BOOL.checkType(type)){
             throw new InvalidTypeException(ctx, PrimType.BOOL, type);
         }
+        symbolTable.enterNewScope();
         visit(ctx.stat(0));
+        symbolTable.exitScope();
         boolean tempReturn = hasReturn;
+        symbolTable.enterNewScope();
         visit(ctx.stat(1));
+        symbolTable.exitScope();
         hasReturn = (tempReturn && hasReturn) || alreadyReturns; 
 
         return null;
