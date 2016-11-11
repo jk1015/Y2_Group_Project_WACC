@@ -208,21 +208,23 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	}
     	Type rhsType = visit(ctx.getChild(0));
     	Type lhsType = visit(ctx.getChild(2));
-    	if(rhsType != lhsType) {
-            // to do check
-    		throw new InvalidTypeException(ctx);
-    	} else if (rhsType.checkType(PrimType.CHAR)) {
-    		return PrimType.BOOL;
-    	} else if (rhsType.checkType(PrimType.INT)) {
-    		return PrimType.BOOL;
-    	}
-    	throw new InvalidTypeException(ctx);
+
+        if (!rhsType.checkType(PrimType.INT) && !rhsType.checkType(PrimType.CHAR)) {
+            throw new InvalidTypeException(ctx, "Expected int or char, got " + rhsType);
+        }
+        if (!lhsType.checkType(PrimType.INT) && !lhsType.checkType(PrimType.CHAR)) {
+            throw new InvalidTypeException(ctx, "Expected int or char, got " + lhsType);
+        }
+        if(rhsType != lhsType) {
+            throw new InvalidTypeException(ctx, "Expected both int or both char, got " + lhsType + " and " + rhsType);
+        }
+
+    	return PrimType.BOOL;
     }
 
     @Override
     public Type visitExpr2(WACCParser.Expr2Context ctx) {
     	// PLUS (+) MINUS (-)
-        //System.out.println("hello2");
     	if(ctx.getChildCount() == 1) {
     		return visitChildren(ctx);
     	}
@@ -239,7 +241,6 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     @Override
     public Type visitExpr1(WACCParser.Expr1Context ctx) {
     	// MULTIPLY (*) DIVIDE (/) MOD (%) also other expr types
-        //System.out.println("hello1");
     	if(ctx.getChildCount() == 1) {
     		return visitChildren(ctx);
     	}
