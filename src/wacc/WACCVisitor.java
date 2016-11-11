@@ -9,8 +9,6 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import wacc.exceptions.*;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import wacc.types.*;
-
-import javax.swing.plaf.basic.BasicInternalFrameTitlePane;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
