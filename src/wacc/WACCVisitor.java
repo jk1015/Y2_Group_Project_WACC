@@ -116,8 +116,6 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	// Add to symbol table, check validity of children under new scope
     	//Check that statement contains a return
     	
-    	hasReturn = false;
-    	
         String fName = ctx.getChild(1).getText();
         Type returnType = visit(ctx.getChild(0));
         List<String> idents = new ArrayList<String>();
@@ -153,9 +151,22 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         if(!hasReturn) {
         	throw new InvalidReturnException(ctx, "Function does not return along all execution branches");
         }
-        
+
+        hasReturn = false;
+
         return fType;
         
+    }
+
+    @Override
+    public Type visitSeqStat(@NotNull WACCParser.SeqStatContext ctx) {
+        for(ParseTree stat: ctx.stat()) {
+            if(hasReturn) {
+                throw new InvalidReturnException(ctx, "Dead code following return");
+            }
+            visit(stat);
+        }
+        return null;
     }
 
     @Override
@@ -427,8 +438,6 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     public Type visitIfStat(WACCParser.IfStatContext ctx) {
     	// Check condition is boolean, check statements are valid.
     	
-    	boolean alreadyReturns = hasReturn;
-    	
     	Type type = visitExpr(ctx.expr());
         if (!PrimType.BOOL.checkType(type)){
             throw new InvalidTypeException(ctx, PrimType.BOOL, type);
@@ -437,10 +446,11 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         visit(ctx.stat(0));
         symbolTable.exitScope();
         boolean tempReturn = hasReturn;
+        hasReturn = false;
         symbolTable.enterNewScope();
         visit(ctx.stat(1));
         symbolTable.exitScope();
-        hasReturn = (tempReturn && hasReturn) || alreadyReturns; 
+        hasReturn = tempReturn && hasReturn;
 
         return null;
     }
