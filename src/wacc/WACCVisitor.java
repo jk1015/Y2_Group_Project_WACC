@@ -10,19 +10,24 @@ import wacc.exceptions.*;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import wacc.types.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 public class WACCVisitor extends WACCParserBaseVisitor<Type> {
 	
-	private final ScopedSymbolTable symbolTable;
+	private ScopedSymbolTable symbolTable;
 	private String currentFunction; 
 	private boolean hasReturn;
+    private HashMap<String, FunctionType> calledFunctions;
+    private Type lhsRequiredType;
 	
 	public WACCVisitor() {
 		symbolTable = new ScopedSymbolTable();
 		currentFunction = "";
 		hasReturn = false;
+        calledFunctions = new HashMap<>();
 	}
 	
 	// James
@@ -77,9 +82,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     }
 
     @Override
-    public Type visitCallFunction(WACCParser.CallFunctionContext ctx) {
-    	FunctionType fType = symbolTable.getFunction(ctx.getChild(1).getText());
-    	Type retType = fType.getReturnType();
+    public Type visitCallFunction(WACCParser.CallFunctionContext ctx)  {
     	
     	List<Type> types = new ArrayList<>();
     	if (ctx.getChildCount() == 5) {
@@ -90,18 +93,16 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     	}
     	
     	Type[] typesArray = new Type[types.size() + 1];
-        typesArray[0] = retType;
+        typesArray[0] = lhsRequiredType;
         for(int i = 1; i < typesArray.length; i++) {
         	typesArray[i] = types.get(i - 1);
         }
 
-        Type calledFunctionType = new FunctionType(typesArray);
+        FunctionType calledFunctionType = new FunctionType(typesArray);
     	
-    	if (!fType.checkType(calledFunctionType)) {
-    		throw new InvalidTypeException(ctx, fType, calledFunctionType);
-    	}
+    	calledFunctions.put(ctx.identifier().getText(), calledFunctionType);
     	
-    	return retType;
+    	return lhsRequiredType;
     }
 
     @Override
@@ -336,6 +337,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     public Type visitInitAssignStat(WACCParser.InitAssignStatContext ctx) {
     	// Check type against rhs, add to symbol table
         Type type = visit(ctx.type());
+        lhsRequiredType = type;
         Type rhs = visit(ctx.assignRHS());
         //System.out.println(type);
         //System.out.println(rhs);
@@ -474,6 +476,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     public Type visitAssignStat(WACCParser.AssignStatContext ctx) {
     	// Check LHS and RHS match
         Type lhs = visitAssignLHS(ctx.assignLHS());
+        lhsRequiredType = lhs;
         Type rhs = visitAssignRHS(ctx.assignRHS());
         if (!rhs.checkType(lhs)) {
             throw new InvalidTypeException(ctx, rhs, lhs);
@@ -523,6 +526,22 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     }
 
     @Override
+    public Type visitProgram(@NotNull WACCParser.ProgramContext ctx) {
+        super.visitProgram(ctx);
+
+        Set<String> functionNames = calledFunctions.keySet();
+
+        for(String name: functionNames) {
+            FunctionType fType = calledFunctions.get(name);
+            if(!fType.checkType(symbolTable.getFunction(name))) {
+                throw new UndeclaredVariableException(name + " is undefined should be of type " + fType);
+            }
+
+        }
+        return null;
+    }
+
+    @Override
     public Type visitIntLiter(WACCParser.IntLiterContext ctx) {
     	// Return int, check
         String intToken = ctx.getText();
@@ -535,7 +554,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
 
         int integerLimit = (int)(Math.pow(2,32));
 
-        boolean withinIntBounds = (convertedToken < integerLimit) && (convertedToken > -integerLimit);
+        boolean withinIntBounds = (convertedToken < integerLimit) && (convertedToken >= -integerLimit);
         if (!withinIntBounds) {
             throw new IntegerSizeException("Integer " + intToken + " larger than WACC_MAX_INT");
         }
