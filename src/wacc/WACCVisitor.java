@@ -477,7 +477,9 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
         if (!exit.checkType(PrimType.INT)){
             throw new InvalidTypeException(ctx, PrimType.INT, exit);
         }
-        hasReturn = true;
+        if(currentFunction != "") {
+            hasReturn = true;
+        }
         return exit;
     }
 
