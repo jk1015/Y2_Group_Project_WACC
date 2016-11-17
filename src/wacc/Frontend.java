@@ -38,7 +38,7 @@ public class Frontend {
             exit(CompilerStatus.SYNTAX_ERROR.code());
         }
 
-        WACCVisitor semanticAnalysis = new WACCVisitor();
+        FrontendVisitor semanticAnalysis = new FrontendVisitor();
 
         CompilerStatus compilerStatus = CompilerStatus.SUCCESS;
 

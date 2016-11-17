@@ -16,7 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-public class WACCVisitor extends WACCParserBaseVisitor<Type> {
+public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
 	
 	private ScopedSymbolTable symbolTable;
 	private String currentFunction; 
@@ -24,7 +24,7 @@ public class WACCVisitor extends WACCParserBaseVisitor<Type> {
     private HashMap<String, FunctionType> calledFunctions;
     private Type lhsRequiredType;
 
-	public WACCVisitor() {
+	public FrontendVisitor() {
 		symbolTable = new ScopedSymbolTable();
 		currentFunction = "";
 		hasReturn = false;
