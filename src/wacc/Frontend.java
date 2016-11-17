@@ -38,6 +38,9 @@ public class Frontend {
             exit(CompilerStatus.SYNTAX_ERROR.code());
         }
 
+        BackendVisitor back = new BackendVisitor(null);
+        back.visit(tree);
+
         FrontendVisitor semanticAnalysis = new FrontendVisitor();
 
         CompilerStatus compilerStatus = CompilerStatus.SUCCESS;
@@ -51,6 +54,7 @@ public class Frontend {
         	System.err.println(e);
         	compilerStatus = CompilerStatus.SEMANTIC_ERROR;
         }
+
         return compilerStatus;
 	}
 	
