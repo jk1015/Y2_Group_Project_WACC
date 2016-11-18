@@ -1,6 +1,8 @@
 package wacc;
+import wacc.exceptions.RedeclaredFunctionException;
 import wacc.exceptions.RedeclaredVariableException;
 import wacc.exceptions.UndeclaredVariableException;
+import wacc.types.FunctionType;
 import wacc.types.Type;
 
 import java.util.*;
@@ -27,6 +29,15 @@ public class ScopedSymbolTable {
         currentScope.put(name, elem);
     }
 
+    public void addFunction(String name, FunctionType elem) {
+        String funcName = '\\' + name;
+        try {
+            add(funcName, elem);
+        } catch (RedeclaredVariableException e) {
+            throw new RedeclaredFunctionException("Function " + name + " has already been declared");
+        }
+    }
+
     public Type get(String name){
         Iterator<Map<String, Type>> it = scopes.iterator();
         while (it.hasNext()) {
@@ -38,6 +49,28 @@ public class ScopedSymbolTable {
         throw new UndeclaredVariableException(
         		"Identifier " + name + " has not been declared yet.");
     }
+
+    public FunctionType getFunction(String name){
+        String funcName = '\\' + name;
+        return (FunctionType) get(funcName);
+    }
+
+    public boolean hasName(String name) {
+        Iterator<Map<String, Type>> it = scopes.iterator();
+        while (it.hasNext()) {
+            Map<String, Type> scope = it.next();
+            if (scope.containsKey(name)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public boolean hasFunction(String name) {
+        return hasName('\\' + name);
+    }
+
 
     public void enterNewScope() {
         Map<String, Type> newScope = new HashMap<String, Type>();

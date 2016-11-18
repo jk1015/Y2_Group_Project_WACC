@@ -1,0 +1,61 @@
+#!/usr/bin/ruby
+#./testsuite ../wacc_examples &> output.txt
+
+def testFile(fileName, errCode)
+  cmd = `./compile #{fileName}`
+  code = $?.exitstatus
+  ret = true
+  if (code != errCode) then
+   puts "#{fileName}: Expected: #{errCode} got #{code}"
+   puts cmd
+   puts "________________________________"
+   ret = false
+  end
+  return ret
+end
+
+def testDirectory(dirName, errCode)
+  count = 0
+  Dir.foreach(dirName) do |fileName|
+    if (fileName == ".") || (fileName == "..") then
+      next
+    end
+    fullName = "#{dirName}/#{fileName}"
+    if (File.directory?(fullName)) then
+      count += testDirectory(fullName, errCode)
+    else
+      if (File.extname(fileName) != ".wacc") then
+        next
+      end
+      if (!testFile(fullName, errCode)) then
+        count += 1
+      end
+    end
+  end
+  return count
+end
+
+root = ARGV[0]
+valid = "#{root}valid"
+syntax = "#{root}invalid/syntaxErr"
+semantic = "#{root}invalid/semanticErr"
+
+puts "Valid Tests:"
+validFails = testDirectory(valid, 0)
+puts ""
+puts ""
+puts ""
+puts ""
+puts "Syntax Tests:"
+syntaxFails = testDirectory(syntax, 100)
+puts ""
+puts ""
+puts ""
+puts ""
+puts "Semantic Tests:"
+semanticFails = testDirectory(semantic, 200)
+puts ""
+puts ""
+puts ""
+puts ""
+puts "Failures: #{validFails} valid, #{syntaxFails} syntax, #{semanticFails} semantic"

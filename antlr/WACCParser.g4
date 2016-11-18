@@ -73,6 +73,38 @@ pairElemType: baseType
 
 pairNullType: PAIR;
 
+unaryOper: NOT
+  | LEN
+  | ORD
+  | CHR
+  | MINUS
+  ;
+
+binaryOper1: MULTIPLY
+  | DIVIDE
+  | MOD
+  ;
+
+binaryOper2: PLUS
+  | MINUS
+  ;
+
+binaryOper3: GT
+  | GEQ
+  | LT
+  | LEQ
+  ;
+
+binaryOper4: EQ
+  | NEQ
+  ;
+
+binaryOper5: AND
+  ;
+
+binaryOper6: OR
+  ;
+
 expr: expr6;
 
 bracketsExpr: OPEN_PARENTHESES expr CLOSE_PARENTHESES;
@@ -114,43 +146,11 @@ expr6: expr6 binaryOper6 expr6
   | expr5
   ;
 
-unaryOper: NOT
-  | LEN
-  | ORD
-  | CHR
-  | MINUS
-  ;
-
-binaryOper1: MULTIPLY
-  | DIVIDE
-  | MOD
-  ;
-
-binaryOper2: PLUS
-  | MINUS
-  ;
-
-binaryOper3: GT
-  | GEQ
-  | LT
-  | LEQ
-  ;
-
-binaryOper4: EQ
-  | NEQ
-  ;
-
-binaryOper5: AND
-  ;
-
-binaryOper6: OR
-  ;
-
 arrayElem: identifier (OPEN_SQUARE expr CLOSE_SQUARE)+;
 
 arrayLiter: OPEN_SQUARE (expr (COMMA expr)*)? CLOSE_SQUARE;
 
-intLiter: INT_LITERAL;
+intLiter: (PLUS | MINUS)? INT;
 
 boolLiter: BOOL_LITERAL;
 

@@ -94,8 +94,8 @@ fragment ALPHANUMERIC: (LETTER | DIGIT);
 //numbers
 fragment DIGIT : '0'..'9' ;
 
-//literals
-INT_LITERAL: (PLUS | MINUS)? DIGIT+;
+
+INT: DIGIT+;
 BOOL_LITERAL: 'true' | 'false';
 PAIR_LITERAL: NULL;
 CHAR_LITERAL: '\'' CHARACTER '\'' ;
