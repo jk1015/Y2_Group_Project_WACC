@@ -11,9 +11,11 @@ import java.util.List;
 public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     private final ScopedSymbolTable symbolTable;
+    private final MemoryStack stack;
 
     public BackendVisitor(ScopedSymbolTable symbolTable) {
         this.symbolTable = symbolTable;
+        this.stack = new MemoryStack(2);
     }
 
     @Override
@@ -41,12 +43,18 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitSeqStat(@NotNull WACCParser.SeqStatContext ctx) {
-        return super.visitSeqStat(ctx);
+        Instruction stat1 = visit(ctx.stat(0));
+        Instruction stat2 = visit(ctx.stat(1));
+        return new SequenceInstruction(stat1, stat2);
     }
 
     @Override
     public Instruction visitInitAssignStat(@NotNull WACCParser.InitAssignStatContext ctx) {
-        return super.visitInitAssignStat(ctx);
+        String var = ctx.identifier().getText();
+        stack.add(var);
+        //TODO
+        ExprInstruction expr = (ExprInstruction) visit(ctx.assignRHS());
+        return new InitAssignInstruction(expr, stack.getLocationString(var));
     }
 
     @Override
