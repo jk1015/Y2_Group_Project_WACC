@@ -14,5 +14,6 @@ public class ExitInstruction implements Instruction {
     public void toAssembly(PrintStream out) {
         expr.toAssembly(out);
         out.println("MOV r0, " + expr.getLocationString());
+        out.println("BL exit");
     }
 }
