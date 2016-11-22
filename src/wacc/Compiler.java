@@ -31,6 +31,7 @@ public class Compiler {
     		exit(status.code());
     	}
 		System.out.println("Syntax and Semantic checking successful.");
+
     }
     
 }
