@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class LabelMaker {
-    //TODO: Make this not suck.
     private final Map<Instruction, String> labels;
     private static LabelMaker labelMaker;
 
@@ -24,7 +23,7 @@ public class LabelMaker {
     public String getLabel(Instruction ins, int no) {
         String label = labels.get(ins);
         if (label == null) {
-            label = "L" + Math.floor(Math.random() * 10000) + "N";
+            label = "L" + labels.size() + "N";
             labels.put(ins, label);
         }
         return label + no;
