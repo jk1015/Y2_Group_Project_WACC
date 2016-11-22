@@ -12,17 +12,39 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     private final ScopedSymbolTable symbolTable;
     private final MemoryStack stack;
+    private List<DataInstruction> data = new ArrayList<>();
+    private List<LabelInstruction> labels = new ArrayList<>();
 
     public BackendVisitor(ScopedSymbolTable symbolTable) {
         this.symbolTable = symbolTable;
         this.stack = new MemoryStack(2);
     }
 
+    public void addDataAndLabels(ContainingDataOrLabelsInstruction ins){
+        ArrayList<DataInstruction> dataInstructions = ins.getData();
+        ArrayList<LabelInstruction> labelInstructions = ins.getLabel();
+
+        if (dataInstructions != null){
+             data.addAll(dataInstructions);
+        }
+
+        if (labelInstructions != null){
+            labels.addAll(labelInstructions);
+        }
+    }
+
+
     @Override
     public Instruction visitProgram(@NotNull WACCParser.ProgramContext ctx) {
         // Visit functions then visit program.
         Instruction program = new ProgramInstruction(visit(ctx.stat()));
+        for (DataInstruction d : data){
+            d.toAssembly(System.out);
+        }
         program.toAssembly(System.out);
+        for (LabelInstruction l : labels){
+            l.toAssembly(System.out);
+        }
         return program;
     }
 
@@ -84,7 +106,10 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitPrintStat(@NotNull WACCParser.PrintStatContext ctx) {
-        return super.visitPrintStat(ctx);
+        ExprInstruction expr = (ExprInstruction) visitExpr(ctx.expr());
+        PrintInstruction print = new PrintInstruction(expr);
+        addDataAndLabels(print);
+        return print;
     }
 
     @Override
