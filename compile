@@ -7,7 +7,8 @@ cmd = 'java -cp bin:lib/antlr-4.4-complete.jar wacc.Compiler'
 if (ARGV.empty?) then
   puts `#{cmd}`
 elsif (ARGV.length == 1) then
-  puts `#{cmd} #{ARGV[0]}`
+  out = File.basename(ARGV[0], '.*') + ".s"
+  puts `#{cmd} #{ARGV[0]} #{out}`
 else
   puts `#{cmd} #{ARGV[0]} #{ARGV[1]}`
 end
