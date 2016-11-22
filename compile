@@ -6,8 +6,10 @@
 cmd = 'java -cp bin:lib/antlr-4.4-complete.jar wacc.Compiler'
 if (ARGV.empty?) then
   puts `#{cmd}`
-else
+elsif (ARGV.length == 1) then
   puts `#{cmd} #{ARGV[0]}`
+else
+  puts `#{cmd} #{ARGV[0]} #{ARGV[1]}`
 end
 
 exit $?.exitstatus

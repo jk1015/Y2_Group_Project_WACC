@@ -22,7 +22,6 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     public Instruction visitProgram(@NotNull WACCParser.ProgramContext ctx) {
         // Visit functions then visit program.
         Instruction program = new ProgramInstruction(visit(ctx.stat()));
-        program.toAssembly(System.out);
         return program;
     }
 
