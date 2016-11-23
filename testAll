@@ -1,0 +1,38 @@
+#!/usr/bin/ruby
+
+def testFile(fileName)
+  cmd = `./testFile #{fileName}`
+  code = $?.exitstatus
+  if (code != 0) then
+    puts cmd
+    puts "_______________"
+    return false
+  end
+    return true
+end
+
+def testDirectory(dirName)
+  count = 0
+  Dir.foreach(dirName) do |fileName|
+    if (fileName == ".") || (fileName == "..") then
+      next
+    end
+    fullName = "#{dirName}/#{fileName}"
+    if (File.directory?(fullName)) then
+      count += testDirectory(fullName)
+    else
+      if (File.extname(fileName) != ".wacc") then
+        next
+      end
+      if (!testFile(fullName)) then
+        count += 1
+      end
+    end
+  end
+  return count
+end
+
+cmd = `make clean`
+cmd = `make`
+failures = testDirectory(ARGV[0])
+puts "#{failures} failures."
