@@ -24,7 +24,6 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     public Instruction visitProgram(@NotNull WACCParser.ProgramContext ctx) {
         // Visit functions then visit program.
         Instruction program = new ProgramInstruction(visit(ctx.stat()));
-        program.toAssembly(System.out);
         return program;
     }
 
@@ -84,12 +83,18 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitWhileStat(@NotNull WACCParser.WhileStatContext ctx) {
-        return super.visitWhileStat(ctx);
+        ExprInstruction expr = (ExprInstruction) visit(ctx.expr());
+        Instruction stat = visit(ctx.stat());
+        return new WhileInstruction(expr, stat);
     }
 
     @Override
     public Instruction visitIfStat(@NotNull WACCParser.IfStatContext ctx) {
-        return super.visitIfStat(ctx);
+        ExprInstruction expr = (ExprInstruction) visit(ctx.expr());
+        Instruction stat1 = visit(ctx.stat(0));
+        Instruction stat2 = visit(ctx.stat(1));
+        IfInstruction ins = new IfInstruction(expr, stat1, stat2);
+        return ins;
     }
 
     @Override
