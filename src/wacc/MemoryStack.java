@@ -1,45 +1,37 @@
 package wacc;
 
 import java.util.Deque;
-import java.util.Iterator;
 import java.util.LinkedList;
 
 public class MemoryStack {
 
-    private Deque<String> stack;
+    private LinkedList<String> stack;
+    private Deque<Integer> scopeSizes;
 
-
-    public MemoryStack(int size) {
+    public MemoryStack() {
         this.stack = new LinkedList<String>();
-        scope(size);
+        this.scopeSizes = new LinkedList<Integer>();
     }
 
-    public void scope(int size) {
-        for(int i = 0; i < size; i++) {
-            stack.addFirst(null);
-        }
+    public void newScope() {
+        scopeSizes.push(0);
     }
 
-    public void descope(int size) {
+    public int descope() {
+        int size = scopeSizes.pop();
         for(int i = 0; i < size; i++) {
             stack.removeFirst();
         }
+        return size * 4;
     }
 
     public void add(String id) {
-        int i = 0;
-
-        for(String s: stack) {
-            if (s == null) {
-                ((LinkedList) stack).set(i, id);
-                return;
-            }
-            i++;
-        }
+        stack.addFirst(id);
+        scopeSizes.push(scopeSizes.pop() + 1);
     }
 
     public int get(String id) {
-        return ((LinkedList)stack).indexOf(id) * 4;
+        return stack.indexOf(id) * 4;
     }
 
     public String getLocationString(String id) {

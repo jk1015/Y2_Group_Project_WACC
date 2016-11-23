@@ -5,9 +5,11 @@ import java.io.PrintStream;
 public class ProgramInstruction implements Instruction {
 
     private final Instruction stat;
+    private final int scopeSize;
 
-    public ProgramInstruction(Instruction stat) {
+    public ProgramInstruction(Instruction stat, int scopeSize) {
         this.stat = stat;
+        this.scopeSize = scopeSize;
     }
 
     @Override
@@ -18,6 +20,9 @@ public class ProgramInstruction implements Instruction {
         out.println("main:");
         out.println("PUSH {lr}");
         stat.toAssembly(out);
+        if (scopeSize > 0) {
+            out.println("ADD sp, sp, #" + scopeSize);
+        }
         out.println("LDR r0, =0");
         out.println("POP {pc}");
         out.println(".ltorg");

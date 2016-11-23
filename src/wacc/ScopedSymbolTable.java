@@ -24,7 +24,7 @@ public class ScopedSymbolTable {
     public void add(String name, Type elem) {
         if (currentScope.containsKey(name)) {
             throw new RedeclaredVariableException(
-            		"Variable " + name + " has already been declared in this scope.");
+            		"Variable " + name + " has already been declared in this movePointer.");
         }
         currentScope.put(name, elem);
     }

@@ -55,7 +55,7 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
 
     @Override
     public Type visitFunction(WACCParser.FunctionContext ctx) {
-        // Add to symbol table, check validity of children under new scope
+        // Add to symbol table, check validity of children under new movePointer
         //Check that statement contains a return
 
         String fName = ctx.getChild(1).getText();
