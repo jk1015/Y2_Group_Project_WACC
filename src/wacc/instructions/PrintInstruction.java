@@ -10,10 +10,10 @@ import java.io.PrintStream;
 
 public class PrintInstruction extends ContainingDataOrLabelsInstruction {
 
-    private ExprInstruction expr;
-    private int numOfMsg;
-    private String nameOfLabel;
-    private Type type;
+    protected ExprInstruction expr;
+    protected int numOfMsg;
+    protected String nameOfLabel;
+    protected Type type;
 
     public PrintInstruction(ExprInstruction expr, int numOfMsg) {
         this.expr = expr;
@@ -29,35 +29,42 @@ public class PrintInstruction extends ContainingDataOrLabelsInstruction {
         addDataAndLabels();
     }
 
-    public void addDataAndLabels() {
-        if (type.checkType(PrimType.INT)) {
-            String ascii = "\0";
-            String nameOfMsg = "msg" + numOfMsg;
-            DataInstruction dataInstruction = new DataInstruction(nameOfMsg, ascii);
-            addData(dataInstruction);
-            String[] namesOfMsg = {nameOfMsg};
-            LabelInstruction labelInstruction = new LabelInstruction(nameOfLabel, namesOfMsg);
-            addlebel(labelInstruction);
-        } else {
-            String ascii1 = "true\0";
-            String ascii2 = "false\0";
-            String nameOfMsg1 = "msg" + numOfMsg;
-            String nameOfMsg2 = "msg" + (numOfMsg + 1);
+    public int addDataAndLabels() {
+        if (!type.checkType(PrimType.CHAR)) {
+            if (type.checkType(PrimType.INT)) {
+                String nameOfMsg = setData("%d\0");
+                String[] namesOfMsg = {nameOfMsg};
+                setLabel(nameOfLabel, namesOfMsg);
+            } else {
+                String nameOfMsg1;
+                String nameOfMsg2;
 
-            if (type.checkType(PrimType.STRING)) {
-                ascii1 = ((StringLiterInstruction) expr).getStringLiter();
-                ascii2 = "%.*s\0";
-                nameOfMsg1 = "msg" + numOfMsg;
-                nameOfMsg2 = "msg" + (numOfMsg + 1);
+                if (type.checkType(PrimType.STRING)) {
+                    nameOfMsg1 = setData(((StringLiterInstruction) expr).getStringLiter());
+                    nameOfMsg2 = setData("%.*s\0");
+
+                } else {
+                    nameOfMsg1 = setData("true\0");
+                    nameOfMsg2 = setData("false\0");
+                }
+                String[] namesOfMsg = {nameOfMsg1, nameOfMsg2};
+                setLabel(nameOfLabel, namesOfMsg);
             }
-            DataInstruction dataInstruction1 = new DataInstruction(nameOfMsg1, ascii1);
-            addData(dataInstruction1);
-            DataInstruction dataInstruction2 = new DataInstruction(nameOfMsg1, ascii2);
-            addData(dataInstruction2);
-            String[] namesOfMsg = {nameOfMsg1, nameOfMsg2};
-            LabelInstruction labelInstruction = new LabelInstruction(nameOfLabel, namesOfMsg);
-            addlebel(labelInstruction);
         }
+        return numOfMsg;
+    }
+
+    public void setLabel(String label, String[] namesOfMsg) {
+        LabelInstruction labelInstruction = new LabelInstruction(label, namesOfMsg);
+        addlebel(labelInstruction);
+    }
+
+    public String setData(String ascii) {
+        String nameOfMsg = "msg" + numOfMsg;
+        DataInstruction dataInstruction = new DataInstruction(nameOfMsg, ascii);
+        addData(dataInstruction);
+        numOfMsg++;
+        return nameOfMsg;
     }
 
 }

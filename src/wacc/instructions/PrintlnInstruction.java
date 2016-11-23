@@ -4,26 +4,24 @@ import wacc.instructions.expressions.ExprInstruction;
 
 import java.io.PrintStream;
 
-public class PrintlnInstruction extends ContainingDataOrLabelsInstruction {
-    private PrintInstruction printInstruction;
-    private int numOfMsg;
+public class PrintlnInstruction extends PrintInstruction {
 
     public PrintlnInstruction(ExprInstruction expr, int numOfMsg) {
-        printInstruction = new PrintInstruction(expr, numOfMsg);
-        this.numOfMsg = numOfMsg;
+        super(expr,numOfMsg);
     }
 
     @Override
     public void toAssembly(PrintStream out) {
-        printInstruction.toAssembly(out);
+        super.toAssembly(out);
+        out.println("BL p_print_ln");
 
-        String nameOfLabel = "p_print_ln";
-        out.println("BL " + nameOfLabel);
-        String nameOfMsg1 = "msg" + numOfMsg + 2;
-        DataInstruction dataInstruction1 = new DataInstruction(nameOfMsg1,"\0");
-        data.add(dataInstruction1);
+    }
+    @Override
+    public int addDataAndLabels() {
+        numOfMsg = super.addDataAndLabels();
+        String nameOfMsg1 = setData("\0");
         String[] namesOfMsg = {nameOfMsg1};
-        LabelInstruction labelInstruction = new LabelInstruction(nameOfLabel,namesOfMsg);
-        labels.add(labelInstruction);
+        setLabel("p_print_ln",namesOfMsg);
+        return numOfMsg;
     }
 }

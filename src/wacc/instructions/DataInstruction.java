@@ -14,10 +14,9 @@ public class DataInstruction implements Instruction {
 
     @Override
     public void toAssembly(PrintStream out) {
+        out.println();
         out.println(name + ":");
-        out.println();
         out.println(".word " + ascii.length());
-        out.println();
         out.println(".ascii " + ascii);
     }
 

@@ -18,11 +18,11 @@ public class LabelInstruction implements Instruction{
         if (name.equals("putchar")){
             return;
         }
-        out.println(name);
+        out.println();
+        out.println(name + ":");
         out.println("PUSH {lr}");
         assembly(out);
         out.println("POP {pc}");
-
     }
 
     public void assembly(PrintStream out){
