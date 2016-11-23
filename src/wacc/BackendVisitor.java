@@ -157,6 +157,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     public Instruction visitPrintStat(@NotNull WACCParser.PrintStatContext ctx) {
         ExprInstruction expr = (ExprInstruction) visitExpr(ctx.expr());
         PrintInstruction print = new PrintInstruction(expr,numOfMsg);
+        print.addDataAndLabels();
         addDataAndLabels(print);
         return print;
     }

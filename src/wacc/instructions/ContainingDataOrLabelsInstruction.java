@@ -8,8 +8,8 @@ import wacc.types.Type;
 import java.util.ArrayList;
 
 public abstract class ContainingDataOrLabelsInstruction implements Instruction {
-    protected ArrayList<DataInstruction> data;
-    protected ArrayList<LabelInstruction> labels;
+    protected ArrayList<DataInstruction> data = new ArrayList<>();
+    protected ArrayList<LabelInstruction> labels = new ArrayList<>();
 
     public ArrayList<DataInstruction> getData() {
         return data;

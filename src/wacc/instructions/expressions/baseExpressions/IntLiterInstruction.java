@@ -10,7 +10,7 @@ public class IntLiterInstruction extends ExprInstruction {
     private int value;
 
     public IntLiterInstruction(int value, int register) {
-        super(register, PrimType.BOOL);
+        super(register, PrimType.INT);
         this.value = value;
     }
 
@@ -18,6 +18,7 @@ public class IntLiterInstruction extends ExprInstruction {
     public void toAssembly(PrintStream out) {
         out.print("LDR " + getLocationString() + ", ");
         out.println("=" + value);
+        commonAssembly(out);
     }
 
 }

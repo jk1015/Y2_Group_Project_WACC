@@ -3,6 +3,8 @@ package wacc.instructions.expressions;
 import wacc.instructions.Instruction;
 import wacc.types.Type;
 
+import java.io.PrintStream;
+
 public abstract class ExprInstruction implements Instruction {
 
     private final int register;
@@ -20,6 +22,11 @@ public abstract class ExprInstruction implements Instruction {
 
     public String getLocationString() {
         return "r" + register;
+    }
+
+    protected void commonAssembly(PrintStream out){
+        String reg =getLocationString();
+        out.println("MOV r0," + reg);
     }
 
 }
