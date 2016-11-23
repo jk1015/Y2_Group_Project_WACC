@@ -10,17 +10,23 @@ import java.io.PrintStream;
  */
 public class StringLiterInstruction extends ExprInstruction {
 
+    private String stringLiter;
     private int location;
     //TODO
     //print string at top of file
-    public StringLiterInstruction(int count, int register) {
+    public StringLiterInstruction(int count, int register, String stringLiter) {
         super(register, PrimType.STRING);
         this.location = count;
+        this.stringLiter = stringLiter;
     }
 
     @Override
     public void toAssembly(PrintStream out) {
         out.print("LDR " + getLocationString() + ", ");
         out.println("=msg_" + location);
+    }
+
+    public String getStringLiter() {
+        return stringLiter;
     }
 }

@@ -330,10 +330,10 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     public Instruction visitStringLiter(@NotNull WACCParser.StringLiterContext ctx) {
         String literal = ctx.STRING_LITERAL().getText();
         if (stringList.contains(literal)) {
-            return new StringLiterInstruction(stringList.indexOf(literal), currentReg);
+            return new StringLiterInstruction(stringList.indexOf(literal), currentReg, literal);
         }
         stringList.add(literal);
-        return new StringLiterInstruction(stringList.size() - 1, currentReg);
+        return new StringLiterInstruction(stringList.size() - 1, currentReg, literal);
     }
 
     @Override
