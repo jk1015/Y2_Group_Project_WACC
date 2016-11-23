@@ -15,7 +15,6 @@ import wacc.instructions.expressions.binaryExpressions.logicalExpressions.ORInst
 import wacc.instructions.expressions.unaryExpressions.*;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
@@ -141,8 +140,10 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitWhileStat(@NotNull WACCParser.WhileStatContext ctx) {
         ExprInstruction expr = (ExprInstruction) visit(ctx.expr());
+        stack.newScope();
         Instruction stat = visit(ctx.stat());
-        return new WhileInstruction(expr, stat);
+        int scopeSize = stack.descope();
+        return new WhileInstruction(expr, stat, scopeSize);
     }
 
     @Override
@@ -398,7 +399,14 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitIdentifier(@NotNull WACCParser.IdentifierContext ctx) {
         String id = ctx.IDENTIFIER().getText();
-        return new IdentifierInstruction(stack.getLocationString(id), currentReg);
+        String locationString = stack.getLocationString(id);
+        if (ctx.getParent() instanceof WACCParser.BaseTypeContext) {
+            return new IdentifierExprInstruction(locationString, currentReg);
+        } else {
+            return new IdentifierInstruction(locationString);
+        }
+
+
     }
 
     @Override
@@ -425,7 +433,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitAssignLHS(@NotNull WACCParser.AssignLHSContext ctx) {
 
-        return super.visitAssignLHS(ctx);
+        return new AssignLHSInstruction(visit(ctx.getChild(0)));
     }
 
     @Override

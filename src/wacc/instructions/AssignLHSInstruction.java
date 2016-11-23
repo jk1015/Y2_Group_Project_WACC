@@ -1,19 +1,18 @@
 package wacc.instructions;
 
-import wacc.instructions.expressions.ExprInstruction;
+import java.io.PrintStream;
 
-public class AssignLHSInstruction {
-    private ExprInstruction expr;
+public class AssignLHSInstruction implements Instruction {
 
-    public AssignLHSInstruction(ExprInstruction expr) {
-        this.expr = expr;
+
+    private final Instruction ins;
+
+    public AssignLHSInstruction(Instruction ins) {
+        this.ins = ins;
     }
 
-    public String getLocationString() {
-        return null;
-    }
-
-    public ExprInstruction getExpr() {
-        return expr;
+    @Override
+    public void toAssembly(PrintStream out) {
+        ins.toAssembly(out);
     }
 }
