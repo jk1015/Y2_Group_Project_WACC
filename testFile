@@ -1,0 +1,85 @@
+#!/usr/bin/ruby
+
+def getExitCode(fileName)
+  foundExit = false
+  File.foreach(fileName) do |line|
+    if (foundExit) then
+      return line.match('[0-9]+')[0].to_i
+    end
+    if (line.start_with?("\# Exit:")) then
+      foundExit = true
+    end
+  end
+  return 0
+end
+
+def getOutput(fileName)
+  output = ""
+  foundOut = false
+  File.foreach(fileName) do |line|
+    if (foundOut) then
+      if (line.start_with?("\#")) then
+        line.slice!(0)
+        line.lstrip!
+        output = output + line
+      else
+        return output
+      end
+    end
+    if (line.start_with?("\# Output:")) then
+      foundOut = true
+    end
+  end
+  return output
+end
+
+def compareOutput(expected, actual, input, output)
+  #if (expected == "\#empty\#") then
+  #  return actual == ""
+  #end
+  expected.gsub!('#empty#', "")
+  expected.gsub!('#input#', input)
+  expected.gsub!('#output#', output)
+  return expected.split('#addrs#') == actual.split(/0x[0-9]+/)
+end
+
+
+
+cmd = `./compile #{ARGV[0]}`
+
+assembled = File.basename(ARGV[0], '.*') + ".s"
+runCmd = "./run #{assembled}"
+
+baseName = File.dirname(ARGV[0]) + "/" + File.basename(ARGV[0], '.*')
+inName = baseName + ".in"
+input = ""
+
+if (File.exist?(inName)) then
+  input = inName
+  cmd = "cat #{inName} > " + cmd
+end
+
+actual = `#{runCmd}`
+acExit = $?.exitstatus
+exExit = getExitCode(ARGV[0])
+if (acExit != exExit) then
+  puts "Expected error code #{exExit} got #{acExit}"
+end
+
+outName = baseName + ".output"
+output = ""
+if (File.exist?(outName)) then
+  output = getOutput(outName)
+else
+  output = getOutput(ARGV[0])
+end
+
+if (!compareOutput(output, actual, input, output)) then
+  puts
+  puts "Expected:"
+  puts output
+  puts "Actual:"
+  puts actual
+end
+
+File.delete(assembled = File.basename(ARGV[0], '.*') + ".s")
