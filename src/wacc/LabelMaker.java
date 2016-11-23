@@ -20,6 +20,10 @@ public class LabelMaker {
         return labelMaker;
     }
 
+    public static String getFunctionLabel(String functionIdentifier) {
+        return "f_" + functionIdentifier;
+    }
+
     public String getLabel(Instruction ins, int no) {
         String label = labels.get(ins);
         if (label == null) {

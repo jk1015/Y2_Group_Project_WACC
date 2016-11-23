@@ -29,16 +29,15 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitFunction(@NotNull WACCParser.FunctionContext ctx) {
-        String functionLabel = "f_" + ctx.identifier().getText() + ':';
+        String functionLabel = LabelMaker.getFunctionLabel(ctx.identifier().getText());
         Instruction statement = visit(ctx.stat());
-        // TODO: Map functionLabel to function
         return new FunctionInstruction(functionLabel, statement);
     }
 
     @Override
     public Instruction visitCallFunction(@NotNull WACCParser.CallFunctionContext ctx) {
         // get corresponding function label of function
-        String functionLabel = ""; //TODO
+        String functionLabel = LabelMaker.getFunctionLabel(ctx.identifier().getText());
 
         // arglist adds args to stack
         List<Instruction> args = new LinkedList<>();
