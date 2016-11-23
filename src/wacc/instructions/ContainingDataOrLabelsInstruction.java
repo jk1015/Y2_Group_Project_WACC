@@ -1,6 +1,9 @@
 package wacc.instructions;
 
 
+import wacc.types.PrimType;
+import wacc.types.Type;
+
 import java.util.ArrayList;
 
 public abstract class ContainingDataOrLabelsInstruction implements Instruction {
@@ -24,16 +27,17 @@ public abstract class ContainingDataOrLabelsInstruction implements Instruction {
     }
 
     protected String getType(String string, ExprInstruction exprIns) {
+        Type type = exprIns.getType();
 
-        if (exprIns instanceof CharLiterInstruction) {
+        if (type.checkType(PrimType.CHAR)) {
             return "putchar";
         } else {
-            if (exprIns instanceof IntLiterInstruction) {
+            if (type.checkType(PrimType.INT)) {
                 return string + "int";
-            } else if (exprIns instanceof StringLiterInstruction) {
-                return string + "string";
-            } else {
+            } else if (type.checkType(PrimType.BOOL)) {
                 return string + "bool";
+            } else {
+                return string + "string";
             }
         }
     }

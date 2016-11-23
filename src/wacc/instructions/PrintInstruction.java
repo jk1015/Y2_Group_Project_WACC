@@ -19,7 +19,7 @@ public class PrintInstruction extends ContainingDataOrLabelsInstruction {
         if (println){
             out.println("BL p_print_ln");
         } else {
-            out.println("BL " + getType("p_print",expr));
+            out.println("BL " + getType("p_print_",expr));
         }
     }
 
