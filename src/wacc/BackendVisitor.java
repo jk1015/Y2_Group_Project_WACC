@@ -1,25 +1,41 @@
 package wacc;
 
+import antlr.WACCLexer;
 import antlr.WACCParser;
-import org.antlr.v4.runtime.atn.RangeTransition;
 import org.antlr.v4.runtime.misc.NotNull;
 import antlr.WACCParserBaseVisitor;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import wacc.instructions.*;
+import wacc.instructions.expressions.ExprInstruction;
+import wacc.instructions.expressions.baseExpressions.*;
+import wacc.instructions.expressions.binaryExpressions.arithmeticExpressions.*;
+import wacc.instructions.expressions.binaryExpressions.comparatorExpressions.*;
+import wacc.instructions.expressions.binaryExpressions.logicalExpressions.ANDInstruction;
+import wacc.instructions.expressions.binaryExpressions.logicalExpressions.ORInstruction;
+import wacc.instructions.expressions.unaryExpressions.*;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     private final ScopedSymbolTable symbolTable;
     private final MemoryStack stack;
+
     private List<DataInstruction> data = new ArrayList<>();
     private List<LabelInstruction> labels = new ArrayList<>();
     private int numOfMsg = 0;
 
+    private int currentReg;
+    private List<String> stringList;
+
+
     public BackendVisitor(ScopedSymbolTable symbolTable) {
         this.symbolTable = symbolTable;
         this.stack = new MemoryStack(2);
+        this.currentReg = 4;
+        this.stringList = new LinkedList<>();
     }
 
     public void addDataAndLabels(ContainingDataOrLabelsInstruction ins){
@@ -40,6 +56,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     public Instruction visitProgram(@NotNull WACCParser.ProgramContext ctx) {
         // Visit functions then visit program.
         Instruction program = new ProgramInstruction(visit(ctx.stat()));
+
         for (DataInstruction d : data){
             d.toAssembly(System.out);
         }
@@ -47,17 +64,45 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         for (LabelInstruction l : labels){
             l.toAssembly(System.out);
         }
+
         return program;
     }
 
     @Override
     public Instruction visitFunction(@NotNull WACCParser.FunctionContext ctx) {
-        return super.visitFunction(ctx);
+        String functionLabel = LabelMaker.getFunctionLabel(ctx.identifier().getText());
+        Instruction statement = visit(ctx.stat());
+
+        //map params to location on stack
+        List<WACCParser.ParamContext> params = ctx.paramList().param();
+        stack.scope(params.size());
+
+        for (WACCParser.ParamContext param: params) {
+            String paramIdentifier = param.getText();
+            stack.add(paramIdentifier);
+        }
+
+        stack.descope(params.size());
+
+        return new FunctionInstruction(functionLabel, statement);
     }
 
     @Override
     public Instruction visitCallFunction(@NotNull WACCParser.CallFunctionContext ctx) {
-        return super.visitCallFunction(ctx);
+        // get corresponding function label of function
+        String functionLabel = LabelMaker.getFunctionLabel(ctx.identifier().getText());
+
+        // arglist adds args to stack
+        List<ExprInstruction> args = new LinkedList<>();
+        List<WACCParser.ExprContext> exprs = ctx.argList().expr();
+        for (WACCParser.ExprContext expr : exprs) {
+            args.add((ExprInstruction) visit(expr));
+            stack.scope(1);
+        }
+
+        stack.descope(exprs.size());
+
+        return new CallFunctionInstruction(functionLabel, args);
     }
 
     @Override
@@ -93,12 +138,18 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitWhileStat(@NotNull WACCParser.WhileStatContext ctx) {
-        return super.visitWhileStat(ctx);
+        ExprInstruction expr = (ExprInstruction) visit(ctx.expr());
+        Instruction stat = visit(ctx.stat());
+        return new WhileInstruction(expr, stat);
     }
 
     @Override
     public Instruction visitIfStat(@NotNull WACCParser.IfStatContext ctx) {
-        return super.visitIfStat(ctx);
+        ExprInstruction expr = (ExprInstruction) visit(ctx.expr());
+        Instruction stat1 = visit(ctx.stat(0));
+        Instruction stat2 = visit(ctx.stat(1));
+        IfInstruction ins = new IfInstruction(expr, stat1, stat2);
+        return ins;
     }
 
     @Override
@@ -138,47 +189,142 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitUnaryExpr(@NotNull WACCParser.UnaryExprContext ctx) {
-        return super.visitUnaryExpr(ctx);
+        int op = ((TerminalNode) ctx.unaryOper().getChild(0)).getSymbol().getType();
+        ExprInstruction i = (ExprInstruction) visit(ctx.expr1());
+        if(op == WACCLexer.NOT) {
+            return new NotInstruction(i, currentReg);
+        } else if (op == WACCLexer.MINUS) {
+            return new NegInstruction(i, currentReg);
+        } else if (op == WACCLexer.LEN){
+            return new LenInstruction(i, currentReg);
+        } else if (op == WACCLexer.ORD) {
+            return new OrdInstruction(i, currentReg);
+        } else {
+            return new ChrInstruction(i, currentReg);
+        }
     }
 
     @Override
     public Instruction visitBracketsExpr(@NotNull WACCParser.BracketsExprContext ctx) {
-        return super.visitBracketsExpr(ctx);
+        return visit(ctx.expr());
     }
 
     @Override
     public Instruction visitExpr6(@NotNull WACCParser.Expr6Context ctx) {
-        return super.visitExpr6(ctx);
+        WACCParser.Expr5Context e = ctx.expr5();
+        if(e != null) {
+            return visit(e);
+        }
+
+        ExprInstruction i1 = (ExprInstruction) visit(ctx.expr6(0));
+        currentReg++;
+        ExprInstruction i2 = (ExprInstruction) visit(ctx.expr6(1));
+        currentReg--;
+        return new ORInstruction(i1, i2, currentReg);
+
     }
 
     @Override
     public Instruction visitExpr5(@NotNull WACCParser.Expr5Context ctx) {
-        return super.visitExpr5(ctx);
+        WACCParser.Expr4Context e = ctx.expr4();
+        if(e != null) {
+            return visit(e);
+        }
+
+        ExprInstruction i1 = (ExprInstruction) visit(ctx.expr5(0));
+        currentReg++;
+        ExprInstruction i2 = (ExprInstruction) visit(ctx.expr5(1));
+        currentReg--;
+        return new ANDInstruction(i1, i2, currentReg);
     }
 
     @Override
     public Instruction visitExpr4(@NotNull WACCParser.Expr4Context ctx) {
-        return super.visitExpr4(ctx);
+        WACCParser.Expr3Context e = ctx.expr3();
+        if(e != null) {
+            return visit(e);
+        }
+
+        ExprInstruction i1 = (ExprInstruction) visit(ctx.expr4(0));
+        currentReg++;
+        ExprInstruction i2 = (ExprInstruction) visit(ctx.expr4(1));
+        currentReg--;
+        int op = ((TerminalNode) ctx.binaryOper4().getChild(0)).getSymbol().getType();
+        if(op == WACCLexer.EQ) {
+            return new EQInstruction(i1, i2, currentReg);
+        } else {
+            return new NEQInstruction(i1, i2, currentReg);
+        }
+
     }
 
     @Override
     public Instruction visitExpr3(@NotNull WACCParser.Expr3Context ctx) {
-        return super.visitExpr3(ctx);
+        WACCParser.Expr2Context e = ctx.expr2();
+        if(e != null) {
+            return visit(e);
+        }
+
+        ExprInstruction i1 = (ExprInstruction) visit(ctx.expr3(0));
+        currentReg++;
+        ExprInstruction i2 = (ExprInstruction) visit(ctx.expr3(1));
+        currentReg--;
+        int op = ((TerminalNode) ctx.binaryOper3().getChild(0)).getSymbol().getType();
+        if(op == WACCLexer.GT) {
+            return new GTInstruction(i1, i2, currentReg);
+        } else if (op == WACCLexer.LT) {
+            return new LTInstruction(i1, i2, currentReg);
+        } else if (op == WACCLexer.LEQ) {
+            return new LEQInstruction(i1, i2, currentReg);
+        } else {
+            return new GEQInstruction(i1, i2, currentReg);
+        }
+
     }
 
     @Override
     public Instruction visitExpr2(@NotNull WACCParser.Expr2Context ctx) {
-        return super.visitExpr2(ctx);
+        WACCParser.Expr1Context e = ctx.expr1();
+        if(e != null) {
+            return visit(e);
+        }
+
+        ExprInstruction i1 = (ExprInstruction) visit(ctx.expr2(0));
+        currentReg++;
+        ExprInstruction i2 = (ExprInstruction) visit(ctx.expr2(1));
+        currentReg--;
+        int op = ((TerminalNode) ctx.binaryOper2().getChild(0)).getSymbol().getType();
+        if(op == WACCLexer.PLUS) {
+            return new PlusInstruction(i1, i2, currentReg);
+        } else {
+            return new MinusInstruction(i1, i2, currentReg);
+        }
     }
 
     @Override
     public Instruction visitExpr1(@NotNull WACCParser.Expr1Context ctx) {
-        return super.visitExpr1(ctx);
+
+        if(ctx.getChildCount() != 1) {
+            return visit(ctx.getChild(0));
+        }
+
+        ExprInstruction i1 = (ExprInstruction) visit(ctx.expr3(0));
+        currentReg++;
+        ExprInstruction i2 = (ExprInstruction) visit(ctx.expr3(1));
+        currentReg--;
+        int op = ((TerminalNode) ctx.binaryOper3().getChild(0)).getSymbol().getType();
+        if(op == WACCLexer.MULTIPLY) {
+            return new MultiplyInstruction(i1, i2, currentReg, currentReg + 1);
+        } else if (op == WACCLexer.DIVIDE) {
+            return new DivideInstruction(i1, i2, currentReg);
+        }  else {
+            return new ModInstruction(i1, i2, currentReg);
+        }
     }
 
     @Override
     public Instruction visitPairLiter(@NotNull WACCParser.PairLiterContext ctx) {
-        return super.visitPairLiter(ctx);
+        return new PairLiterInstruction(currentReg);
     }
 
     @Override
@@ -188,23 +334,29 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitStringLiter(@NotNull WACCParser.StringLiterContext ctx) {
-        return super.visitStringLiter(ctx);
+        String literal = ctx.STRING_LITERAL().getText();
+        if (stringList.contains(literal)) {
+            return new StringLiterInstruction(stringList.indexOf(literal), currentReg);
+        }
+        stringList.add(literal);
+        return new StringLiterInstruction(stringList.size() - 1, currentReg);
     }
 
     @Override
     public Instruction visitIntLiter(@NotNull WACCParser.IntLiterContext ctx) {
         int value = Integer.parseInt(ctx.INT().getText());
-        return new IntLiterInstruction(value, 4);
+        return new IntLiterInstruction(value, currentReg);
     }
 
     @Override
     public Instruction visitCharLiter(@NotNull WACCParser.CharLiterContext ctx) {
-        return super.visitCharLiter(ctx);
+        char value = ctx.CHAR_LITERAL().getText().charAt(0);
+        return new CharLiterInstruction(value, currentReg);
     }
 
     @Override
     public Instruction visitBoolLiter(@NotNull WACCParser.BoolLiterContext ctx) {
-        return super.visitBoolLiter(ctx);
+        return new BoolLiterInstruction(ctx.BOOL_LITERAL().getText().equals("true"), currentReg);
     }
 
     @Override
@@ -239,7 +391,8 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitIdentifier(@NotNull WACCParser.IdentifierContext ctx) {
-        return super.visitIdentifier(ctx);
+        String id = ctx.IDENTIFIER().getText();
+        return new IdentifierInstruction(stack.getLocationString(id), currentReg);
     }
 
     @Override
