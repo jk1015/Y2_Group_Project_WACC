@@ -1,0 +1,22 @@
+package wacc.instructions;
+
+
+import java.io.PrintStream;
+
+public class ReadInstruction extends ContainingDataOrLabelsInstruction {
+    AssignLHSInstruction lhsInstruction;
+
+    public ReadInstruction(AssignLHSInstruction assignLHSInstruction) {
+        this.lhsInstruction = assignLHSInstruction;
+    }
+
+    @Override
+    public void toAssembly(PrintStream out) {
+
+        ExprInstruction expr = lhsInstruction.grtExpr();
+        out.println("ADD " + lhsInstruction.getLocationString() + ", sp, #0");
+        out.println("MOV " + " r0," + lhsInstruction.getLocationString());
+        out.println("BL " + getType("p_read",expr));
+        out.println("ADD "  + "sp, sp, #4");
+    }
+}

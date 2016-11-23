@@ -1,6 +1,7 @@
 package wacc;
 
 import antlr.WACCParser;
+import org.antlr.v4.runtime.atn.RangeTransition;
 import org.antlr.v4.runtime.misc.NotNull;
 import antlr.WACCParserBaseVisitor;
 import wacc.instructions.*;
@@ -14,6 +15,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     private final MemoryStack stack;
     private List<DataInstruction> data = new ArrayList<>();
     private List<LabelInstruction> labels = new ArrayList<>();
+    private int numOfMsg = 0;
 
     public BackendVisitor(ScopedSymbolTable symbolTable) {
         this.symbolTable = symbolTable;
@@ -101,20 +103,26 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitReadStat(@NotNull WACCParser.ReadStatContext ctx) {
+        AssignLHSInstruction assignLHSInstruction = (AssignLHSInstruction) visit(ctx.assignLHS());
+        ReadInstruction readInstruction = new ReadInstruction(assignLHSInstruction);
+
         return super.visitReadStat(ctx);
     }
 
     @Override
     public Instruction visitPrintStat(@NotNull WACCParser.PrintStatContext ctx) {
         ExprInstruction expr = (ExprInstruction) visitExpr(ctx.expr());
-        PrintInstruction print = new PrintInstruction(expr);
+        PrintInstruction print = new PrintInstruction(expr, false);
         addDataAndLabels(print);
         return print;
     }
 
     @Override
     public Instruction visitPrintlnStat(@NotNull WACCParser.PrintlnStatContext ctx) {
-        return super.visitPrintlnStat(ctx);
+        ExprInstruction expr = (ExprInstruction) visitExpr(ctx.expr());
+        PrintlnInstruction print = new PrintlnInstruction(expr);
+        addDataAndLabels(print);
+        return print;
     }
 
     @Override
@@ -257,6 +265,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitAssignLHS(@NotNull WACCParser.AssignLHSContext ctx) {
+
         return super.visitAssignLHS(ctx);
     }
 
