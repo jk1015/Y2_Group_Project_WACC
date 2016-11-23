@@ -1,11 +1,13 @@
 package wacc;
 
 import antlr.WACCParser;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.misc.NotNull;
 import antlr.WACCParserBaseVisitor;
 import wacc.instructions.*;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
@@ -28,12 +30,25 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitFunction(@NotNull WACCParser.FunctionContext ctx) {
-        return super.visitFunction(ctx);
+        String functionLabel = "f_" + ctx.identifier().getText() + ':';
+        Instruction statement = visit(ctx.stat());
+        // TODO: Map functionLabel to function
+        return new FunctionInstruction(functionLabel, statement);
     }
 
     @Override
     public Instruction visitCallFunction(@NotNull WACCParser.CallFunctionContext ctx) {
-        return super.visitCallFunction(ctx);
+        // get corresponding function label of function
+        String functionLabel = ""; //TODO
+
+        // arglist adds args to stack
+        List<Instruction> args = new LinkedList<>();
+        List<WACCParser.ExprContext> exprs = ctx.argList().expr();
+        for (WACCParser.ExprContext expr : exprs) {
+            args.add(visit(expr));
+        }
+
+        return new CallFunctionInstruction(functionLabel, args);
     }
 
     @Override
