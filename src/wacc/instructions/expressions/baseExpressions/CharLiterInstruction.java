@@ -1,6 +1,7 @@
 package wacc.instructions.expressions.baseExpressions;
 
 import wacc.instructions.expressions.ExprInstruction;
+import wacc.types.PrimType;
 
 import java.io.PrintStream;
 
@@ -13,7 +14,7 @@ public class CharLiterInstruction extends ExprInstruction {
     private char value;
 
     public CharLiterInstruction(char value, int register) {
-        super(register);
+        super(register, PrimType.CHAR);
         this.value = value;
     }
 

@@ -2,6 +2,7 @@ package wacc.instructions.expressions.binaryExpressions.arithmeticExpressions;
 
 import wacc.instructions.expressions.ExprInstruction;
 import wacc.instructions.expressions.binaryExpressions.BinaryExprInstruction;
+import wacc.types.PrimType;
 
 import java.io.PrintStream;
 
@@ -13,7 +14,7 @@ public class MultiplyInstruction extends BinaryExprInstruction {
     private int extraReg;
 
     public MultiplyInstruction(ExprInstruction expr1, ExprInstruction expr2, int register1, int register2) {
-        super(expr1, expr2, register1);
+        super(expr1, expr2, register1, PrimType.INT);
         this.extraReg = register2;
     }
 

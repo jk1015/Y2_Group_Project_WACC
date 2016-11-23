@@ -2,6 +2,7 @@ package wacc.instructions.expressions.binaryExpressions.logicalExpressions;
 
 import wacc.instructions.expressions.ExprInstruction;
 import wacc.instructions.expressions.binaryExpressions.BinaryExprInstruction;
+import wacc.types.PrimType;
 
 import java.io.PrintStream;
 
@@ -12,7 +13,7 @@ public class ORInstruction extends BinaryExprInstruction {
 
 
     public ORInstruction(ExprInstruction expr1, ExprInstruction expr2, int register) {
-        super(expr1, expr2, register);
+        super(expr1, expr2, register, PrimType.BOOL);
     }
 
 

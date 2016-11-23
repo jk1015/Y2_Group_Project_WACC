@@ -1,6 +1,7 @@
 package wacc.instructions.expressions.unaryExpressions;
 
 import wacc.instructions.expressions.ExprInstruction;
+import wacc.types.PrimType;
 
 import java.io.PrintStream;
 
@@ -12,7 +13,7 @@ public class NegInstruction extends ExprInstruction {
     private ExprInstruction expr;
 
     public NegInstruction(ExprInstruction expr, int register) {
-        super(register);
+        super(register, PrimType.INT);
         this.expr = expr;
     }
 

@@ -1,6 +1,7 @@
 package wacc.instructions.expressions.baseExpressions;
 
 import wacc.instructions.expressions.ExprInstruction;
+import wacc.types.PrimType;
 
 import java.io.PrintStream;
 
@@ -12,7 +13,7 @@ public class BoolLiterInstruction extends ExprInstruction {
     private int value;
 
     public BoolLiterInstruction(boolean value, int register) {
-        super(register);
+        super(register, PrimType.BOOL);
         if(value) {
             this.value = 1;
         } else {

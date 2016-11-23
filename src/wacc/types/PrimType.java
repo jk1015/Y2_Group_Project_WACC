@@ -1,7 +1,7 @@
 package wacc.types;
 
 public enum PrimType implements Type {
-	BOOL, CHAR, INT;
+	BOOL, CHAR, INT, STRING;
 	
 	@Override
 	public boolean checkType(Type type2) {

@@ -1,6 +1,8 @@
 package wacc.instructions.expressions.baseExpressions;
 
 import wacc.instructions.expressions.ExprInstruction;
+import wacc.types.NullType;
+import wacc.types.PairType;
 
 import java.io.PrintStream;
 
@@ -9,11 +11,9 @@ import java.io.PrintStream;
  */
 public class PairLiterInstruction extends ExprInstruction {
 
-    private int register;
 
-    public PairLiterInstruction(int value, int register) {
-        super(register);
-        this.register = register;
+    public PairLiterInstruction(int register) {
+        super(register, new PairType(new NullType(), new NullType()));
     }
 
     @Override

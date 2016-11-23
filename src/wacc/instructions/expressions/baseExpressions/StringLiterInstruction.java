@@ -1,6 +1,7 @@
 package wacc.instructions.expressions.baseExpressions;
 
 import wacc.instructions.expressions.ExprInstruction;
+import wacc.types.PrimType;
 
 import java.io.PrintStream;
 
@@ -9,13 +10,11 @@ import java.io.PrintStream;
  */
 public class StringLiterInstruction extends ExprInstruction {
 
-    private int register;
     private int location;
     //TODO
     //print string at top of file
-    public StringLiterInstruction(int count, String value, int register) {
-        super(register);
-        this.register = register;
+    public StringLiterInstruction(int count, int register) {
+        super(register, PrimType.STRING);
         this.location = count;
     }
 
