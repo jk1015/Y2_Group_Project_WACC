@@ -2,16 +2,17 @@ package wacc;
 
 import antlr.WACCLexer;
 import antlr.WACCParser;
-import org.antlr.v4.runtime.misc.NotNull;
 import antlr.WACCParserBaseVisitor;
+import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import wacc.instructions.*;
-import wacc.instructions.expressions.*;
-import wacc.instructions.expressions.unaryExpressions.*;
+import wacc.instructions.expressions.ExprInstruction;
 import wacc.instructions.expressions.baseExpressions.*;
 import wacc.instructions.expressions.binaryExpressions.arithmeticExpressions.*;
 import wacc.instructions.expressions.binaryExpressions.comparatorExpressions.*;
-import wacc.instructions.expressions.binaryExpressions.logicalExpressions.*;
+import wacc.instructions.expressions.binaryExpressions.logicalExpressions.ANDInstruction;
+import wacc.instructions.expressions.binaryExpressions.logicalExpressions.ORInstruction;
+import wacc.instructions.expressions.unaryExpressions.*;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -34,18 +35,44 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     public Instruction visitProgram(@NotNull WACCParser.ProgramContext ctx) {
         // Visit functions then visit program.
         Instruction program = new ProgramInstruction(visit(ctx.stat()));
-        program.toAssembly(System.out);
         return program;
     }
 
     @Override
     public Instruction visitFunction(@NotNull WACCParser.FunctionContext ctx) {
-        return super.visitFunction(ctx);
+        String functionLabel = LabelMaker.getFunctionLabel(ctx.identifier().getText());
+        Instruction statement = visit(ctx.stat());
+
+        //map params to location on stack
+        List<WACCParser.ParamContext> params = ctx.paramList().param();
+        stack.scope(params.size());
+
+        for (WACCParser.ParamContext param: params) {
+            String paramIdentifier = param.getText();
+            stack.add(paramIdentifier);
+        }
+
+        stack.descope(params.size());
+
+        return new FunctionInstruction(functionLabel, statement);
     }
 
     @Override
     public Instruction visitCallFunction(@NotNull WACCParser.CallFunctionContext ctx) {
-        return super.visitCallFunction(ctx);
+        // get corresponding function label of function
+        String functionLabel = LabelMaker.getFunctionLabel(ctx.identifier().getText());
+
+        // arglist adds args to stack
+        List<ExprInstruction> args = new LinkedList<>();
+        List<WACCParser.ExprContext> exprs = ctx.argList().expr();
+        for (WACCParser.ExprContext expr : exprs) {
+            args.add((ExprInstruction) visit(expr));
+            stack.scope(1);
+        }
+
+        stack.descope(exprs.size());
+
+        return new CallFunctionInstruction(functionLabel, args);
     }
 
     @Override
@@ -81,12 +108,18 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitWhileStat(@NotNull WACCParser.WhileStatContext ctx) {
-        return super.visitWhileStat(ctx);
+        ExprInstruction expr = (ExprInstruction) visit(ctx.expr());
+        Instruction stat = visit(ctx.stat());
+        return new WhileInstruction(expr, stat);
     }
 
     @Override
     public Instruction visitIfStat(@NotNull WACCParser.IfStatContext ctx) {
-        return super.visitIfStat(ctx);
+        ExprInstruction expr = (ExprInstruction) visit(ctx.expr());
+        Instruction stat1 = visit(ctx.stat(0));
+        Instruction stat2 = visit(ctx.stat(1));
+        IfInstruction ins = new IfInstruction(expr, stat1, stat2);
+        return ins;
     }
 
     @Override

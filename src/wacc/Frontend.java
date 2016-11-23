@@ -4,6 +4,7 @@ import static java.lang.System.exit;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -18,8 +19,8 @@ import wacc.exceptions.WACCSyntaxErrorException;
 
 public class Frontend {
 	
-	public CompilerStatus run(InputStream in) throws IOException {
-        ANTLRInputStream input = null;
+	public CompilerStatus run(InputStream in, PrintStream out) throws IOException {
+        ANTLRInputStream input;
 		input = new ANTLRInputStream(in);
 
         WACCLexer lexer = new WACCLexer(input);
@@ -52,10 +53,14 @@ public class Frontend {
         	compilerStatus = CompilerStatus.SEMANTIC_ERROR;
         }
 
-        if (compilerStatus == CompilerStatus.SUCCESS) {
-            BackendVisitor back = new BackendVisitor(null);
-            back.visit(tree);
+        if (compilerStatus != CompilerStatus.SUCCESS) {
+            return compilerStatus;
         }
+
+        System.out.println("Syntax and Semantic checking successful.");
+
+        BackendVisitor back = new BackendVisitor(null);
+        back.visit(tree).toAssembly(out);
 
         return compilerStatus;
 	}

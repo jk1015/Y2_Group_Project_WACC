@@ -1,12 +1,13 @@
 package wacc;
 
 import java.util.Deque;
+import java.util.Iterator;
 import java.util.LinkedList;
 
 public class MemoryStack {
-    //TODO
-    //chars have size 1 byte
-    private LinkedList<String> stack;
+
+    private Deque<String> stack;
+
 
     public MemoryStack(int size) {
         this.stack = new LinkedList<String>();
@@ -15,15 +16,22 @@ public class MemoryStack {
 
     public void scope(int size) {
         for(int i = 0; i < size; i++) {
-            stack.add(null);
+            stack.addFirst(null);
+        }
+    }
+
+    public void descope(int size) {
+        for(int i = 0; i < size; i++) {
+            stack.removeFirst();
         }
     }
 
     public void add(String id) {
         int i = 0;
+
         for(String s: stack) {
             if (s == null) {
-                stack.set(i, id);
+                ((LinkedList) stack).set(i, id);
                 return;
             }
             i++;
@@ -31,7 +39,7 @@ public class MemoryStack {
     }
 
     public int get(String id) {
-        return stack.indexOf(id) * 4;
+        return ((LinkedList)stack).indexOf(id) * 4;
     }
 
     public String getLocationString(String id) {

@@ -1,0 +1,14 @@
+#!/usr/bin/ruby
+
+if (ARGV.empty?) then
+  STDERR.puts 'Needs a file to run on'
+  exit(-1)
+end
+
+newFile = File.basename(ARGV[0], '.*')
+
+compile = `arm-linux-gnueabi-gcc -o #{newFile} -mcpu=arm1176jzf-s -mtune=arm1176jzf-s #{ARGV[0]}`
+puts `qemu-arm -L /usr/arm-linux-gnueabi/ #{newFile}`
+File.delete(newFile)
+
+exit $?.exitstatus
