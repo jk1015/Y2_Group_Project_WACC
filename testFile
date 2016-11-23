@@ -44,10 +44,17 @@ def compareOutput(expected, actual, input, output)
 end
 
 
-
+puts ARGV[0]
 cmd = `./compile #{ARGV[0]}`
-
+compExit = $?.exitstatus
 assembled = File.basename(ARGV[0], '.*') + ".s"
+if (compExit != 0) then
+  puts "Failed to compile."
+  File.delete(assembled)
+  exit(100)
+end
+
+
 runCmd = "./run #{assembled}"
 
 baseName = File.dirname(ARGV[0]) + "/" + File.basename(ARGV[0], '.*')
@@ -60,10 +67,12 @@ if (File.exist?(inName)) then
 end
 
 actual = `#{runCmd}`
+File.delete(assembled)
 acExit = $?.exitstatus
 exExit = getExitCode(ARGV[0])
 if (acExit != exExit) then
   puts "Expected error code #{exExit} got #{acExit}"
+  exit(150)
 end
 
 outName = baseName + ".output"
@@ -75,11 +84,11 @@ else
 end
 
 if (!compareOutput(output, actual, input, output)) then
-  puts
   puts "Expected:"
   puts output
   puts "Actual:"
   puts actual
+  exit(200)
 end
 
-File.delete(assembled = File.basename(ARGV[0], '.*') + ".s")
+exit(0)
