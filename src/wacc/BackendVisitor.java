@@ -31,6 +31,18 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     public Instruction visitFunction(@NotNull WACCParser.FunctionContext ctx) {
         String functionLabel = LabelMaker.getFunctionLabel(ctx.identifier().getText());
         Instruction statement = visit(ctx.stat());
+
+        //map params to location on stack
+        List<WACCParser.ParamContext> params = ctx.paramList().param();
+        stack.scope(params.size());
+
+        for (WACCParser.ParamContext param: params) {
+            String paramIdentifier = param.getText();
+            stack.add(paramIdentifier);
+        }
+
+        stack.descope(params.size());
+
         return new FunctionInstruction(functionLabel, statement);
     }
 
@@ -40,11 +52,14 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         String functionLabel = LabelMaker.getFunctionLabel(ctx.identifier().getText());
 
         // arglist adds args to stack
-        List<Instruction> args = new LinkedList<>();
+        List<ExprInstruction> args = new LinkedList<>();
         List<WACCParser.ExprContext> exprs = ctx.argList().expr();
         for (WACCParser.ExprContext expr : exprs) {
-            args.add(visit(expr));
+            args.add((ExprInstruction) visit(expr));
+            stack.scope(1);
         }
+
+        stack.descope(exprs.size());
 
         return new CallFunctionInstruction(functionLabel, args);
     }

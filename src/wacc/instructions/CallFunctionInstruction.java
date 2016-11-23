@@ -6,9 +6,9 @@ import java.util.List;
 public class CallFunctionInstruction implements Instruction {
 
     private String functionLabel;
-    private List<Instruction> args;
+    private List<ExprInstruction> args;
 
-    public CallFunctionInstruction(String functionLabel, List<Instruction> args) {
+    public CallFunctionInstruction(String functionLabel, List<ExprInstruction> args) {
         this.functionLabel = functionLabel;
         this.args = args;
     }
@@ -16,8 +16,10 @@ public class CallFunctionInstruction implements Instruction {
     @Override
     public void toAssembly(PrintStream out) {
         // evaluate expressions and store in stack
-        for (Instruction arg : args) {
-            arg.toAssembly(out);
+        for (ExprInstruction arg : args) {
+            //TODO assumed r4 would be free
+            //TODO maybe line below is redundant
+            out.println("LDR r4, " + arg.getLocationString());
             out.print("STR r4, [sp, #-4]!");
         }
 
@@ -29,6 +31,7 @@ public class CallFunctionInstruction implements Instruction {
         out.println("ADD sp, sp, #" + totalArgStackSize);
 
         // store result of function
+        //TODO assumed r4 would be free
         out.println("MOV r4, r0");
     }
 }
