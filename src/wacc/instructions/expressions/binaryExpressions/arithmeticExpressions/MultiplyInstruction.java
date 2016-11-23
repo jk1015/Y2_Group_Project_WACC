@@ -25,6 +25,6 @@ public class MultiplyInstruction extends BinaryExprInstruction {
         //TODO Implement error
         out.println("SMULL " + getLocationString() + ", r" + extraReg + ", " + getExpr1String() + ", " + getExpr2String());
         out.println("CMP r" + extraReg + ", " + getLocationString() + ", ASR #31");
-        out.println("BLNE p_throw_overflow_error");
+        //out.println("BLNE p_throw_overflow_error");
     }
 }

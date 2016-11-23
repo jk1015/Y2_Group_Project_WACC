@@ -297,7 +297,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitExpr1(@NotNull WACCParser.Expr1Context ctx) {
 
-        if(ctx.getChildCount() != 1) {
+        if(ctx.getChildCount() == 1) {
             return visit(ctx.getChild(0));
         }
 
