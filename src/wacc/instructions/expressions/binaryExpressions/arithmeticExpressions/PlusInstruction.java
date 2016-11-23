@@ -23,6 +23,6 @@ public class PlusInstruction extends BinaryExprInstruction {
         out.println("ADDS " + getLocationString() + ", "
                     + getExpr1String() + ", " + getExpr2String());
         //TODO Implement error
-        out.println("BLVS p_throw_overflow_error");
+        //out.println("BLVS p_throw_overflow_error");
     }
 }

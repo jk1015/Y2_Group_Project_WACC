@@ -23,7 +23,7 @@ public class DivideInstruction extends BinaryExprInstruction {
         //TODO Implement error
         out.println("MOV r0, " + getExpr1String());
         out.println("MOV r1, " + getExpr2String());
-        out.println("BL p_check_divide_by_zero");
+        //out.println("BL p_check_divide_by_zero");
         out.println("BL __aeabi_idiv");
         out.println("MOV " + getLocationString() + ", r0");
     }

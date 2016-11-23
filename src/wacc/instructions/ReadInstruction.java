@@ -15,7 +15,7 @@ public class ReadInstruction extends ContainingDataOrLabelsInstruction {
     @Override
     public void toAssembly(PrintStream out) {
 
-        ExprInstruction expr = lhsInstruction.grtExpr();
+        ExprInstruction expr = lhsInstruction.getExpr();
         out.println("ADD " + lhsInstruction.getLocationString() + ", sp, #0");
         out.println("MOV " + " r0," + lhsInstruction.getLocationString());
         out.println("BL " + getType("p_read",expr));

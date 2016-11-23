@@ -22,5 +22,7 @@ public class MinusInstruction extends BinaryExprInstruction {
         super.toAssembly(out);
         out.println("SUBS " + getLocationString() + ", "
                 + getExpr1String() + ", " + getExpr2String());
+        //TODO Implement error
+        //out.println("BLVS p_throw_overflow_error");
     }
 }

@@ -28,14 +28,13 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     private int numOfMsg = 0;
 
     private int currentReg;
-    private List<String> stringList;
+    private List<String> stringList = new ArrayList<>();
 
 
     public BackendVisitor(ScopedSymbolTable symbolTable) {
         this.symbolTable = symbolTable;
         this.stack = new MemoryStack(2);
         this.currentReg = 4;
-        this.stringList = new LinkedList<>();
     }
 
     public void addDataAndLabels(ContainingDataOrLabelsInstruction ins){
@@ -55,17 +54,11 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitProgram(@NotNull WACCParser.ProgramContext ctx) {
         // Visit functions then visit program.
-        Instruction program = new ProgramInstruction(visit(ctx.stat()));
+        ProgramInstruction program = new ProgramInstruction(visit(ctx.stat()));
 
-        for (DataInstruction d : data){
-            d.toAssembly(System.out);
-        }
-        program.toAssembly(System.out);
-        for (LabelInstruction l : labels){
-            l.toAssembly(System.out);
-        }
 
-        return program;
+
+        return new AssemblyInstruction(data, program, labels);
     }
 
     @Override
@@ -305,15 +298,15 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitExpr1(@NotNull WACCParser.Expr1Context ctx) {
 
-        if(ctx.getChildCount() != 1) {
+        if(ctx.getChildCount() == 1) {
             return visit(ctx.getChild(0));
         }
 
-        ExprInstruction i1 = (ExprInstruction) visit(ctx.expr3(0));
+        ExprInstruction i1 = (ExprInstruction) visit(ctx.expr1(0));
         currentReg++;
-        ExprInstruction i2 = (ExprInstruction) visit(ctx.expr3(1));
+        ExprInstruction i2 = (ExprInstruction) visit(ctx.expr1(1));
         currentReg--;
-        int op = ((TerminalNode) ctx.binaryOper3().getChild(0)).getSymbol().getType();
+        int op = ((TerminalNode) ctx.binaryOper1().getChild(0)).getSymbol().getType();
         if(op == WACCLexer.MULTIPLY) {
             return new MultiplyInstruction(i1, i2, currentReg, currentReg + 1);
         } else if (op == WACCLexer.DIVIDE) {

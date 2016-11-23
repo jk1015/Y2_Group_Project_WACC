@@ -13,7 +13,7 @@ public class AssignLHSInstruction {
         return null;
     }
 
-    public ExprInstruction grtExpr() {
+    public ExprInstruction getExpr() {
         return expr;
     }
 }
