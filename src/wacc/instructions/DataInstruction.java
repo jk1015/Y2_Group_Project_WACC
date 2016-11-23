@@ -7,7 +7,7 @@ public class DataInstruction implements Instruction {
     private String ascii;
     private String name;
 
-    public DataInstruction(  String name, String ascii) {
+    public DataInstruction(String name, String ascii) {
         this.ascii = ascii;
         this.name = name;
     }

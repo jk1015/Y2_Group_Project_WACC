@@ -28,14 +28,13 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     private int numOfMsg = 0;
 
     private int currentReg;
-    private List<String> stringList;
+    private List<String> stringList = new ArrayList<>();
 
 
     public BackendVisitor(ScopedSymbolTable symbolTable) {
         this.symbolTable = symbolTable;
         this.stack = new MemoryStack(2);
         this.currentReg = 4;
-        this.stringList = new LinkedList<>();
     }
 
     public void addDataAndLabels(ContainingDataOrLabelsInstruction ins){
@@ -55,17 +54,11 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitProgram(@NotNull WACCParser.ProgramContext ctx) {
         // Visit functions then visit program.
-        Instruction program = new ProgramInstruction(visit(ctx.stat()));
+        ProgramInstruction program = new ProgramInstruction(visit(ctx.stat()));
 
-        for (DataInstruction d : data){
-            d.toAssembly(System.out);
-        }
-        program.toAssembly(System.out);
-        for (LabelInstruction l : labels){
-            l.toAssembly(System.out);
-        }
 
-        return program;
+
+        return new AssemblyInstruction(data, program, labels);
     }
 
     @Override
