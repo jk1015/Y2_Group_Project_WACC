@@ -163,7 +163,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitPrintStat(@NotNull WACCParser.PrintStatContext ctx) {
         ExprInstruction expr = (ExprInstruction) visitExpr(ctx.expr());
-        PrintInstruction print = new PrintInstruction(expr, false);
+        PrintInstruction print = new PrintInstruction(expr,numOfMsg);
         addDataAndLabels(print);
         return print;
     }
@@ -171,7 +171,8 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitPrintlnStat(@NotNull WACCParser.PrintlnStatContext ctx) {
         ExprInstruction expr = (ExprInstruction) visitExpr(ctx.expr());
-        PrintlnInstruction print = new PrintlnInstruction(expr);
+        PrintlnInstruction print = new PrintlnInstruction(expr,numOfMsg);
+        numOfMsg += 3;
         addDataAndLabels(print);
         return print;
     }

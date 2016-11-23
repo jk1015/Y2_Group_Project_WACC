@@ -1,6 +1,8 @@
 package wacc.instructions;
 
 
+import wacc.instructions.expressions.ExprInstruction;
+
 import java.io.PrintStream;
 
 public class ReadInstruction extends ContainingDataOrLabelsInstruction {

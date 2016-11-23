@@ -1,5 +1,7 @@
 package wacc.instructions;
 
+import wacc.instructions.expressions.ExprInstruction;
+
 public class AssignLHSInstruction {
     private ExprInstruction expr;
 
