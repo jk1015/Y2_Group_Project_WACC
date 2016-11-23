@@ -1,8 +1,10 @@
-package wacc.instructions;
+package wacc.instructions.expressions.baseExpressions;
+
+import wacc.instructions.expressions.ExprInstruction;
 
 import java.io.PrintStream;
 
-public class IntLiterInstruction extends BaseExpressionInstruction {
+public class IntLiterInstruction extends ExprInstruction {
 
     private int value;
 
@@ -13,7 +15,7 @@ public class IntLiterInstruction extends BaseExpressionInstruction {
 
     @Override
     public void toAssembly(PrintStream out) {
-        super.toAssembly(out);
+        out.print("LDR " + getLocationString() + ", ");
         out.println("=" + value);
     }
 

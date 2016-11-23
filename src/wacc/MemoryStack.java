@@ -4,7 +4,8 @@ import java.util.Deque;
 import java.util.LinkedList;
 
 public class MemoryStack {
-
+    //TODO
+    //chars have size 1 byte
     private LinkedList<String> stack;
 
     public MemoryStack(int size) {

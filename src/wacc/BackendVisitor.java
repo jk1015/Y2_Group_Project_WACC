@@ -4,9 +4,8 @@ import antlr.WACCParser;
 import org.antlr.v4.runtime.misc.NotNull;
 import antlr.WACCParserBaseVisitor;
 import wacc.instructions.*;
-
-import java.util.ArrayList;
-import java.util.List;
+import wacc.instructions.expressions.ExprInstruction;
+import wacc.instructions.expressions.baseExpressions.IntLiterInstruction;
 
 public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
@@ -110,7 +109,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitBracketsExpr(@NotNull WACCParser.BracketsExprContext ctx) {
-        return super.visitBracketsExpr(ctx);
+        return visit(ctx.expr());
     }
 
     @Override

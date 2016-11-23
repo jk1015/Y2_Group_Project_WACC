@@ -3,11 +3,11 @@
 # You are free to change the language used for this script,
 # but do *not* change its name.
 
-cmd = 'java -cp bin:lib/antlr-4.4-complete.jar wacc.Compiler'
+cmd = 'java -cp bin:lib/antlr-4.4-complete.jar wacc.Test'
 if (ARGV.empty?) then
   puts `#{cmd}`
 else
-  puts `#{cmd} #{ARGV[0]}`
+  puts `#{cmd} < #{ARGV[0]}`
 end
 
 exit $?.exitstatus
