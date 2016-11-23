@@ -1,5 +1,7 @@
 package wacc.instructions;
 
+import wacc.instructions.expressions.ExprInstruction;
+
 public class AssignLHSInstruction {
     private ExprInstruction expr;
 
@@ -11,7 +13,7 @@ public class AssignLHSInstruction {
         return null;
     }
 
-    public ExprInstruction grtExpr() {
+    public ExprInstruction getExpr() {
         return expr;
     }
 }

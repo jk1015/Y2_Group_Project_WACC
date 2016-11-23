@@ -1,6 +1,7 @@
 package wacc.instructions;
 
 import wacc.LabelMaker;
+import wacc.instructions.expressions.ExprInstruction;
 
 import java.io.PrintStream;
 

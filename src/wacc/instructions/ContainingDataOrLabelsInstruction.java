@@ -1,6 +1,7 @@
 package wacc.instructions;
 
 
+import wacc.instructions.expressions.ExprInstruction;
 import wacc.types.PrimType;
 import wacc.types.Type;
 

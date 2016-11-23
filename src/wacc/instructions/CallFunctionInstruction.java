@@ -1,5 +1,7 @@
 package wacc.instructions;
 
+import wacc.instructions.expressions.ExprInstruction;
+
 import java.io.PrintStream;
 import java.util.List;
 

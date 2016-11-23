@@ -308,11 +308,11 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
             return visit(ctx.getChild(0));
         }
 
-        ExprInstruction i1 = (ExprInstruction) visit(ctx.expr3(0));
+        ExprInstruction i1 = (ExprInstruction) visit(ctx.expr1(0));
         currentReg++;
-        ExprInstruction i2 = (ExprInstruction) visit(ctx.expr3(1));
+        ExprInstruction i2 = (ExprInstruction) visit(ctx.expr1(1));
         currentReg--;
-        int op = ((TerminalNode) ctx.binaryOper3().getChild(0)).getSymbol().getType();
+        int op = ((TerminalNode) ctx.binaryOper1().getChild(0)).getSymbol().getType();
         if(op == WACCLexer.MULTIPLY) {
             return new MultiplyInstruction(i1, i2, currentReg, currentReg + 1);
         } else if (op == WACCLexer.DIVIDE) {
