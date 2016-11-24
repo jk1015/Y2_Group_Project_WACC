@@ -42,11 +42,20 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         ArrayList<LabelInstruction> labelInstructions = ins.getLabel();
 
         if (dataInstructions != null){
-             data.addAll(dataInstructions);
+            for (DataInstruction dataIns : dataInstructions){
+             if (!data.contains(dataIns)){
+                 data.add(dataIns);
+             }
+            }
+
         }
 
         if (labelInstructions != null){
-            labels.addAll(labelInstructions);
+            for (LabelInstruction labelIns : labelInstructions){
+                if (!labels.contains(labelIns)){
+                    labels.add(labelIns);
+                }
+            }
         }
     }
 
@@ -459,7 +468,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         return super.visitParamList(ctx);
     }
 
-    @Override
+   @Override
     public Instruction visitBaseExpr(@NotNull WACCParser.BaseExprContext ctx) {
         return super.visitBaseExpr(ctx);
     }
