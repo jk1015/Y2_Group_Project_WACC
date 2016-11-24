@@ -28,7 +28,7 @@ public class PrintInstruction extends ContainingDataOrLabelsInstruction {
     public int addDataAndLabels() {
         if (!type.checkType(PrimType.CHAR)) {
             if (type.checkType(PrimType.INT)) {
-                String nameOfMsg = setData("%d\0");
+                String nameOfMsg = setData("\"%d\\0\"");
                 String[] namesOfMsg = {nameOfMsg};
                 setLabel(nameOfLabel, namesOfMsg);
             } else {
@@ -37,11 +37,11 @@ public class PrintInstruction extends ContainingDataOrLabelsInstruction {
 
                 if (type.checkType(PrimType.STRING)) {
                     nameOfMsg1 = setData(((StringLiterInstruction) expr).getStringLiter());
-                    nameOfMsg2 = setData("%.*s\0");
+                    nameOfMsg2 = setData("\"%.*s\\0\"");
 
                 } else {
-                    nameOfMsg1 = setData("true\0");
-                    nameOfMsg2 = setData("false\0");
+                    nameOfMsg1 = setData("\"true\\0\"");
+                    nameOfMsg2 = setData("\"false\\0\"");
                 }
                 String[] namesOfMsg = {nameOfMsg1, nameOfMsg2};
                 setLabel(nameOfLabel, namesOfMsg);

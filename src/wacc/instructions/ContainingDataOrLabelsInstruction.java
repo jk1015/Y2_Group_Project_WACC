@@ -77,5 +77,5 @@ public abstract class ContainingDataOrLabelsInstruction implements Instruction {
         numOfMsg++;
         return nameOfMsg;
     }
-    
+
 }
