@@ -408,7 +408,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     public Instruction visitIdentifier(@NotNull WACCParser.IdentifierContext ctx) {
         String id = ctx.IDENTIFIER().getText();
         String locationString = stack.getLocationString(id);
-        if (ctx.getParent() instanceof WACCParser.BaseTypeContext) {
+        if (ctx.getParent() instanceof WACCParser.BaseExprContext) {
             return new IdentifierExprInstruction(locationString, currentReg);
         } else {
             return new IdentifierInstruction(locationString);
