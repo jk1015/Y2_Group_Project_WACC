@@ -2,11 +2,9 @@ package wacc.instructions;
 
 
 import wacc.instructions.expressions.ExprInstruction;
-import wacc.instructions.expressions.baseExpressions.StringLiterInstruction;
 import wacc.types.PrimType;
 import wacc.types.Type;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 
 public abstract class ContainingDataOrLabelsInstruction implements Instruction {
@@ -20,7 +18,9 @@ public abstract class ContainingDataOrLabelsInstruction implements Instruction {
 
     protected abstract int addDataAndLabels();
 
-    ContainingDataOrLabelsInstruction(){
+    ContainingDataOrLabelsInstruction(AssignLHSInstruction assignLHSInstruction,int numOfMsg){
+        this.numOfMsg = numOfMsg;
+        this.type = assignLHSInstruction.getType();
 
     }
     ContainingDataOrLabelsInstruction(ExprInstruction expr, int numOfMsg){
@@ -71,7 +71,7 @@ public abstract class ContainingDataOrLabelsInstruction implements Instruction {
     }
 
     public String setData(String ascii) {
-        String nameOfMsg = "msg" + numOfMsg;
+        String nameOfMsg = "msg_" + numOfMsg;
         DataInstruction dataInstruction = new DataInstruction(nameOfMsg, ascii);
         addData(dataInstruction);
         numOfMsg++;
