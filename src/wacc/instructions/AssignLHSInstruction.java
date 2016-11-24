@@ -2,17 +2,22 @@ package wacc.instructions;
 
 import java.io.PrintStream;
 
-public class AssignLHSInstruction implements Instruction {
+public class AssignLHSInstruction implements LocatableInstruction {
 
 
-    private final Instruction ins;
+    private final LocatableInstruction ins;
 
-    public AssignLHSInstruction(Instruction ins) {
+    public AssignLHSInstruction(LocatableInstruction ins) {
         this.ins = ins;
     }
 
     @Override
     public void toAssembly(PrintStream out) {
         ins.toAssembly(out);
+    }
+
+    @Override
+    public String getLocationString() {
+        return ins.getLocationString();
     }
 }

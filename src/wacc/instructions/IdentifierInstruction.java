@@ -2,10 +2,7 @@ package wacc.instructions;
 
 import java.io.PrintStream;
 
-/**
- * Created by jk1015 on 23/11/16.
- */
-public class IdentifierInstruction implements Instruction {
+public class IdentifierInstruction implements LocatableInstruction {
 
     private final String location;
 
@@ -15,7 +12,10 @@ public class IdentifierInstruction implements Instruction {
 
 
     @Override
-    public void toAssembly(PrintStream out) {
-        out.println(location);
+    public void toAssembly(PrintStream out) {}
+
+    @Override
+    public String getLocationString() {
+        return location;
     }
 }

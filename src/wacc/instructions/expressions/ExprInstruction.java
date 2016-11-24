@@ -1,9 +1,9 @@
 package wacc.instructions.expressions;
 
-import wacc.instructions.Instruction;
+import wacc.instructions.LocatableInstruction;
 import wacc.types.Type;
 
-public abstract class ExprInstruction implements Instruction {
+public abstract class ExprInstruction implements LocatableInstruction {
 
     private final int register;
     private final Type type;
@@ -16,7 +16,6 @@ public abstract class ExprInstruction implements Instruction {
     public Type getType() {
         return type;
     }
-
 
     public String getLocationString() {
         return "r" + register;
