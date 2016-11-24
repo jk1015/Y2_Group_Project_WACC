@@ -22,4 +22,29 @@ public class DataInstruction implements Instruction {
         out.println(".ascii " + ascii);
     }
 
+    @Override
+    public int hashCode() {
+        return name.hashCode()+ ascii.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof DataInstruction))
+            return false;
+        if (((DataInstruction) obj).getName().equals(name) &&
+                ((DataInstruction) obj).getAscii().equals(ascii)){
+            return true;
+        }
+
+        return false;
+    }
+
+    public String getName(){
+        return name;
+    }
+
+    public String getAscii(){
+        return ascii;
+    }
+
 }

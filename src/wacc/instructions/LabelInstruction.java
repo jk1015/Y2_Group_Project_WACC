@@ -25,6 +25,28 @@ public class LabelInstruction implements Instruction{
         out.println("POP {pc}");
     }
 
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof LabelInstruction))
+            return false;
+        if (((LabelInstruction) obj).getName().equals(name)){
+            return true;
+        }
+
+        return false;
+    }
+
+    public String getName(){
+        return name;
+    }
+
+
+
     public void assembly(PrintStream out){
         switch (name) {
             case "p_print_ln":

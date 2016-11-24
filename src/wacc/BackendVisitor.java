@@ -15,7 +15,6 @@ import wacc.instructions.expressions.binaryExpressions.logicalExpressions.ORInst
 import wacc.instructions.expressions.unaryExpressions.*;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
@@ -33,7 +32,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     public BackendVisitor(ScopedSymbolTable symbolTable) {
         this.symbolTable = symbolTable;
-        this.stack = new MemoryStack(2);
+        this.stack = new MemoryStack();
         this.currentReg = 4;
     }
 
@@ -42,11 +41,20 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         ArrayList<LabelInstruction> labelInstructions = ins.getLabel();
 
         if (dataInstructions != null){
-             data.addAll(dataInstructions);
+            for (DataInstruction dataIns : dataInstructions){
+             if (!data.contains(dataIns)){
+                 data.add(dataIns);
+             }
+            }
+
         }
 
         if (labelInstructions != null){
-            labels.addAll(labelInstructions);
+            for (LabelInstruction labelIns : labelInstructions){
+                if (!labels.contains(labelIns)){
+                    labels.add(labelIns);
+                }
+            }
         }
     }
 
@@ -54,7 +62,10 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitProgram(@NotNull WACCParser.ProgramContext ctx) {
         // Visit functions then visit program.
-        ProgramInstruction program = new ProgramInstruction(visit(ctx.stat()));
+        stack.newScope();
+        Instruction ins = visit(ctx.stat());
+        int scopeSize = stack.descope();
+        ProgramInstruction program = new ProgramInstruction(ins, scopeSize);
 
 
 
@@ -63,12 +74,13 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitFunction(@NotNull WACCParser.FunctionContext ctx) {
+        /*
         String functionLabel = LabelMaker.getFunctionLabel(ctx.identifier().getText());
         Instruction statement = visit(ctx.stat());
 
         //map params to location on stack
         List<WACCParser.ParamContext> params = ctx.paramList().param();
-        stack.scope(params.size());
+        stack.movePointer(params.size());
 
         for (WACCParser.ParamContext param: params) {
             String paramIdentifier = param.getText();
@@ -78,10 +90,13 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         stack.descope(params.size());
 
         return new FunctionInstruction(functionLabel, statement);
+        */
+        return null;
     }
 
     @Override
     public Instruction visitCallFunction(@NotNull WACCParser.CallFunctionContext ctx) {
+        /*
         // get corresponding function label of function
         String functionLabel = LabelMaker.getFunctionLabel(ctx.identifier().getText());
 
@@ -90,12 +105,14 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         List<WACCParser.ExprContext> exprs = ctx.argList().expr();
         for (WACCParser.ExprContext expr : exprs) {
             args.add((ExprInstruction) visit(expr));
-            stack.scope(1);
+            stack.movePointer(1);
         }
 
         stack.descope(exprs.size());
 
         return new CallFunctionInstruction(functionLabel, args);
+        */
+        return null;
     }
 
     @Override
@@ -121,7 +138,9 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitAssignStat(@NotNull WACCParser.AssignStatContext ctx) {
-        return super.visitAssignStat(ctx);
+        LocatableInstruction lhs = ((LocatableInstruction) visit(ctx.assignLHS()));
+        LocatableInstruction rhs = ((LocatableInstruction) visit(ctx.assignRHS()));
+        return new AssignInstruction(lhs, rhs);
     }
 
     @Override
@@ -132,16 +151,22 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitWhileStat(@NotNull WACCParser.WhileStatContext ctx) {
         ExprInstruction expr = (ExprInstruction) visit(ctx.expr());
+        stack.newScope();
         Instruction stat = visit(ctx.stat());
-        return new WhileInstruction(expr, stat);
+        int scopeSize = stack.descope();
+        return new WhileInstruction(expr, stat, scopeSize);
     }
 
     @Override
     public Instruction visitIfStat(@NotNull WACCParser.IfStatContext ctx) {
         ExprInstruction expr = (ExprInstruction) visit(ctx.expr());
+        stack.newScope();
         Instruction stat1 = visit(ctx.stat(0));
+        int scopeSize1 = stack.descope();
+        stack.newScope();
         Instruction stat2 = visit(ctx.stat(1));
-        IfInstruction ins = new IfInstruction(expr, stat1, stat2);
+        int scopeSize2 = stack.descope();
+        IfInstruction ins = new IfInstruction(expr, stat1, stat2, scopeSize1, scopeSize2);
         return ins;
     }
 
@@ -389,7 +414,14 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitIdentifier(@NotNull WACCParser.IdentifierContext ctx) {
         String id = ctx.IDENTIFIER().getText();
-        return new IdentifierInstruction(stack.getLocationString(id), currentReg);
+        String locationString = stack.getLocationString(id);
+        if (ctx.getParent() instanceof WACCParser.BaseTypeContext) {
+            return new IdentifierExprInstruction(locationString, currentReg);
+        } else {
+            return new IdentifierInstruction(locationString);
+        }
+
+
     }
 
     @Override
@@ -416,7 +448,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitAssignLHS(@NotNull WACCParser.AssignLHSContext ctx) {
 
-        return super.visitAssignLHS(ctx);
+        return new AssignLHSInstruction((LocatableInstruction) visit(ctx.getChild(0)));
     }
 
     @Override
@@ -434,7 +466,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         return super.visitParamList(ctx);
     }
 
-    @Override
+   @Override
     public Instruction visitBaseExpr(@NotNull WACCParser.BaseExprContext ctx) {
         return super.visitBaseExpr(ctx);
     }

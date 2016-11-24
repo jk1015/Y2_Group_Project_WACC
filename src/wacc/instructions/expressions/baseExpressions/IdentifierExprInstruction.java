@@ -9,12 +9,12 @@ import java.io.PrintStream;
 /**
  * Created by jk1015 on 22/11/16.
  */
-public class IdentifierInstruction extends ExprInstruction {
+public class IdentifierExprInstruction extends ExprInstruction {
 
     private String var;
 
     //Takes string from MemoryStack getLocationString
-    public IdentifierInstruction(String var, int register) {
+    public IdentifierExprInstruction(String var, int register) {
         //TODO
         super(register, new NullType());
         this.var = var;

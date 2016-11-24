@@ -18,6 +18,7 @@ public class InitAssignInstruction implements Instruction{
     @Override
     public void toAssembly(PrintStream out) {
         expr.toAssembly(out);
+        out.println("SUB sp, sp, #4");
         out.println("STR " + expr.getLocationString() + ", " + var);
     }
 }
