@@ -31,7 +31,6 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     private int numOfMsg = 0;
 
     private int currentReg;
-    private List<String> stringList = new ArrayList<>();
 
 
     public BackendVisitor(ScopedSymbolTable symbolTable) {
