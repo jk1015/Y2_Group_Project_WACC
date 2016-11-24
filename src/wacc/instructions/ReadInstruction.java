@@ -1,21 +1,28 @@
 package wacc.instructions;
 
 
-import wacc.instructions.expressions.ExprInstruction;
-import wacc.instructions.expressions.baseExpressions.StringLiterInstruction;
 import wacc.types.PrimType;
+import wacc.types.Type;
 
 import java.io.PrintStream;
 
 public class ReadInstruction extends ContainingDataOrLabelsInstruction {
     AssignLHSInstruction lhsInstruction;
-    //ExprInstruction expr = lhsInstruction.getExpr();
 
-    public ReadInstruction(AssignLHSInstruction assignLHSInstruction) {
-        super();
+    public ReadInstruction(AssignLHSInstruction assignLHSInstruction,int numOfMsg) {
+        super(assignLHSInstruction,numOfMsg);
         this.lhsInstruction = assignLHSInstruction;
-        this.nameOfLabel = getType("p_read_",expr);
-        //this.expr = lhsInstruction.getExpr();
+        this.nameOfLabel = "p_read_" + readType(type);
+    }
+
+    private String readType(Type type){
+        if (type.checkType(PrimType.CHAR)) {
+            return "char";
+        } else if (type.checkType(PrimType.INT)) {
+                return "int";
+        }
+
+        return null;
     }
 
     @Override
@@ -23,7 +30,7 @@ public class ReadInstruction extends ContainingDataOrLabelsInstruction {
 
         out.println("ADD " + lhsInstruction.getLocationString() + ", sp, #0");
         out.println("MOV " + " r0," + lhsInstruction.getLocationString());
-        //out.println("BL " + );
+        out.println("BL " + nameOfLabel);
         out.println("ADD "  + "sp, sp, #4");
 
     }
@@ -31,7 +38,7 @@ public class ReadInstruction extends ContainingDataOrLabelsInstruction {
     @Override
     public int addDataAndLabels() {
         if (type.checkType(PrimType.CHAR)) {
-            String nameOfMsg = setData("\"%c\\0\"");
+            String nameOfMsg = setData("\" %c\\0\"");
             String[] namesOfMsg = {nameOfMsg};
             setLabel(nameOfLabel, namesOfMsg);
         }else if (type.checkType(PrimType.INT)) {
@@ -41,8 +48,6 @@ public class ReadInstruction extends ContainingDataOrLabelsInstruction {
         }
         return numOfMsg;
         }
-
-
 
 }
 

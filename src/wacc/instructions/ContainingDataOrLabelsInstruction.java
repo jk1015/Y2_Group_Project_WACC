@@ -20,7 +20,9 @@ public abstract class ContainingDataOrLabelsInstruction implements Instruction {
 
     protected abstract int addDataAndLabels();
 
-    ContainingDataOrLabelsInstruction(){
+    ContainingDataOrLabelsInstruction(AssignLHSInstruction assignLHSInstruction,int numOfMsg){
+        this.numOfMsg = numOfMsg;
+        this.type = assignLHSInstruction.getType();
 
     }
     ContainingDataOrLabelsInstruction(ExprInstruction expr, int numOfMsg){
@@ -71,7 +73,7 @@ public abstract class ContainingDataOrLabelsInstruction implements Instruction {
     }
 
     public String setData(String ascii) {
-        String nameOfMsg = "msg" + numOfMsg;
+        String nameOfMsg = "msg_" + numOfMsg;
         DataInstruction dataInstruction = new DataInstruction(nameOfMsg, ascii);
         addData(dataInstruction);
         numOfMsg++;

@@ -195,7 +195,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitReadStat(@NotNull WACCParser.ReadStatContext ctx) {
         AssignLHSInstruction assignLHSInstruction = (AssignLHSInstruction) visitAssignLHS(ctx.assignLHS());
-        ReadInstruction readInstruction = new ReadInstruction(assignLHSInstruction);
+        ReadInstruction readInstruction = new ReadInstruction(assignLHSInstruction,numOfMsg);
         numOfMsg = readInstruction.addDataAndLabels();
         addDataAndLabels(readInstruction);
         return readInstruction;
