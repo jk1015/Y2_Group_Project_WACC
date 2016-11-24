@@ -20,7 +20,7 @@ public class PrintInstruction extends ContainingDataOrLabelsInstruction {
     public void toAssembly(PrintStream out) {
         expr.toAssembly(out);
         String reg =expr.getLocationString();
-        out.println("MOV r0," + reg);
+        out.println("MOV r0, " + reg);
         out.println("BL " + nameOfLabel);
     }
 
