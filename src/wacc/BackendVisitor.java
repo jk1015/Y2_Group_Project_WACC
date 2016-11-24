@@ -165,16 +165,18 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitReadStat(@NotNull WACCParser.ReadStatContext ctx) {
-        AssignLHSInstruction assignLHSInstruction = (AssignLHSInstruction) visit(ctx.assignLHS());
+        AssignLHSInstruction assignLHSInstruction = (AssignLHSInstruction) visitAssignLHS(ctx.assignLHS());
         ReadInstruction readInstruction = new ReadInstruction(assignLHSInstruction);
-
-        return super.visitReadStat(ctx);
+        numOfMsg = readInstruction.addDataAndLabels();
+        addDataAndLabels(readInstruction);
+        return readInstruction;
     }
 
     @Override
     public Instruction visitPrintStat(@NotNull WACCParser.PrintStatContext ctx) {
         ExprInstruction expr = (ExprInstruction) visitExpr(ctx.expr());
-        PrintInstruction print = new PrintInstruction(expr, false);
+        PrintInstruction print = new PrintInstruction(expr,numOfMsg);
+        numOfMsg = print.addDataAndLabels();
         addDataAndLabels(print);
         return print;
     }
@@ -182,7 +184,9 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitPrintlnStat(@NotNull WACCParser.PrintlnStatContext ctx) {
         ExprInstruction expr = (ExprInstruction) visitExpr(ctx.expr());
-        PrintlnInstruction print = new PrintlnInstruction(expr);
+        PrintlnInstruction print = new PrintlnInstruction(expr,numOfMsg);
+        print.addDataAndLabels();
+        numOfMsg += 3;
         addDataAndLabels(print);
         return print;
     }
@@ -347,10 +351,10 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     public Instruction visitStringLiter(@NotNull WACCParser.StringLiterContext ctx) {
         String literal = ctx.STRING_LITERAL().getText();
         if (stringList.contains(literal)) {
-            return new StringLiterInstruction(stringList.indexOf(literal), currentReg);
+            return new StringLiterInstruction(stringList.indexOf(literal), currentReg, literal);
         }
         stringList.add(literal);
-        return new StringLiterInstruction(stringList.size() - 1, currentReg);
+        return new StringLiterInstruction(stringList.size() - 1, currentReg, literal);
     }
 
     @Override

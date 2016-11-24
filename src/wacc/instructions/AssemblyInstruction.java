@@ -21,6 +21,9 @@ public class AssemblyInstruction implements Instruction {
 
     @Override
     public void toAssembly(PrintStream out) {
+        if (data != null){
+            out.println(".data");
+        }
         for (DataInstruction d : data){
             d.toAssembly(out);
         }

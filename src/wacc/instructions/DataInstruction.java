@@ -14,10 +14,11 @@ public class DataInstruction implements Instruction {
 
     @Override
     public void toAssembly(PrintStream out) {
+        String checkLength =ascii.replaceAll("\\\\","");
+
+        out.println();
         out.println(name + ":");
-        out.println();
-        out.println(".word " + ascii.length());
-        out.println();
+        out.println(".word " + (checkLength.length()-2));
         out.println(".ascii " + ascii);
     }
 
