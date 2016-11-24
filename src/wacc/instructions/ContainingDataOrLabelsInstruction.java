@@ -2,11 +2,9 @@ package wacc.instructions;
 
 
 import wacc.instructions.expressions.ExprInstruction;
-import wacc.instructions.expressions.baseExpressions.StringLiterInstruction;
 import wacc.types.PrimType;
 import wacc.types.Type;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 
 public abstract class ContainingDataOrLabelsInstruction implements Instruction {

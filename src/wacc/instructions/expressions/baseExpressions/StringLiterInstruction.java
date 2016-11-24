@@ -1,5 +1,6 @@
 package wacc.instructions.expressions.baseExpressions;
 
+import wacc.instructions.DataInstruction;
 import wacc.instructions.expressions.ExprInstruction;
 import wacc.types.PrimType;
 
@@ -24,6 +25,13 @@ public class StringLiterInstruction extends ExprInstruction {
     public void toAssembly(PrintStream out) {
         out.print("LDR " + getLocationString() + ", ");
         out.println("=msg_" + location);
+    }
+
+    public DataInstruction setData(String ascii) {
+        String nameOfMsg = "msg_" + location;
+        DataInstruction dataInstruction = new DataInstruction(nameOfMsg, ascii);
+        location++;
+        return dataInstruction;
     }
 
     public String getStringLiter() {

@@ -31,15 +31,12 @@ public class DataInstruction implements Instruction {
     public boolean equals(Object obj) {
         if (!(obj instanceof DataInstruction))
             return false;
-        if (((DataInstruction) obj).getAscii().equals(ascii)){
+        DataInstruction objData = (DataInstruction) obj;
+        if (objData.getAscii().equals(ascii)){
             return true;
         }
 
         return false;
-    }
-
-    public String getName(){
-        return name;
     }
 
     public String getAscii(){
