@@ -10,21 +10,17 @@ import java.io.PrintStream;
 
 public class PrintInstruction extends ContainingDataOrLabelsInstruction {
 
-    protected ExprInstruction expr;
-    protected int numOfMsg;
-    protected String nameOfLabel;
-    protected Type type;
 
     public PrintInstruction(ExprInstruction expr, int numOfMsg) {
-        this.expr = expr;
-        this.numOfMsg = numOfMsg;
+        super(expr,numOfMsg);
         this.nameOfLabel = getType("p_print_",expr);
-        this.type = expr.getType();
     }
 
     @Override
     public void toAssembly(PrintStream out) {
         expr.toAssembly(out);
+        String reg =expr.getLocationString();
+        out.println("MOV r0," + reg);
         out.println("BL " + nameOfLabel);
         addDataAndLabels();
     }
@@ -52,19 +48,6 @@ public class PrintInstruction extends ContainingDataOrLabelsInstruction {
             }
         }
         return numOfMsg;
-    }
-
-    public void setLabel(String label, String[] namesOfMsg) {
-        LabelInstruction labelInstruction = new LabelInstruction(label, namesOfMsg);
-        addlebel(labelInstruction);
-    }
-
-    public String setData(String ascii) {
-        String nameOfMsg = "msg" + numOfMsg;
-        DataInstruction dataInstruction = new DataInstruction(nameOfMsg, ascii);
-        addData(dataInstruction);
-        numOfMsg++;
-        return nameOfMsg;
     }
 
 }

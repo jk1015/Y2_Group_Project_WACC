@@ -9,6 +9,7 @@ public class ReadInstruction extends ContainingDataOrLabelsInstruction {
     AssignLHSInstruction lhsInstruction;
 
     public ReadInstruction(AssignLHSInstruction assignLHSInstruction) {
+        super();
         this.lhsInstruction = assignLHSInstruction;
     }
 
@@ -20,5 +21,10 @@ public class ReadInstruction extends ContainingDataOrLabelsInstruction {
         out.println("MOV " + " r0," + lhsInstruction.getLocationString());
         out.println("BL " + getType("p_read",expr));
         out.println("ADD "  + "sp, sp, #4");
+    }
+
+    @Override
+    protected int addDataAndLabels() {
+        return 0;
     }
 }

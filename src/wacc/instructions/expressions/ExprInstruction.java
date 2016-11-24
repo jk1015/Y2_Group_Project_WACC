@@ -24,9 +24,5 @@ public abstract class ExprInstruction implements Instruction {
         return "r" + register;
     }
 
-    protected void commonAssembly(PrintStream out){
-        String reg =getLocationString();
-        out.println("MOV r0," + reg);
-    }
 
 }

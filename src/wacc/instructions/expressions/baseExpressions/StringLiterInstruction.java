@@ -24,7 +24,6 @@ public class StringLiterInstruction extends ExprInstruction {
     public void toAssembly(PrintStream out) {
         out.print("LDR " + getLocationString() + ", ");
         out.println("=msg_" + location);
-        commonAssembly(out);
     }
 
     public String getStringLiter() {

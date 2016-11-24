@@ -18,7 +18,6 @@ public class IntLiterInstruction extends ExprInstruction {
     public void toAssembly(PrintStream out) {
         out.print("LDR " + getLocationString() + ", ");
         out.println("=" + value);
-        commonAssembly(out);
     }
 
 }
