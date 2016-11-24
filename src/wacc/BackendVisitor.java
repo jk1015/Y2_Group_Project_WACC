@@ -445,7 +445,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitSkipStat(@NotNull WACCParser.SkipStatContext ctx) {
-        return super.visitSkipStat(ctx);
+        return new SkipInstruction();
     }
 
     @Override
