@@ -34,6 +34,8 @@ public class LabelInstruction implements Instruction{
                 out.println("MOV r0, #0");
                 out.println("BL fflush");
                 break;
+            case "p_read_char":
+            case "p_read_int":
             case "p_print_int":
                 out.println("MOV r1, r0");
                 out.println("LDR r0, =" + msg[0]);
@@ -58,6 +60,7 @@ public class LabelInstruction implements Instruction{
                 out.println("MOV r0, #0");
                 out.println("BL fflush");
                 break;
+
         }
 
     }

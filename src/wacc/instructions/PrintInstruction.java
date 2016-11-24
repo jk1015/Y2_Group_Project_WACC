@@ -22,7 +22,6 @@ public class PrintInstruction extends ContainingDataOrLabelsInstruction {
         String reg =expr.getLocationString();
         out.println("MOV r0," + reg);
         out.println("BL " + nameOfLabel);
-        addDataAndLabels();
     }
 
     public int addDataAndLabels() {
