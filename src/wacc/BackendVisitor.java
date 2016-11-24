@@ -397,7 +397,16 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitArrayLiter(@NotNull WACCParser.ArrayLiterContext ctx) {
-        return super.visitArrayLiter(ctx);
+        List<WACCParser.ExprContext> exprs = ctx.expr();
+        List<ExprInstruction> elems = new LinkedList<>();
+
+        for (WACCParser.ExprContext expr : exprs) {
+            ExprInstruction exprIns = (ExprInstruction) visit(expr);
+            elems.add(exprIns);
+            stack.add(expr.getText(), exprIns.getType());
+        }
+
+        return new ArrayLiterInstruction(elems);
     }
 
     @Override
