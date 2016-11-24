@@ -13,6 +13,9 @@ import wacc.instructions.expressions.binaryExpressions.comparatorExpressions.*;
 import wacc.instructions.expressions.binaryExpressions.logicalExpressions.ANDInstruction;
 import wacc.instructions.expressions.binaryExpressions.logicalExpressions.ORInstruction;
 import wacc.instructions.expressions.unaryExpressions.*;
+import wacc.types.NullType;
+import wacc.types.PrimType;
+import wacc.types.Type;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -85,11 +88,12 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
         for (WACCParser.ParamContext param: params) {
             String paramIdentifier = param.getText();
-            stack.add(paramIdentifier);
+            //TODO IMMPLEMENT TYPES
+            stack.add(paramIdentifier, new NullType());
         }
 
         // error string that symbolises the branch link for the function
-        stack.add("@!$%");
+        stack.add("@!$%", new NullType());
 
         stack.descope();
 
@@ -109,7 +113,8 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
         for (WACCParser.ExprContext expr : exprs) {
             args.add((ExprInstruction) visit(expr));
-            stack.add(expr.getText());
+            //TODO IMMPLEMENT TYPES
+            stack.add(expr.getText(), new NullType());
         }
 
         stack.descope();
@@ -132,9 +137,24 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitInitAssignStat(@NotNull WACCParser.InitAssignStatContext ctx) {
         String var = ctx.identifier().getText();
-        stack.add(var);
-        //TODO
-        ExprInstruction expr = (ExprInstruction) visit(ctx.assignRHS());
+        LocatableInstruction expr = (LocatableInstruction) visit(ctx.assignRHS());
+
+        WACCParser.TypeContext type = ctx.type();
+        Type varType = new NullType();
+        if(type.getChild(0) instanceof WACCParser.BaseTypeContext) {
+            int t = ((TerminalNode) (type.getChild(0)).getChild(0)).getSymbol().getType();
+            if(t == WACCLexer.BOOL_TYPE) {
+                varType = PrimType.BOOL;
+            } else if (t == WACCLexer.INT_TYPE) {
+                varType = PrimType.INT;
+            } else if (t == WACCLexer.CHAR_TYPE) {
+                varType = PrimType.CHAR;
+            } else {
+                varType = PrimType.STRING;
+            }
+        }
+
+        stack.add(var, varType);
         return new InitAssignInstruction(expr, stack.getLocationString(var));
     }
 
@@ -417,10 +437,11 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     public Instruction visitIdentifier(@NotNull WACCParser.IdentifierContext ctx) {
         String id = ctx.IDENTIFIER().getText();
         String locationString = stack.getLocationString(id);
+        Type type = stack.getType(id);
         if (ctx.getParent() instanceof WACCParser.BaseExprContext) {
-            return new IdentifierExprInstruction(locationString, currentReg);
+            return new IdentifierExprInstruction(locationString, type, currentReg);
         } else {
-            return new IdentifierInstruction(locationString);
+            return new IdentifierInstruction(locationString, type);
         }
 
 

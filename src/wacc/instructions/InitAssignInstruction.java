@@ -1,24 +1,22 @@
 package wacc.instructions;
 
-import wacc.instructions.expressions.ExprInstruction;
-
 import java.io.PrintStream;
 
 public class InitAssignInstruction implements Instruction{
 
-    private ExprInstruction expr;
+    private LocatableInstruction location;
     private String var;
 
-    public InitAssignInstruction(ExprInstruction expr, String var) {
-        this.expr = expr;
+    public InitAssignInstruction(LocatableInstruction location, String var) {
+        this.location = location;
         this.var = var;
     }
 
 
     @Override
     public void toAssembly(PrintStream out) {
-        expr.toAssembly(out);
+        location.toAssembly(out);
         out.println("SUB sp, sp, #4");
-        out.println("STR " + expr.getLocationString() + ", " + var);
+        out.println("STR " + location.getLocationString() + ", " + var);
     }
 }

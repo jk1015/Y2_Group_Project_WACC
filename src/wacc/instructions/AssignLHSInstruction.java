@@ -1,5 +1,7 @@
 package wacc.instructions;
 
+import wacc.types.Type;
+
 import java.io.PrintStream;
 
 public class AssignLHSInstruction implements LocatableInstruction {
@@ -19,5 +21,10 @@ public class AssignLHSInstruction implements LocatableInstruction {
     @Override
     public String getLocationString() {
         return ins.getLocationString();
+    }
+
+    @Override
+    public Type getType() {
+        return ins.getType();
     }
 }

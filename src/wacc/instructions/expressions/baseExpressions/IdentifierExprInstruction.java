@@ -3,6 +3,7 @@ package wacc.instructions.expressions.baseExpressions;
 import wacc.instructions.expressions.ExprInstruction;
 import wacc.types.NullType;
 import wacc.types.PrimType;
+import wacc.types.Type;
 
 import java.io.PrintStream;
 
@@ -14,9 +15,9 @@ public class IdentifierExprInstruction extends ExprInstruction {
     private String var;
 
     //Takes string from MemoryStack getLocationString
-    public IdentifierExprInstruction(String var, int register) {
+    public IdentifierExprInstruction(String var, Type t, int register) {
         //TODO
-        super(register, new NullType());
+        super(register, t);
         this.var = var;
     }
 
