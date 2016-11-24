@@ -66,34 +66,45 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitProgram(@NotNull WACCParser.ProgramContext ctx) {
         // Visit functions then visit program.
+
+        List<FunctionInstruction> funcs = new LinkedList<>();
+        for(WACCParser.FunctionContext f: ctx.function()) {
+            funcs.add((FunctionInstruction) visit(f));
+        }
+
         stack.newScope();
         Instruction ins = visit(ctx.stat());
         int scopeSize = stack.descope();
         ProgramInstruction program = new ProgramInstruction(ins, scopeSize);
 
-
-
-        return new AssemblyInstruction(data, program, labels);
+        return new AssemblyInstruction(data, funcs, program, labels);
     }
 
     @Override
     public Instruction visitFunction(@NotNull WACCParser.FunctionContext ctx) {
 
         String functionLabel = LabelMaker.getFunctionLabel(ctx.identifier().getText());
-        Instruction statement = visit(ctx.stat());
+
 
         //map params to location on stack
-        List<WACCParser.ParamContext> params = ctx.paramList().param();
+        List<WACCParser.ParamContext> params = new LinkedList<>();
+
+        if(ctx.paramList() != null) {
+            params = ctx.paramList().param();
+        }
+
         stack.newScope();
 
         for (WACCParser.ParamContext param: params) {
-            String paramIdentifier = param.getText();
+            String paramIdentifier = param.identifier().getText();
+            WACCParser.TypeContext type = param.type();
             //TODO IMMPLEMENT TYPES
-            stack.add(paramIdentifier, new NullType());
+            stack.add(paramIdentifier, parseType(type));
         }
 
         // error string that symbolises the branch link for the function
         stack.add("@!$%", new NullType());
+        Instruction statement = visit(ctx.stat());
 
         stack.descope();
 
@@ -103,18 +114,23 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitCallFunction(@NotNull WACCParser.CallFunctionContext ctx) {
         // get corresponding function label of function
+
         String functionLabel = LabelMaker.getFunctionLabel(ctx.identifier().getText());
 
         // arglist adds args to stack
         List<ExprInstruction> args = new LinkedList<>();
-        List<WACCParser.ExprContext> exprs = ctx.argList().expr();
+        List<WACCParser.ExprContext> exprs = new LinkedList<>();
+
+        if(ctx.argList() != null) {
+            exprs = ctx.argList().expr();
+        }
 
         stack.newScope();
 
         for (WACCParser.ExprContext expr : exprs) {
-            args.add((ExprInstruction) visit(expr));
-            //TODO IMMPLEMENT TYPES
-            stack.add(expr.getText(), new NullType());
+            ExprInstruction exprIns = (ExprInstruction) visit(expr);
+            args.add(exprIns);
+            stack.add(expr.getText(), exprIns.getType());
         }
 
         stack.descope();
@@ -124,7 +140,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitReturnStat(@NotNull WACCParser.ReturnStatContext ctx) {
-        return super.visitReturnStat(ctx);
+        return new ReturnInstruction((ExprInstruction) visit(ctx.expr()));
     }
 
     @Override
@@ -138,8 +154,16 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     public Instruction visitInitAssignStat(@NotNull WACCParser.InitAssignStatContext ctx) {
         String var = ctx.identifier().getText();
         LocatableInstruction expr = (LocatableInstruction) visit(ctx.assignRHS());
-
         WACCParser.TypeContext type = ctx.type();
+
+        Type varType = parseType(type);
+
+        stack.add(var, varType);
+        return new InitAssignInstruction(expr, stack.getLocationString(var));
+    }
+
+    private Type parseType(@NotNull WACCParser.TypeContext type) {
+
         Type varType = new NullType();
         if(type.getChild(0) instanceof WACCParser.BaseTypeContext) {
             int t = ((TerminalNode) (type.getChild(0)).getChild(0)).getSymbol().getType();
@@ -154,8 +178,9 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
             }
         }
 
-        stack.add(var, varType);
-        return new InitAssignInstruction(expr, stack.getLocationString(var));
+        //TODO IMPLEMENT ARRAY AND PAIR TYPES
+
+        return varType;
     }
 
     @Override

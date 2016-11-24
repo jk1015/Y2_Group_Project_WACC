@@ -15,7 +15,7 @@ public class FunctionInstruction implements Instruction {
     @Override
     public void toAssembly(PrintStream out) {
         // label
-        out.println(functionLabel);
+        out.println(functionLabel + ":" );
 
         // store link addr
         out.println("PUSH {lr}");

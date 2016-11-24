@@ -11,11 +11,13 @@ public class AssemblyInstruction implements Instruction {
     private List<DataInstruction> data;
     private ProgramInstruction program;
     private List<LabelInstruction> labels;
+    private List<FunctionInstruction> funcs;
 
-    public AssemblyInstruction(List<DataInstruction> data, ProgramInstruction program, List<LabelInstruction> labels) {
+    public AssemblyInstruction(List<DataInstruction> data, List<FunctionInstruction> funcs, ProgramInstruction program, List<LabelInstruction> labels) {
         this.data = data;
         this.program = program;
         this.labels = labels;
+        this.funcs = funcs;
     }
 
 
@@ -26,6 +28,15 @@ public class AssemblyInstruction implements Instruction {
         }
         for (DataInstruction d : data){
             d.toAssembly(out);
+        }
+        if(data != null) {
+            out.println();
+        }
+        out.println(".text");
+        out.println();
+        out.println(".global main");
+        for (FunctionInstruction f : funcs){
+            f.toAssembly(out);
         }
         program.toAssembly(out);
         for (LabelInstruction l : labels){

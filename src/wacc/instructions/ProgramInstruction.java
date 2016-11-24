@@ -14,9 +14,7 @@ public class ProgramInstruction implements Instruction {
 
     @Override
     public void toAssembly(PrintStream out) {
-        out.println(".text");
-        out.println();
-        out.println(".global main");
+
         out.println("main:");
         out.println("PUSH {lr}");
         stat.toAssembly(out);
