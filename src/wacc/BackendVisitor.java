@@ -15,6 +15,7 @@ import wacc.instructions.expressions.binaryExpressions.logicalExpressions.ORInst
 import wacc.instructions.expressions.unaryExpressions.*;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
@@ -65,45 +66,46 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitFunction(@NotNull WACCParser.FunctionContext ctx) {
-        /*
+
         String functionLabel = LabelMaker.getFunctionLabel(ctx.identifier().getText());
         Instruction statement = visit(ctx.stat());
 
         //map params to location on stack
         List<WACCParser.ParamContext> params = ctx.paramList().param();
-        stack.movePointer(params.size());
+        stack.newScope();
 
         for (WACCParser.ParamContext param: params) {
             String paramIdentifier = param.getText();
             stack.add(paramIdentifier);
         }
 
-        stack.descope(params.size());
+        // error string that symbolises the branch link for the function
+        stack.add("@!$%");
+
+        stack.descope();
 
         return new FunctionInstruction(functionLabel, statement);
-        */
-        return null;
     }
 
     @Override
     public Instruction visitCallFunction(@NotNull WACCParser.CallFunctionContext ctx) {
-        /*
         // get corresponding function label of function
         String functionLabel = LabelMaker.getFunctionLabel(ctx.identifier().getText());
 
         // arglist adds args to stack
         List<ExprInstruction> args = new LinkedList<>();
         List<WACCParser.ExprContext> exprs = ctx.argList().expr();
+
+        stack.newScope();
+
         for (WACCParser.ExprContext expr : exprs) {
             args.add((ExprInstruction) visit(expr));
-            stack.movePointer(1);
+            stack.add(expr.getText());
         }
 
-        stack.descope(exprs.size());
+        stack.descope();
 
         return new CallFunctionInstruction(functionLabel, args);
-        */
-        return null;
     }
 
     @Override
