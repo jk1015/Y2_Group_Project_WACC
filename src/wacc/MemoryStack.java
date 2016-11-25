@@ -42,7 +42,7 @@ public class MemoryStack {
         return stack.get(stack.indexOf(new TypedVariable(id, null))).getType();
     }
 
-    public String getLocationString(String id) {
+    public String getOffsetString(String id) {
         int loc = get(id);
         if (loc == 0) {
             return "[sp]";
