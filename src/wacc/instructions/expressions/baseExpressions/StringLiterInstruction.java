@@ -13,8 +13,7 @@ public class StringLiterInstruction extends ExprInstruction {
 
     private String stringLiter;
     private int location;
-    //TODO
-    //print string at top of file
+
     public StringLiterInstruction(int count, int register, String stringLiter) {
         super(register, PrimType.STRING);
         this.location = count;
@@ -30,7 +29,6 @@ public class StringLiterInstruction extends ExprInstruction {
     public DataInstruction setData(String ascii) {
         String nameOfMsg = "msg_" + location;
         DataInstruction dataInstruction = new DataInstruction(nameOfMsg, ascii);
-        location++;
         return dataInstruction;
     }
 
