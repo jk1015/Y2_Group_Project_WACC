@@ -285,11 +285,17 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         if(e != null) {
             return visit(e);
         }
-
+        boolean capped = false;
         ExprInstruction i1 = (ExprInstruction) visit(ctx.expr6(0));
-        currentReg++;
+        if(currentReg < 10) {
+            currentReg++;
+            capped = true;
+        }
         ExprInstruction i2 = (ExprInstruction) visit(ctx.expr6(1));
-        currentReg--;
+        if(capped) {
+            currentReg--;
+        }
+
         return new ORInstruction(i1, i2, currentReg);
 
     }
@@ -300,11 +306,16 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         if(e != null) {
             return visit(e);
         }
-
+        boolean capped = false;
         ExprInstruction i1 = (ExprInstruction) visit(ctx.expr5(0));
-        currentReg++;
+        if(currentReg < 10) {
+            currentReg++;
+            capped = true;
+        }
         ExprInstruction i2 = (ExprInstruction) visit(ctx.expr5(1));
-        currentReg--;
+        if(capped) {
+            currentReg--;
+        }
         return new ANDInstruction(i1, i2, currentReg);
     }
 
@@ -314,11 +325,16 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         if(e != null) {
             return visit(e);
         }
-
+        boolean capped = false;
         ExprInstruction i1 = (ExprInstruction) visit(ctx.expr4(0));
-        currentReg++;
+        if(currentReg < 10) {
+            currentReg++;
+            capped = true;
+        }
         ExprInstruction i2 = (ExprInstruction) visit(ctx.expr4(1));
-        currentReg--;
+        if(capped) {
+            currentReg--;
+        }
         int op = ((TerminalNode) ctx.binaryOper4().getChild(0)).getSymbol().getType();
         if(op == WACCLexer.EQ) {
             return new EQInstruction(i1, i2, currentReg);
@@ -334,11 +350,16 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         if(e != null) {
             return visit(e);
         }
-
+        boolean capped = false;
         ExprInstruction i1 = (ExprInstruction) visit(ctx.expr3(0));
-        currentReg++;
+        if(currentReg < 10) {
+            currentReg++;
+            capped = true;
+        }
         ExprInstruction i2 = (ExprInstruction) visit(ctx.expr3(1));
-        currentReg--;
+        if(capped) {
+            currentReg--;
+        }
         int op = ((TerminalNode) ctx.binaryOper3().getChild(0)).getSymbol().getType();
         if(op == WACCLexer.GT) {
             return new GTInstruction(i1, i2, currentReg);
@@ -358,11 +379,16 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         if(e != null) {
             return visit(e);
         }
-
+        boolean capped = false;
         ExprInstruction i1 = (ExprInstruction) visit(ctx.expr2(0));
-        currentReg++;
+        if(currentReg < 10) {
+            currentReg++;
+            capped = true;
+        }
         ExprInstruction i2 = (ExprInstruction) visit(ctx.expr2(1));
-        currentReg--;
+        if(capped) {
+            currentReg--;
+        }
         int op = ((TerminalNode) ctx.binaryOper2().getChild(0)).getSymbol().getType();
         if(op == WACCLexer.PLUS) {
             return new PlusInstruction(i1, i2, currentReg);
@@ -378,10 +404,16 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
             return visit(ctx.getChild(0));
         }
 
+        boolean capped = false;
         ExprInstruction i1 = (ExprInstruction) visit(ctx.expr1(0));
-        currentReg++;
+        if(currentReg < 10) {
+            currentReg++;
+            capped = true;
+        }
         ExprInstruction i2 = (ExprInstruction) visit(ctx.expr1(1));
-        currentReg--;
+        if(capped) {
+            currentReg--;
+        }
         int op = ((TerminalNode) ctx.binaryOper1().getChild(0)).getSymbol().getType();
         if(op == WACCLexer.MULTIPLY) {
             return new MultiplyInstruction(i1, i2, currentReg, currentReg + 1);

@@ -6,7 +6,7 @@ import wacc.types.Type;
 public abstract class ExprInstruction implements LocatableInstruction {
 
 
-    private final int register;
+    private int register;
     private final Type type;
 
     public ExprInstruction(int register, Type type) {
@@ -20,6 +20,10 @@ public abstract class ExprInstruction implements LocatableInstruction {
 
     public String getLocationString() {
         return "r" + register;
+    }
+
+    public void setRegister(int i) {
+        this.register = i;
     }
 
 
