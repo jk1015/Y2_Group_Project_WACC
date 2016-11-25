@@ -427,7 +427,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitCharLiter(@NotNull WACCParser.CharLiterContext ctx) {
-        char value = ctx.CHAR_LITERAL().getText().charAt(0);
+        char value = ctx.CHAR_LITERAL().getText().charAt(1);
         return new CharLiterInstruction(value, currentReg);
     }
 

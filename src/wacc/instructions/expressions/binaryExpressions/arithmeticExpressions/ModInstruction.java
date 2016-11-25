@@ -24,6 +24,6 @@ public class ModInstruction extends BinaryExprInstruction {
         out.println("MOV r1, " + getExpr2String());
         //out.println("BL p_check_divide_by_zero");
         out.println("BL __aeabi_idivmod");
-        out.println("MOV " + getLocationString() + ", r0");
+        out.println("MOV " + getLocationString() + ", r1");
     }
 }
