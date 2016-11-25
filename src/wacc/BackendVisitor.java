@@ -285,14 +285,19 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         if(e != null) {
             return visit(e);
         }
-        boolean capped = false;
+        boolean capped = true;
         ExprInstruction i1 = (ExprInstruction) visit(ctx.expr6(0));
         if(currentReg < 10) {
             currentReg++;
-            capped = true;
+            capped = false;
+        } else {
+            stack.newScope();
+            stack.add("", null);
         }
         ExprInstruction i2 = (ExprInstruction) visit(ctx.expr6(1));
         if(capped) {
+            stack.descope();
+        } else {
             currentReg--;
         }
 
@@ -306,14 +311,19 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         if(e != null) {
             return visit(e);
         }
-        boolean capped = false;
+        boolean capped = true;
         ExprInstruction i1 = (ExprInstruction) visit(ctx.expr5(0));
         if(currentReg < 10) {
             currentReg++;
-            capped = true;
+            capped = false;
+        } else {
+            stack.newScope();
+            stack.add("", null);
         }
         ExprInstruction i2 = (ExprInstruction) visit(ctx.expr5(1));
         if(capped) {
+            stack.descope();
+        } else {
             currentReg--;
         }
         return new ANDInstruction(i1, i2, currentReg);
@@ -325,14 +335,19 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         if(e != null) {
             return visit(e);
         }
-        boolean capped = false;
+        boolean capped = true;
         ExprInstruction i1 = (ExprInstruction) visit(ctx.expr4(0));
         if(currentReg < 10) {
             currentReg++;
-            capped = true;
+            capped = false;
+        } else {
+            stack.newScope();
+            stack.add("", null);
         }
         ExprInstruction i2 = (ExprInstruction) visit(ctx.expr4(1));
         if(capped) {
+            stack.descope();
+        } else {
             currentReg--;
         }
         int op = ((TerminalNode) ctx.binaryOper4().getChild(0)).getSymbol().getType();
@@ -350,14 +365,19 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         if(e != null) {
             return visit(e);
         }
-        boolean capped = false;
+        boolean capped = true;
         ExprInstruction i1 = (ExprInstruction) visit(ctx.expr3(0));
         if(currentReg < 10) {
             currentReg++;
-            capped = true;
+            capped = false;
+        } else {
+            stack.newScope();
+            stack.add("", null);
         }
         ExprInstruction i2 = (ExprInstruction) visit(ctx.expr3(1));
         if(capped) {
+            stack.descope();
+        } else {
             currentReg--;
         }
         int op = ((TerminalNode) ctx.binaryOper3().getChild(0)).getSymbol().getType();
@@ -379,14 +399,19 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         if(e != null) {
             return visit(e);
         }
-        boolean capped = false;
+        boolean capped = true;
         ExprInstruction i1 = (ExprInstruction) visit(ctx.expr2(0));
         if(currentReg < 10) {
             currentReg++;
-            capped = true;
+            capped = false;
+        } else {
+            stack.newScope();
+            stack.add("", null);
         }
         ExprInstruction i2 = (ExprInstruction) visit(ctx.expr2(1));
         if(capped) {
+            stack.descope();
+        } else {
             currentReg--;
         }
         int op = ((TerminalNode) ctx.binaryOper2().getChild(0)).getSymbol().getType();
@@ -404,14 +429,19 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
             return visit(ctx.getChild(0));
         }
 
-        boolean capped = false;
+        boolean capped = true;
         ExprInstruction i1 = (ExprInstruction) visit(ctx.expr1(0));
         if(currentReg < 10) {
             currentReg++;
-            capped = true;
+            capped = false;
+        } else {
+            stack.newScope();
+            stack.add("", null);
         }
         ExprInstruction i2 = (ExprInstruction) visit(ctx.expr1(1));
         if(capped) {
+            stack.descope();
+        } else {
             currentReg--;
         }
         int op = ((TerminalNode) ctx.binaryOper1().getChild(0)).getSymbol().getType();
@@ -596,7 +626,8 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitExpr(@NotNull WACCParser.ExprContext ctx) {
-        return super.visitExpr(ctx);
+        Instruction i = super.visitExpr(ctx);
+        return i;
     }
 
     @Override
