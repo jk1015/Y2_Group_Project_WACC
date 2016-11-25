@@ -28,7 +28,7 @@ public class ArrayLiterInstruction implements LocatableInstruction {
         for (int i = 1; i <= elems.size(); i++) {
             ExprInstruction current = elems.get(i-1);
             current.toAssembly(out);
-            out.println("STR " + current.getLocationString() + ", [r4, " + i*4 + ']');
+            out.println("STR " + current.getLocationString() + ", [r4, #" + i*4 + ']');
         }
 
         out.println("LDR r5, =" + elems.size());

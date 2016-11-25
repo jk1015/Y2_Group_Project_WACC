@@ -7,6 +7,7 @@ import antlr.WACCParserBaseVisitor;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import wacc.instructions.*;
 import wacc.instructions.expressions.ExprInstruction;
+import wacc.instructions.expressions.PairLHSInstruction;
 import wacc.instructions.expressions.baseExpressions.*;
 import wacc.instructions.expressions.binaryExpressions.arithmeticExpressions.*;
 import wacc.instructions.expressions.binaryExpressions.comparatorExpressions.*;
@@ -487,7 +488,10 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitNewPair(@NotNull WACCParser.NewPairContext ctx) {
-        return super.visitNewPair(ctx);
+        ExprInstruction exprA = (ExprInstruction) visit(ctx.expr(0));
+        ExprInstruction exprB = (ExprInstruction) visit(ctx.expr(1));
+
+        return new NewPairInstruction(currentReg, exprA, exprB);
     }
 
     @Override
@@ -510,6 +514,21 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     public Instruction visitAssignLHS(@NotNull WACCParser.AssignLHSContext ctx) {
 
         return new AssignLHSInstruction((LocatableInstruction) visit(ctx.getChild(0)));
+    }
+
+    @Override
+    public Instruction visitPairElem(@NotNull WACCParser.PairElemContext ctx) {
+        TerminalNode pairOp = (TerminalNode) ctx.getChild(0);
+        int pairOpToken = pairOp.getSymbol().getType();
+        boolean isTokenFST = pairOpToken == WACCLexer.FST;
+
+        ExprInstruction expr = (ExprInstruction) visit(ctx.expr());
+
+        if (ctx.getParent() instanceof WACCParser.AssignRHSContext) {
+            return new PairRHSInstruction(isTokenFST, expr);
+        } else {
+            return new PairLHSInstruction(isTokenFST, expr);
+        }
     }
 
     @Override
@@ -562,18 +581,9 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         return super.visitBinaryOper6(ctx);
     }
 
+
     @Override
     public Instruction visitParam(@NotNull WACCParser.ParamContext ctx) {
         return super.visitParam(ctx);
-    }
-
-    @Override
-    public Instruction visitExpr(@NotNull WACCParser.ExprContext ctx) {
-        return super.visitExpr(ctx);
-    }
-
-    @Override
-    public Instruction visitPairElem(@NotNull WACCParser.PairElemContext ctx) {
-        return super.visitPairElem(ctx);
     }
 }
