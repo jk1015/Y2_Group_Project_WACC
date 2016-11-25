@@ -466,7 +466,6 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         for (WACCParser.ExprContext expr : exprs) {
             ExprInstruction exprIns = (ExprInstruction) visit(expr);
             elems.add(exprIns);
-            stack.add(expr.getText(), exprIns.getType());
         }
         currentReg--;
         return new ArrayLiterInstruction(elems, currentReg);
