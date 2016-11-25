@@ -624,13 +624,15 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
                     locationString, type, currentReg, exprs, numOfMsg);
             numOfMsg = array.setErrorChecking();
             arrayIns = array.getCanThrowRuntimeError();
+            addDataAndLabels(arrayIns);
+            return array;
         } else {
             ArrayElemInstruction array = new ArrayElemInstruction(locationString, type, currentReg, exprs, numOfMsg);
             numOfMsg = array.setErrorChecking();
             arrayIns = array.getCanThrowRuntimeError();
+            addDataAndLabels(arrayIns);
+            return array;
         }
-        addDataAndLabels(arrayIns);
-        return arrayIns;
     }
 
     @Override
@@ -696,13 +698,15 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
             PairRHSInstruction pair = new PairRHSInstruction(isTokenFST, expr, numOfMsg);
             numOfMsg = pair.setErrorChecking();
             pairIns = pair.getCanThrowRuntimeError();
+            addDataAndLabels(pairIns);
+            return pair;
         } else {
             PairLHSInstruction pair = new PairLHSInstruction(isTokenFST, expr, numOfMsg);
             numOfMsg = pair.setErrorChecking();
             pairIns = pair.getCanThrowRuntimeError();
+            addDataAndLabels(pairIns);
+            return pair;
         }
-        addDataAndLabels(pairIns);
-        return pairIns;
     }
 
     @Override
