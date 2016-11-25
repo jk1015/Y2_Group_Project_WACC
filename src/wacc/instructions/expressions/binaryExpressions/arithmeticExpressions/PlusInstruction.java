@@ -29,6 +29,10 @@ public class PlusInstruction extends BinaryExprInstruction {
     public int setCheckError() {
         numOfMsg = addDataAndLabels("p_throw_overflow_error",
                 "\"OverflowError: the result is too small/large to store in a 4-byte signed-integer.\\n\"");
+        numOfMsg = addDataAndLabels("p_throw_runtime_error",
+                "\"OverflowError: the result is too small/large to store in a 4-byte signed-integer.\\n\"");
+        numOfMsg = addDataAndLabels("p_throw_runtime_error", "\"DivideByZeroError:divide or modulo by zero\\n\\0\"");
+        numOfMsg = addDataAndLabels("p_print_string", "\"%.*s\\0\"");
         return numOfMsg;
     }
 }

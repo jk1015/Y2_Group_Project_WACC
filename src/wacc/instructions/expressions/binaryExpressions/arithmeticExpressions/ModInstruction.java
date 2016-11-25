@@ -30,6 +30,9 @@ public class ModInstruction extends BinaryExprInstruction {
     @Override
     public int setCheckError() {
         numOfMsg = addDataAndLabels("p_check_divide_by_zero", "\"DivideByZeroError:divide or modulo by zero\\n\\0\"");
+        numOfMsg = addDataAndLabels("p_throw_runtime_error", "\"DivideByZeroError:divide or modulo by zero\\n\\0\"");
+        numOfMsg = addDataAndLabels("p_throw_runtime_error", "\"DivideByZeroError:divide or modulo by zero\\n\\0\"");
+        numOfMsg = addDataAndLabels("p_print_string", "\"%.*s\\0\"");
         return numOfMsg;
     }
 }
