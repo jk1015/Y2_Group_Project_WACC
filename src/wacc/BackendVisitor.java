@@ -463,13 +463,13 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     public Instruction visitArrayLiter(@NotNull WACCParser.ArrayLiterContext ctx) {
         List<WACCParser.ExprContext> exprs = ctx.expr();
         List<ExprInstruction> elems = new LinkedList<>();
-
+        currentReg++;
         for (WACCParser.ExprContext expr : exprs) {
             ExprInstruction exprIns = (ExprInstruction) visit(expr);
             elems.add(exprIns);
             stack.add(expr.getText(), exprIns.getType());
         }
-
+        currentReg--;
         return new ArrayLiterInstruction(elems, currentReg);
     }
 
@@ -573,9 +573,10 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitNewPair(@NotNull WACCParser.NewPairContext ctx) {
+        currentReg++;
         ExprInstruction exprA = (ExprInstruction) visit(ctx.expr(0));
         ExprInstruction exprB = (ExprInstruction) visit(ctx.expr(1));
-
+        currentReg--;
         return new NewPairInstruction(currentReg, exprA, exprB);
     }
 
