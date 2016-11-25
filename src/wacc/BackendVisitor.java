@@ -490,7 +490,14 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitCharLiter(@NotNull WACCParser.CharLiterContext ctx) {
         char value = ctx.CHAR_LITERAL().getText().charAt(1);
-        return new CharLiterInstruction(value, currentReg);
+        String valStr;
+        if (value == '\\') {
+            value = ctx.CHAR_LITERAL().getText().charAt(2);
+            valStr = "" + EscapedCharacters.getAscii(value);
+        } else {
+            valStr = "\'" + value + "\'";
+        }
+        return new CharLiterInstruction(valStr, currentReg);
     }
 
     @Override

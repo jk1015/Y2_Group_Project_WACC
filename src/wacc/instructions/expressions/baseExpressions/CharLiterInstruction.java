@@ -11,9 +11,9 @@ import java.io.PrintStream;
 public class CharLiterInstruction extends ExprInstruction {
 
 
-    private char value;
+    private String value;
 
-    public CharLiterInstruction(char value, int register) {
+    public CharLiterInstruction(String value, int register) {
         super(register, PrimType.CHAR);
         this.value = value;
     }
@@ -21,7 +21,7 @@ public class CharLiterInstruction extends ExprInstruction {
     @Override
     public void toAssembly(PrintStream out) {
         out.print("MOV " + getLocationString() + ", ");
-        out.println("#'" + value + "'");
+        out.println("#" + value);
 
     }
 }
