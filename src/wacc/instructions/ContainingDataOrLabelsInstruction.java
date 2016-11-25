@@ -27,6 +27,10 @@ public  class ContainingDataOrLabelsInstruction implements Instruction {
         this.type = expr.getType();
     }
 
+    public ContainingDataOrLabelsInstruction(int numOfMsg) {
+        this.numOfMsg = numOfMsg;
+    }
+
     public ContainingDataOrLabelsInstruction() {
 
     }

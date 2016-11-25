@@ -265,7 +265,11 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         if(op == WACCLexer.NOT) {
             return new NotInstruction(i, currentReg);
         } else if (op == WACCLexer.MINUS) {
-            return new NegInstruction(i, currentReg);
+
+            NegInstruction negInstruction = new NegInstruction(i, currentReg,numOfMsg);
+            numOfMsg = negInstruction.setCheckError();
+            addDataAndLabels(negInstruction.getDataAndLabels());
+            return negInstruction;
         } else if (op == WACCLexer.LEN){
             return new LenInstruction(i, currentReg);
         } else if (op == WACCLexer.ORD) {
