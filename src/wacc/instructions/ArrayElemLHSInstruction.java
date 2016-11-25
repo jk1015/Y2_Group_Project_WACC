@@ -7,13 +7,15 @@ import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.List;
 
-public class ArrayElemLHSInstruction implements LocatableInstruction {
+public class ArrayElemLHSInstruction extends CanThrowRuntimeError implements LocatableInstruction{
     private final String locationString;
     private final Type type;
     private final int currentReg;
     private final List<ExprInstruction> exprs;
 
-    public ArrayElemLHSInstruction(String locationString, Type type, int currentReg, List<ExprInstruction> exprs) {
+    public ArrayElemLHSInstruction(String locationString, Type type,
+                                   int currentReg, List<ExprInstruction> exprs,int numOfMsg) {
+        super(numOfMsg);
         this.locationString = locationString;
         this.type = type;
         this.currentReg = currentReg;
@@ -56,5 +58,17 @@ public class ArrayElemLHSInstruction implements LocatableInstruction {
     @Override
     public Type getType() {
         return type;
+    }
+
+    @Override
+    public int setErrorChecking() {
+        String[] ascii = {"ArrayIndexOutOfBoundsError: negative index\n\0",
+                "ArrayIndexOutOfBoundsError: index too large\n\0"};
+        numOfMsg = addDataAndLabels("p_check_array_bounds", ascii);
+
+        numOfMsg = addDataAndLabels("p_throw_runtime_error", ascii);
+        String[] stringAscii = {"\"%.*s\\0\""};
+        numOfMsg = addDataAndLabels("p_print_string", stringAscii);
+        return numOfMsg;
     }
 }

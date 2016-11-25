@@ -6,12 +6,13 @@ import wacc.types.Type;
 
 import java.io.PrintStream;
 
-public class PairRHSInstruction implements LocatableInstruction {
+public class PairRHSInstruction extends CanThrowRuntimeError implements LocatableInstruction {
 
     private final boolean isTokenFST;
     private final ExprInstruction expr;
 
-    public PairRHSInstruction(boolean isTokenFST, ExprInstruction expr) {
+    public PairRHSInstruction(boolean isTokenFST, ExprInstruction expr, int numOfMsg) {
+        super(numOfMsg);
         this.isTokenFST = isTokenFST;
         this.expr = expr;
     }
@@ -42,5 +43,16 @@ public class PairRHSInstruction implements LocatableInstruction {
         } else {
             return ((PairType) expr.getType()).getType2();
         }
+    }
+
+    @Override
+    public int setErrorChecking() {
+        String[] ascii = {"NullReferenceError: dereference a null reference\n\0"};
+        numOfMsg = addDataAndLabels("BL p_check_null_pointer", ascii);
+
+        numOfMsg = addDataAndLabels("p_throw_runtime_error", ascii);
+        String[] stringAscii = {"\"%.*s\\0\""};
+        numOfMsg = addDataAndLabels("p_print_string", stringAscii);
+        return numOfMsg;
     }
 }

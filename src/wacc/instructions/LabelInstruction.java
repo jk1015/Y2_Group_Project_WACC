@@ -113,6 +113,20 @@ public class LabelInstruction implements Instruction{
                 out.println("MOV r0, #-1");
                 out.println("BL exit");
                 break;
+            case "p_check_array_bounds":
+                out.println("CMP r0, #0");
+                out.println("LDRLT r0, =" + msg[0]);
+                out.println("BLLT p_throw_runtime_error");
+                out.println("LDR r1, [r1]");
+                out.println("CMP r0, r1");
+                out.println("LDRCS r0, =" + msg[1]);
+                out.println("BLCS p_throw_runtime_error");
+                break;
+            case "p_check_null_pointer":
+                out.println("CMP r0, #0");
+                out.println("LDREQ r0, =" + msg[0]);
+                out.println("BLEQ p_throw_runtime_error");
+                break;
         }
 
     }

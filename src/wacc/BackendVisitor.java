@@ -557,12 +557,15 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         for (WACCParser.ExprContext e : ctx.expr()) {
             exprs.add((ExprInstruction) visit(e));
         }
-
+        CanThrowRuntimeError arrayIns;
         if (ctx.getParent() instanceof WACCParser.AssignLHSContext) {
-            return new ArrayElemLHSInstruction(locationString, type, currentReg, exprs);
+            arrayIns = new ArrayElemLHSInstruction(locationString, type, currentReg, exprs, numOfMsg);
         } else {
-            return new ArrayElemInstruction(locationString, type, currentReg, exprs);
+            arrayIns = new ArrayElemInstruction(locationString, type, currentReg, exprs, numOfMsg);
         }
+        numOfMsg = arrayIns.setErrorChecking();
+        addDataAndLabels(arrayIns);
+        return arrayIns;
     }
 
     @Override
@@ -622,11 +625,15 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
         ExprInstruction expr = (ExprInstruction) visit(ctx.expr());
 
+        CanThrowRuntimeError pairIns;
         if (ctx.getParent() instanceof WACCParser.AssignRHSContext) {
-            return new PairRHSInstruction(isTokenFST, expr);
+            pairIns = new PairRHSInstruction(isTokenFST, expr, numOfMsg);
         } else {
-            return new PairLHSInstruction(isTokenFST, expr);
+            pairIns = new PairLHSInstruction(isTokenFST, expr, numOfMsg);
         }
+        numOfMsg = pairIns.setErrorChecking();
+        addDataAndLabels(pairIns);
+        return pairIns;
     }
 
     @Override
