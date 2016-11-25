@@ -191,7 +191,10 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitBlockStat(@NotNull WACCParser.BlockStatContext ctx) {
-        return super.visitBlockStat(ctx);
+        stack.newScope();
+        Instruction ins = visit(ctx.stat());
+        int scopeSize = stack.descope();
+        return new BlockInstruction(ins, scopeSize);
     }
 
     @Override
