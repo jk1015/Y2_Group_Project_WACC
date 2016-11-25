@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Created by jaspreet on 25/11/16.
  */
-public class ArrayElemInstruction implements LocatableInstruction {
+public class ArrayElemInstruction extends ExprInstruction {
 
     private final String locationString;
     private final Type type;
@@ -18,6 +18,7 @@ public class ArrayElemInstruction implements LocatableInstruction {
     private final List<ExprInstruction> exprs;
 
     public ArrayElemInstruction(String locationString, Type type, int currentReg, List<ExprInstruction> exprs) {
+        super(currentReg, type);
         this.locationString = locationString;
         this.type = type;
         this.currentReg = currentReg;
