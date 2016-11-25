@@ -96,7 +96,6 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         for (WACCParser.ParamContext param: params) {
             String paramIdentifier = param.identifier().getText();
             WACCParser.TypeContext type = param.type();
-            //TODO IMMPLEMENT TYPES
             stack.add(paramIdentifier, parseType(type));
         }
 
