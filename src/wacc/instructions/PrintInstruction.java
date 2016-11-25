@@ -3,6 +3,7 @@ package wacc.instructions;
 
 import wacc.instructions.expressions.ExprInstruction;
 import wacc.instructions.expressions.baseExpressions.StringLiterInstruction;
+import wacc.types.ArrayType;
 import wacc.types.PrimType;
 import wacc.types.Type;
 
@@ -32,7 +33,8 @@ public class PrintInstruction extends ContainingDataOrLabelsInstruction {
                 numOfMsg++;
                 String[] namesOfMsg = {nameOfMsg};
                 setLabel(nameOfLabel, namesOfMsg);
-            } else {
+            } else if (type.checkType(PrimType.STRING) ||
+                    type.checkType(PrimType.BOOL)){
                 String nameOfMsg1;
                 String nameOfMsg2;
 
@@ -50,6 +52,11 @@ public class PrintInstruction extends ContainingDataOrLabelsInstruction {
                 }
                 String[] namesOfMsg = {nameOfMsg1, nameOfMsg2};
                 setLabel(nameOfLabel, namesOfMsg);
+            }else {
+                String nameOfMsg = setData(prefix + numOfMsg,"\"%p\\0\"");
+                numOfMsg++;
+                String[] namesOfMsg = {nameOfMsg};
+                setLabel(nameOfLabel, namesOfMsg);
             }
         }
         return numOfMsg;
@@ -60,15 +67,18 @@ public class PrintInstruction extends ContainingDataOrLabelsInstruction {
 
         if (type.checkType(PrimType.CHAR)) {
             return "putchar";
-        } else {
-            if (type.checkType(PrimType.INT)) {
+        } else if (type.checkType(PrimType.INT)) {
                 return string + "int";
-            } else if (type.checkType(PrimType.BOOL)) {
+        } else if (type.checkType(PrimType.BOOL)) {
                 return string + "bool";
-            } else {
+        } else if (type.checkType(PrimType.STRING)){
                 return string + "string";
-            }
+        }else {
+            return "p_print_reference";
         }
+
     }
 
 }
+
+
