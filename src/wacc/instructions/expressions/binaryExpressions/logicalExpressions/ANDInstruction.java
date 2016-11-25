@@ -20,7 +20,7 @@ public class ANDInstruction extends BinaryExprInstruction {
     @Override
     public void toAssembly(PrintStream out) {
         super.toAssembly(out);
-        out.println(" " + getLocationString() + ", "
+        out.println("AND " + getLocationString() + ", "
                 + getExpr1String() + ", " + getExpr2String());
     }
 }

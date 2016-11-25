@@ -16,6 +16,7 @@ public class MemoryStack {
         this.scopeSizes = new LinkedList<>();
     }
 
+
     public void newScope() {
         scopeSizes.push(0);
     }
