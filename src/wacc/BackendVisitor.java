@@ -245,7 +245,8 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitFreeStat(@NotNull WACCParser.FreeStatContext ctx) {
-        return super.visitFreeStat(ctx);
+        ExprInstruction expr = (ExprInstruction) visit(ctx.expr());
+        return new FreeInstruction(expr);
     }
 
     @Override
