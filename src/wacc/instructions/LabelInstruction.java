@@ -18,6 +18,12 @@ public class LabelInstruction implements Instruction{
         if (name.equals("putchar")){
             return;
         }
+        if (name.equals("p_throw_overflow_error") || name.equals("p_throw_runtime_error")){
+            out.println();
+            out.println(name + ":");
+            assembly(out);
+            return;
+        }
         out.println();
         out.println(name + ":");
         out.println("PUSH {lr}");
@@ -89,7 +95,20 @@ public class LabelInstruction implements Instruction{
                 out.println("MOV r0, #0");
                 out.println("BL fflush");
                 break;
-
+            case "p_throw_overflow_error":
+                out.println("LDR r0, =" + msg[0]);
+                out.println("BL p_throw_runtime_error");
+                break;
+            case "p_check_divide_by_zero":
+                out.println("CMP r1, #0");
+                out.println("LDREQ r0, =" + msg[0]);
+                out.println("BLEQ p_throw_runtime_error");
+                break;
+            case "p_throw_runtime_error":
+                out.println("BL p_print_string");
+                out.println("MOV r0, #-1");
+                out.println("BL exit");
+                break;
         }
 
     }

@@ -34,7 +34,7 @@ public class ReadInstruction extends ContainingDataOrLabelsInstruction {
         out.println("ADD "  + "sp, sp, #4");
 
     }
-    
+
     public int addDataAndLabels() {
         String prefix = "msg_";
         if (type.checkType(PrimType.CHAR)) {
