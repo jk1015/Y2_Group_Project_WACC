@@ -10,9 +10,11 @@ import java.util.List;
 public class ArrayLiterInstruction implements LocatableInstruction {
 
     private final List<ExprInstruction> elems;
+    private final int currentReg;
 
-    public ArrayLiterInstruction(List<ExprInstruction> elems) {
+    public ArrayLiterInstruction(List<ExprInstruction> elems, int currentReg) {
         this.elems = elems;
+        this.currentReg = currentReg;
     }
 
     @Override
@@ -20,15 +22,14 @@ public class ArrayLiterInstruction implements LocatableInstruction {
         // sets number of bytes required for allocation
         out.println("LDR r0 =" + (elems.size()+1) * 4);
 
-        // TODO write malloc at end
         out.println("BL malloc");
 
-        out.println("MOV r4, r0");
+        out.println("MOV r" + currentReg + ", r0");
 
         for (int i = 1; i <= elems.size(); i++) {
             ExprInstruction current = elems.get(i-1);
             current.toAssembly(out);
-            out.println("STR " + current.getLocationString() + ", [r4, #" + i*4 + ']');
+            out.println("STR " + current.getLocationString() + ", [r" + currentReg + ", #" + i*4 + ']');
         }
 
         out.println("LDR r5, =" + elems.size());
