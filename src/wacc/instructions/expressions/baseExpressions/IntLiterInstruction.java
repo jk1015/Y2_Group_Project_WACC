@@ -7,9 +7,9 @@ import java.io.PrintStream;
 
 public class IntLiterInstruction extends ExprInstruction {
 
-    private int value;
+    private String value;
 
-    public IntLiterInstruction(int value, int register) {
+    public IntLiterInstruction(String value, int register) {
         super(register, PrimType.INT);
         this.value = value;
     }
