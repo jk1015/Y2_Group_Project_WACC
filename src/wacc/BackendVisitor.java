@@ -502,7 +502,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitIntLiter(@NotNull WACCParser.IntLiterContext ctx) {
         String value = ctx.getText();
-        value = value.replaceFirst("(?<=^(\\+-)?)0+(?!$)", "");
+        value = value.replaceFirst("(?<=^[\\+-]?)0+(?!$)", "");
 
         return new IntLiterInstruction(value, currentReg);
     }
