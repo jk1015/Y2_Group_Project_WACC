@@ -9,20 +9,26 @@ import java.util.List;
 /**
  * Created by jaspreet on 25/11/16.
  */
-public class ArrayElemInstruction extends CanThrowRuntimeError implements LocatableInstruction {
+
+public class ArrayElemInstruction extends ExprInstruction {
 
     private final String locationString;
     private final Type type;
     private final int currentReg;
     private final List<ExprInstruction> exprs;
+    private CanThrowRuntimeError canThrowRuntimeError;
+    private int numOfMsg;
+
 
     public ArrayElemInstruction(String locationString, Type type,
                                 int currentReg, List<ExprInstruction> exprs, int numOfMsg) {
-        super(numOfMsg);
+        super(currentReg, type);
         this.locationString = locationString;
         this.type = type;
         this.currentReg = currentReg;
         this.exprs = exprs;
+        this.numOfMsg = numOfMsg;
+        this.canThrowRuntimeError = new CanThrowRuntimeError(numOfMsg);
     }
 
     @Override
@@ -51,15 +57,18 @@ public class ArrayElemInstruction extends CanThrowRuntimeError implements Locata
         return type;
     }
 
-    @Override
     public int setErrorChecking() {
         String[] ascii = {"ArrayIndexOutOfBoundsError: negative index\n\0",
                 "ArrayIndexOutOfBoundsError: index too large\n\0"};
-        numOfMsg = addDataAndLabels("p_check_array_bounds", ascii);
+        numOfMsg = canThrowRuntimeError.addDataAndLabels("p_check_array_bounds", ascii);
 
-        numOfMsg = addDataAndLabels("p_throw_runtime_error", ascii);
+        numOfMsg = canThrowRuntimeError.addDataAndLabels("p_throw_runtime_error", ascii);
         String[] stringAscii = {"\"%.*s\\0\""};
-        numOfMsg = addDataAndLabels("p_print_string", stringAscii);
+        numOfMsg = canThrowRuntimeError.addDataAndLabels("p_print_string", stringAscii);
         return numOfMsg;
+    }
+
+    public CanThrowRuntimeError getCanThrowRuntimeError(){
+        return canThrowRuntimeError;
     }
 }

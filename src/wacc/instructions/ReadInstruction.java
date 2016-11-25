@@ -27,12 +27,15 @@ public class ReadInstruction extends ContainingDataOrLabelsInstruction {
 
     @Override
     public void toAssembly(PrintStream out) {
-
-        out.println("ADD " + lhsInstruction.getLocationString() + ", sp, #0");
-        out.println("MOV " + " r0," + lhsInstruction.getLocationString());
-        out.println("BL " + nameOfLabel);
-        out.println("ADD "  + "sp, sp, #4");
-
+        lhsInstruction.toAssembly(out);
+        String offset = lhsInstruction.getOffsetString();
+        if(offset == null) {
+            out.println("MOV " + "r0, " + lhsInstruction.getLocationString());
+            out.println("BL " + nameOfLabel);
+        } else {
+            out.println("ADD " + "r0" + ", sp, " + offset);
+            out.println("BL " + nameOfLabel);
+        }
     }
 
     public int addDataAndLabels() {

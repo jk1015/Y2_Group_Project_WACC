@@ -6,15 +6,18 @@ import wacc.types.Type;
 
 import java.io.PrintStream;
 
-public class PairRHSInstruction extends CanThrowRuntimeError implements LocatableInstruction {
+public class PairRHSInstruction implements LocatableInstruction {
 
     private final boolean isTokenFST;
     private final ExprInstruction expr;
+    private CanThrowRuntimeError canThrowRuntimeError;
+    private int numOfMsg;
 
     public PairRHSInstruction(boolean isTokenFST, ExprInstruction expr, int numOfMsg) {
-        super(numOfMsg);
         this.isTokenFST = isTokenFST;
         this.expr = expr;
+        this.numOfMsg = numOfMsg;
+        this.canThrowRuntimeError = new CanThrowRuntimeError(numOfMsg);
     }
 
     @Override
@@ -45,14 +48,17 @@ public class PairRHSInstruction extends CanThrowRuntimeError implements Locatabl
         }
     }
 
-    @Override
     public int setErrorChecking() {
         String[] ascii = {"NullReferenceError: dereference a null reference\n\0"};
-        numOfMsg = addDataAndLabels("BL p_check_null_pointer", ascii);
+        numOfMsg = canThrowRuntimeError.addDataAndLabels("BL p_check_null_pointer", ascii);
 
-        numOfMsg = addDataAndLabels("p_throw_runtime_error", ascii);
+        numOfMsg = canThrowRuntimeError.addDataAndLabels("p_throw_runtime_error", ascii);
         String[] stringAscii = {"\"%.*s\\0\""};
-        numOfMsg = addDataAndLabels("p_print_string", stringAscii);
+        numOfMsg = canThrowRuntimeError.addDataAndLabels("p_print_string", stringAscii);
         return numOfMsg;
+    }
+
+    public CanThrowRuntimeError getCanThrowRuntimeError(){
+        return canThrowRuntimeError;
     }
 }

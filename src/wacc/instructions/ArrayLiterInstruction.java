@@ -20,7 +20,7 @@ public class ArrayLiterInstruction implements LocatableInstruction {
     @Override
     public void toAssembly(PrintStream out) {
         // sets number of bytes required for allocation
-        out.println("LDR r0 =" + (elems.size()+1) * 4);
+        out.println("LDR r0, =" + (elems.size()+1) * 4);
 
         out.println("BL malloc");
 
@@ -32,12 +32,13 @@ public class ArrayLiterInstruction implements LocatableInstruction {
             out.println("STR " + current.getLocationString() + ", [r" + currentReg + ", #" + i*4 + ']');
         }
 
-        out.println("LDR r5, =" + elems.size());
+        out.println("LDR r" + (currentReg + 1) +", =" + elems.size());
+        out.println("STR r" + (currentReg + 1) + ", " + "[" + "r" + currentReg + "]");
     }
 
     @Override
     public String getLocationString() {
-        return "r5";
+        return "r" + currentReg;
     }
 
     @Override
