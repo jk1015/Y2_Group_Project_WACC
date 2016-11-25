@@ -18,6 +18,12 @@ public class LabelInstruction implements Instruction{
         if (name.equals("putchar")){
             return;
         }
+        if (name.equals("p_throw_overflow_error") || name.equals("p_throw_runtime_error")){
+            out.println();
+            out.println(name + ":");
+            assembly(out);
+            return;
+        }
         out.println();
         out.println(name + ":");
         out.println("PUSH {lr}");
@@ -74,7 +80,11 @@ public class LabelInstruction implements Instruction{
             case "p_print_string":
                 out.println("LDR r1, [r0]");
                 out.println("ADD r2, r0, #4");
-                out.println("LDR r0, =" + msg[1]);
+                if (msg.length<2){
+                    out.println("LDR r0, =" + msg[0]);
+                }else {
+                    out.println("LDR r0, =" + msg[1]);
+                }
                 out.println("ADD r0, r0, #4");
                 out.println("BL printf");
                 out.println("MOV r0, #0");
@@ -89,7 +99,34 @@ public class LabelInstruction implements Instruction{
                 out.println("MOV r0, #0");
                 out.println("BL fflush");
                 break;
-
+            case "p_throw_overflow_error":
+                out.println("LDR r0, =" + msg[0]);
+                out.println("BL p_throw_runtime_error");
+                break;
+            case "p_check_divide_by_zero":
+                out.println("CMP r1, #0");
+                out.println("LDREQ r0, =" + msg[0]);
+                out.println("BLEQ p_throw_runtime_error");
+                break;
+            case "p_throw_runtime_error":
+                out.println("BL p_print_string");
+                out.println("MOV r0, #-1");
+                out.println("BL exit");
+                break;
+            case "p_check_array_bounds":
+                out.println("CMP r0, #0");
+                out.println("LDRLT r0, =" + msg[0]);
+                out.println("BLLT p_throw_runtime_error");
+                out.println("LDR r1, [r1]");
+                out.println("CMP r0, r1");
+                out.println("LDRCS r0, =" + msg[1]);
+                out.println("BLCS p_throw_runtime_error");
+                break;
+            case "p_check_null_pointer":
+                out.println("CMP r0, #0");
+                out.println("LDREQ r0, =" + msg[0]);
+                out.println("BLEQ p_throw_runtime_error");
+                break;
         }
 
     }

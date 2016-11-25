@@ -9,6 +9,7 @@ import wacc.instructions.*;
 import wacc.instructions.expressions.ExprInstruction;
 import wacc.instructions.PairLHSInstruction;
 import wacc.instructions.expressions.baseExpressions.*;
+import wacc.instructions.expressions.binaryExpressions.BinaryExprInstruction;
 import wacc.instructions.expressions.binaryExpressions.arithmeticExpressions.*;
 import wacc.instructions.expressions.binaryExpressions.comparatorExpressions.*;
 import wacc.instructions.expressions.binaryExpressions.logicalExpressions.ANDInstruction;
@@ -302,7 +303,8 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     public Instruction visitPrintlnStat(@NotNull WACCParser.PrintlnStatContext ctx) {
         ExprInstruction expr = (ExprInstruction) visitExpr(ctx.expr());
         PrintlnInstruction print = new PrintlnInstruction(expr,numOfMsg);
-        numOfMsg = print.addDataAndLabels();;
+        print.addDataAndLabels();
+        numOfMsg += 3;
         addDataAndLabels(print);
         return print;
     }
@@ -477,11 +479,16 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
             currentReg--;
         }
         int op = ((TerminalNode) ctx.binaryOper2().getChild(0)).getSymbol().getType();
+        BinaryExprInstruction plusOrMinus;
         if(op == WACCLexer.PLUS) {
-            return new PlusInstruction(i1, i2, currentReg);
+            plusOrMinus = new PlusInstruction(i1, i2, currentReg,numOfMsg);
         } else {
-            return new MinusInstruction(i1, i2, currentReg);
+            plusOrMinus = new MinusInstruction(i1, i2, currentReg,numOfMsg);
         }
+        numOfMsg = plusOrMinus.setCheckError();
+        ContainingDataOrLabelsInstruction dataAndLabels = plusOrMinus.getErrorPrint();
+        addDataAndLabels(dataAndLabels);
+        return plusOrMinus;
     }
 
     @Override
@@ -507,13 +514,19 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
             currentReg--;
         }
         int op = ((TerminalNode) ctx.binaryOper1().getChild(0)).getSymbol().getType();
+
+        BinaryExprInstruction binaryOp;
         if(op == WACCLexer.MULTIPLY) {
-            return new MultiplyInstruction(i1, i2, currentReg, currentReg + 1);
+            binaryOp = new MultiplyInstruction(i1, i2, currentReg, currentReg + 1,numOfMsg);
         } else if (op == WACCLexer.DIVIDE) {
-            return new DivideInstruction(i1, i2, currentReg);
-        }  else {
-            return new ModInstruction(i1, i2, currentReg);
+            binaryOp = new DivideInstruction(i1, i2, currentReg,numOfMsg);
+        } else {
+            binaryOp = new ModInstruction(i1, i2, currentReg,numOfMsg);
         }
+        numOfMsg = binaryOp.setCheckError();
+        ContainingDataOrLabelsInstruction dataAndLabels = binaryOp.getErrorPrint();
+        addDataAndLabels(dataAndLabels);
+        return binaryOp;
     }
 
     @Override
@@ -529,7 +542,6 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         for (WACCParser.ExprContext expr : exprs) {
             ExprInstruction exprIns = (ExprInstruction) visit(expr);
             elems.add(exprIns);
-            stack.add(expr.getText(), exprIns.getType());
         }
         currentReg--;
         return new ArrayLiterInstruction(elems, currentReg);
@@ -553,7 +565,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitIntLiter(@NotNull WACCParser.IntLiterContext ctx) {
         String value = ctx.getText();
-        value = value.replaceFirst("0+(?!$)", "");
+        value = value.replaceFirst("(?<=^[\\+-]?)0+(?!$)", "");
 
         return new IntLiterInstruction(value, currentReg);
     }
@@ -606,12 +618,19 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         for (WACCParser.ExprContext e : ctx.expr()) {
             exprs.add((ExprInstruction) visit(e));
         }
-
+        CanThrowRuntimeError arrayIns;
         if (ctx.getParent() instanceof WACCParser.AssignLHSContext) {
-            return new ArrayElemLHSInstruction(locationString, type, currentReg, exprs);
+            ArrayElemLHSInstruction array = new ArrayElemLHSInstruction(
+                    locationString, type, currentReg, exprs, numOfMsg);
+            numOfMsg = array.setErrorChecking();
+            arrayIns = array.getCanThrowRuntimeError();
         } else {
-            return new ArrayElemInstruction(locationString, type, currentReg, exprs);
+            ArrayElemInstruction array = new ArrayElemInstruction(locationString, type, currentReg, exprs, numOfMsg);
+            numOfMsg = array.setErrorChecking();
+            arrayIns = array.getCanThrowRuntimeError();
         }
+        addDataAndLabels(arrayIns);
+        return arrayIns;
     }
 
     @Override
@@ -672,11 +691,18 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
         ExprInstruction expr = (ExprInstruction) visit(ctx.expr());
 
+        CanThrowRuntimeError pairIns;
         if (ctx.getParent() instanceof WACCParser.AssignRHSContext) {
-            return new PairRHSInstruction(isTokenFST, expr);
+            PairRHSInstruction pair = new PairRHSInstruction(isTokenFST, expr, numOfMsg);
+            numOfMsg = pair.setErrorChecking();
+            pairIns = pair.getCanThrowRuntimeError();
         } else {
-            return new PairLHSInstruction(isTokenFST, expr);
+            PairLHSInstruction pair = new PairLHSInstruction(isTokenFST, expr, numOfMsg);
+            numOfMsg = pair.setErrorChecking();
+            pairIns = pair.getCanThrowRuntimeError();
         }
+        addDataAndLabels(pairIns);
+        return pairIns;
     }
 
     @Override

@@ -23,4 +23,9 @@ public class ORInstruction extends BinaryExprInstruction {
         out.println("ORR " + getLocationString() + ", "
                 + getExpr1String() + ", " + getExpr2String());
     }
+
+    @Override
+    public int setCheckError() {
+        return 0;
+    }
 }

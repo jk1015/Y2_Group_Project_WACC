@@ -10,10 +10,14 @@ public class PairRHSInstruction implements LocatableInstruction {
 
     private final boolean isTokenFST;
     private final ExprInstruction expr;
+    private CanThrowRuntimeError canThrowRuntimeError;
+    private int numOfMsg;
 
-    public PairRHSInstruction(boolean isTokenFST, ExprInstruction expr) {
+    public PairRHSInstruction(boolean isTokenFST, ExprInstruction expr, int numOfMsg) {
         this.isTokenFST = isTokenFST;
         this.expr = expr;
+        this.numOfMsg = numOfMsg;
+        this.canThrowRuntimeError = new CanThrowRuntimeError(numOfMsg);
     }
 
     @Override
@@ -42,5 +46,19 @@ public class PairRHSInstruction implements LocatableInstruction {
         } else {
             return ((PairType) expr.getType()).getType2();
         }
+    }
+
+    public int setErrorChecking() {
+        String[] ascii = {"NullReferenceError: dereference a null reference\n\0"};
+        numOfMsg = canThrowRuntimeError.addDataAndLabels("BL p_check_null_pointer", ascii);
+
+        numOfMsg = canThrowRuntimeError.addDataAndLabels("p_throw_runtime_error", ascii);
+        String[] stringAscii = {"\"%.*s\\0\""};
+        numOfMsg = canThrowRuntimeError.addDataAndLabels("p_print_string", stringAscii);
+        return numOfMsg;
+    }
+
+    public CanThrowRuntimeError getCanThrowRuntimeError(){
+        return canThrowRuntimeError;
     }
 }
