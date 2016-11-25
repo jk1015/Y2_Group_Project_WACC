@@ -7,16 +7,14 @@ import antlr.WACCParserBaseVisitor;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import wacc.instructions.*;
 import wacc.instructions.expressions.ExprInstruction;
-import wacc.instructions.expressions.PairLHSInstruction;
+import wacc.instructions.PairLHSInstruction;
 import wacc.instructions.expressions.baseExpressions.*;
 import wacc.instructions.expressions.binaryExpressions.arithmeticExpressions.*;
 import wacc.instructions.expressions.binaryExpressions.comparatorExpressions.*;
 import wacc.instructions.expressions.binaryExpressions.logicalExpressions.ANDInstruction;
 import wacc.instructions.expressions.binaryExpressions.logicalExpressions.ORInstruction;
 import wacc.instructions.expressions.unaryExpressions.*;
-import wacc.types.NullType;
-import wacc.types.PrimType;
-import wacc.types.Type;
+import wacc.types.*;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -407,7 +405,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
             stack.add(expr.getText(), exprIns.getType());
         }
 
-        return new ArrayLiterInstruction(elems);
+        return new ArrayLiterInstruction(elems, currentReg);
     }
 
     @Override
@@ -464,7 +462,20 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitArrayElem(@NotNull WACCParser.ArrayElemContext ctx) {
-        return super.visitArrayElem(ctx);
+        String id = ctx.identifier().getText();
+        String locationString = stack.getLocationString(id);
+        Type type = ((ArrayType)stack.getType(id)).getContentsType();
+
+        List<ExprInstruction> exprs = new LinkedList<>();
+        for (WACCParser.ExprContext e : ctx.expr()) {
+            exprs.add((ExprInstruction) visit(e));
+        }
+
+        if (ctx.getParent() instanceof WACCParser.AssignLHSContext) {
+            return new ArrayElemLHSInstruction(locationString, type, currentReg, exprs);
+        } else {
+            return new ArrayElemInstruction(locationString, type, currentReg, exprs);
+        }
     }
 
     @Override

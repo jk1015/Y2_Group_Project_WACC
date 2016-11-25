@@ -1,7 +1,6 @@
-package wacc.instructions.expressions;
+package wacc.instructions;
 
-import wacc.instructions.Instruction;
-import wacc.instructions.LocatableInstruction;
+import wacc.instructions.expressions.ExprInstruction;
 import wacc.types.PairType;
 import wacc.types.Type;
 
@@ -37,7 +36,7 @@ public class PairLHSInstruction implements LocatableInstruction {
         out.println(expr);
         out.println("MOV r0, " + exprLocation);
         out.println("BL p_check_null_pointer");
-        out.println("STR " + exprLocation + ", " + exprLocation);
+        out.println("LDR " + exprLocation + ", [" + exprLocation + "]");
         if (!isTokenFST) {
             out.println("ADD " + exprLocation + ", " + exprLocation + ", #4");
         }

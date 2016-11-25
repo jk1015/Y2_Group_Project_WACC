@@ -22,11 +22,11 @@ public class PairRHSInstruction implements LocatableInstruction {
         expr.toAssembly(out);
         out.println("MOV r0, " + exprLocation);
         out.println("BL p_check_null_pointer");
-        out.println("STR " + exprLocation + ", [" + exprLocation + "]");
+        out.println("LDR " + exprLocation + ", [" + exprLocation + "]");
         if (isTokenFST) {
-            out.println("STR " + exprLocation + ", [" + exprLocation + "]");
+            out.println("LDR " + exprLocation + ", [" + exprLocation + "]");
         } else {
-            out.println("STR " + exprLocation + ", [" + exprLocation + ", #4]");
+            out.println("LDR " + exprLocation + ", [" + exprLocation + ", #4]");
         }
     }
 
