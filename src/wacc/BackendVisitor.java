@@ -191,7 +191,10 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitBlockStat(@NotNull WACCParser.BlockStatContext ctx) {
-        return super.visitBlockStat(ctx);
+        stack.newScope();
+        Instruction ins = visit(ctx.stat());
+        int scopeSize = stack.descope();
+        return new BlockInstruction(ins, scopeSize);
     }
 
     @Override
@@ -416,7 +419,8 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitIntLiter(@NotNull WACCParser.IntLiterContext ctx) {
-        int value = Integer.parseInt(ctx.INT().getText());
+        String value = ctx.INT().getText();
+        value.replaceFirst("^0+(?!$)", "");
         return new IntLiterInstruction(value, currentReg);
     }
 
