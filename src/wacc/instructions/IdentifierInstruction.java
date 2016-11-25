@@ -23,6 +23,14 @@ public class IdentifierInstruction implements LocatableInstruction {
         return location;
     }
 
+    public String getOffsetString() {
+        if (location.length() == 4) {
+            return "#0";
+        } else {
+            return "#" + location.substring(7, location.length() - 1);
+        }
+    }
+
     @Override
     public Type getType() {
         return type;

@@ -18,7 +18,7 @@ public class PairLHSInstruction implements LocatableInstruction {
 
     @Override
     public String getLocationString() {
-        return "[" + expr.getLocationString() + "]";
+        return expr.getLocationString();
     }
 
     @Override

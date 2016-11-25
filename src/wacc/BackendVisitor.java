@@ -44,7 +44,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
         if (dataInstructions != null){
             for (DataInstruction dataIns : dataInstructions){
-             if (!data.contains(dataIns)){
+             if (true){
                  data.add(dataIns);
              }
             }
@@ -156,7 +156,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         Type varType = parseType(type);
 
         stack.add(var, varType);
-        return new InitAssignInstruction(expr, stack.getLocationString(var));
+        return new InitAssignInstruction(expr, stack.getOffsetString(var));
     }
 
     private Type parseType(@NotNull WACCParser.TypeContext type) {
@@ -462,13 +462,13 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     public Instruction visitArrayLiter(@NotNull WACCParser.ArrayLiterContext ctx) {
         List<WACCParser.ExprContext> exprs = ctx.expr();
         List<ExprInstruction> elems = new LinkedList<>();
-
+        currentReg++;
         for (WACCParser.ExprContext expr : exprs) {
             ExprInstruction exprIns = (ExprInstruction) visit(expr);
             elems.add(exprIns);
             stack.add(expr.getText(), exprIns.getType());
         }
-
+        currentReg--;
         return new ArrayLiterInstruction(elems, currentReg);
     }
 
@@ -536,7 +536,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitArrayElem(@NotNull WACCParser.ArrayElemContext ctx) {
         String id = ctx.identifier().getText();
-        String locationString = stack.getLocationString(id);
+        String locationString = stack.getOffsetString(id);
         Type type = ((ArrayType)stack.getType(id)).getContentsType();
 
         List<ExprInstruction> exprs = new LinkedList<>();
@@ -559,7 +559,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitIdentifier(@NotNull WACCParser.IdentifierContext ctx) {
         String id = ctx.IDENTIFIER().getText();
-        String locationString = stack.getLocationString(id);
+        String locationString = stack.getOffsetString(id);
         Type type = stack.getType(id);
         if (ctx.getParent() instanceof WACCParser.BaseExprContext) {
             return new IdentifierExprInstruction(locationString, type, currentReg);
@@ -572,9 +572,10 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitNewPair(@NotNull WACCParser.NewPairContext ctx) {
+        currentReg++;
         ExprInstruction exprA = (ExprInstruction) visit(ctx.expr(0));
         ExprInstruction exprB = (ExprInstruction) visit(ctx.expr(1));
-
+        currentReg--;
         return new NewPairInstruction(currentReg, exprA, exprB);
     }
 
