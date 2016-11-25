@@ -28,4 +28,9 @@ public class ComparatorExprInstruction extends BinaryExprInstruction {
         out.println(trueCon + getLocationString() + ", #1");
         out.println(falseCon + getLocationString() + ", #0");
     }
+
+    @Override
+    public int setCheckError() {
+        return 0;
+    }
 }

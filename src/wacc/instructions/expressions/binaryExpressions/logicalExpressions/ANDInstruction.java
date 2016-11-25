@@ -23,4 +23,9 @@ public class ANDInstruction extends BinaryExprInstruction {
         out.println(" " + getLocationString() + ", "
                 + getExpr1String() + ", " + getExpr2String());
     }
+
+    @Override
+    public int setCheckError() {
+        return 0;
+    }
 }

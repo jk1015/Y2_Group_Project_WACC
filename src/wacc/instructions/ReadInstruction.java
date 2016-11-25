@@ -34,17 +34,19 @@ public class ReadInstruction extends ContainingDataOrLabelsInstruction {
         out.println("ADD "  + "sp, sp, #4");
 
     }
-
-    @Override
+    
     public int addDataAndLabels() {
+        String prefix = "msg_";
         if (type.checkType(PrimType.CHAR)) {
-            String nameOfMsg = setData("\" %c\\0\"");
+            String nameOfMsg = setData(prefix + numOfMsg,"\" %c\\0\"");
+            numOfMsg++;
             String[] namesOfMsg = {nameOfMsg};
             setLabel(nameOfLabel, namesOfMsg);
         }else if (type.checkType(PrimType.INT)) {
-                String nameOfMsg = setData("\"%d\\0\"");
-                String[] namesOfMsg = {nameOfMsg};
-                setLabel(nameOfLabel, namesOfMsg);
+            String nameOfMsg = setData(prefix + numOfMsg,"\"%d\\0\"");
+            numOfMsg++;
+            String[] namesOfMsg = {nameOfMsg};
+            setLabel(nameOfLabel, namesOfMsg);
         }
         return numOfMsg;
         }

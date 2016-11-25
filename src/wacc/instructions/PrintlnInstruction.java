@@ -20,10 +20,12 @@ import java.io.PrintStream;
         @Override
         public int addDataAndLabels() {
             numOfMsg = super.addDataAndLabels();
-            String nameOfMsg1 = setData("\"\\0\"");
+            String nameOfMsg1 = setData("msg_" + numOfMsg,"\"\\0\"");
             String[] namesOfMsg = {nameOfMsg1};
             setLabel("p_print_ln",namesOfMsg);
             return numOfMsg;
         }
+
+
     }
 

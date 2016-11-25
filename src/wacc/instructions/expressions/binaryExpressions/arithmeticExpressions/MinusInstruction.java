@@ -12,8 +12,8 @@ import java.io.PrintStream;
 public class MinusInstruction extends BinaryExprInstruction {
 
 
-    public MinusInstruction(ExprInstruction expr1, ExprInstruction expr2, int register) {
-        super(expr1, expr2, register, PrimType.INT);
+    public MinusInstruction(ExprInstruction expr1, ExprInstruction expr2, int register,int numOfMsg) {
+        super(expr1, expr2, register, PrimType.INT,numOfMsg);
     }
 
 
@@ -22,7 +22,13 @@ public class MinusInstruction extends BinaryExprInstruction {
         super.toAssembly(out);
         out.println("SUBS " + getLocationString() + ", "
                 + getExpr1String() + ", " + getExpr2String());
-        //TODO Implement error
-        //out.println("BLVS p_throw_overflow_error");
+        out.println("BLVS p_throw_overflow_error");
+    }
+
+    @Override
+    public int setCheckError() {
+        numOfMsg = addDataAndLabels("p_throw_overflow_error",
+                "\"OverflowError: the result is too small/large to store in a 4-byte signed-integer.\\n\"");
+        return numOfMsg;
     }
 }

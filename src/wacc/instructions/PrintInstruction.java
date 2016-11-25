@@ -25,9 +25,11 @@ public class PrintInstruction extends ContainingDataOrLabelsInstruction {
     }
 
     public int addDataAndLabels() {
+        String prefix = "msg_";
         if (!type.checkType(PrimType.CHAR)) {
             if (type.checkType(PrimType.INT)) {
-                String nameOfMsg = setData("\"%d\\0\"");
+                String nameOfMsg = setData(prefix + numOfMsg,"\"%d\\0\"");
+                numOfMsg++;
                 String[] namesOfMsg = {nameOfMsg};
                 setLabel(nameOfLabel, namesOfMsg);
             } else {
@@ -35,18 +37,38 @@ public class PrintInstruction extends ContainingDataOrLabelsInstruction {
                 String nameOfMsg2;
 
                 if (type.checkType(PrimType.STRING)) {
-                    nameOfMsg1 = setData(((StringLiterInstruction) expr).getStringLiter());
-                    nameOfMsg2 = setData("\"%.*s\\0\"");
+                    nameOfMsg1 = setData(prefix + numOfMsg,((StringLiterInstruction) expr).getStringLiter());
+                    numOfMsg++;
+                    nameOfMsg2 = setData(prefix + numOfMsg,"\"%.*s\\0\"");
+                    numOfMsg++;
 
                 } else {
-                    nameOfMsg1 = setData("\"true\\0\"");
-                    nameOfMsg2 = setData("\"false\\0\"");
+                    nameOfMsg1 = setData(prefix + numOfMsg,"\"true\\0\"");
+                    numOfMsg++;
+                    nameOfMsg2 = setData(prefix + numOfMsg,"\"false\\0\"");
+                    numOfMsg++;
                 }
                 String[] namesOfMsg = {nameOfMsg1, nameOfMsg2};
                 setLabel(nameOfLabel, namesOfMsg);
             }
         }
         return numOfMsg;
+    }
+
+    protected String getType(String string, ExprInstruction exprIns) {
+        Type type = exprIns.getType();
+
+        if (type.checkType(PrimType.CHAR)) {
+            return "putchar";
+        } else {
+            if (type.checkType(PrimType.INT)) {
+                return string + "int";
+            } else if (type.checkType(PrimType.BOOL)) {
+                return string + "bool";
+            } else {
+                return string + "string";
+            }
+        }
     }
 
 }

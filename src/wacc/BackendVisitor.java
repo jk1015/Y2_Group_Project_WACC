@@ -8,6 +8,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import wacc.instructions.*;
 import wacc.instructions.expressions.ExprInstruction;
 import wacc.instructions.expressions.baseExpressions.*;
+import wacc.instructions.expressions.binaryExpressions.BinaryExprInstruction;
 import wacc.instructions.expressions.binaryExpressions.arithmeticExpressions.*;
 import wacc.instructions.expressions.binaryExpressions.comparatorExpressions.*;
 import wacc.instructions.expressions.binaryExpressions.logicalExpressions.ANDInstruction;
@@ -228,7 +229,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitPrintStat(@NotNull WACCParser.PrintStatContext ctx) {
         ExprInstruction expr = (ExprInstruction) visitExpr(ctx.expr());
-        PrintInstruction print = new PrintInstruction(expr,numOfMsg - 1);
+        PrintInstruction print = new PrintInstruction(expr,numOfMsg);
         numOfMsg = print.addDataAndLabels();
         addDataAndLabels(print);
         return print;
@@ -237,7 +238,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitPrintlnStat(@NotNull WACCParser.PrintlnStatContext ctx) {
         ExprInstruction expr = (ExprInstruction) visitExpr(ctx.expr());
-        PrintlnInstruction print = new PrintlnInstruction(expr,numOfMsg - 1);
+        PrintlnInstruction print = new PrintlnInstruction(expr,numOfMsg);
         print.addDataAndLabels();
         numOfMsg += 3;
         addDataAndLabels(print);
@@ -362,11 +363,16 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         ExprInstruction i2 = (ExprInstruction) visit(ctx.expr2(1));
         currentReg--;
         int op = ((TerminalNode) ctx.binaryOper2().getChild(0)).getSymbol().getType();
+        BinaryExprInstruction plusOrMinus;
         if(op == WACCLexer.PLUS) {
-            return new PlusInstruction(i1, i2, currentReg);
+            plusOrMinus = new PlusInstruction(i1, i2, currentReg,numOfMsg);
         } else {
-            return new MinusInstruction(i1, i2, currentReg);
+            plusOrMinus = new MinusInstruction(i1, i2, currentReg,numOfMsg);
         }
+        numOfMsg = plusOrMinus.setCheckError();
+        ContainingDataOrLabelsInstruction dataAndLabels = plusOrMinus.getErrorPrint();
+        addDataAndLabels(dataAndLabels);
+        return plusOrMinus;
     }
 
     @Override
@@ -381,13 +387,19 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         ExprInstruction i2 = (ExprInstruction) visit(ctx.expr1(1));
         currentReg--;
         int op = ((TerminalNode) ctx.binaryOper1().getChild(0)).getSymbol().getType();
+
+        BinaryExprInstruction binaryOp;
         if(op == WACCLexer.MULTIPLY) {
-            return new MultiplyInstruction(i1, i2, currentReg, currentReg + 1);
+            binaryOp = new MultiplyInstruction(i1, i2, currentReg, currentReg + 1,numOfMsg);
         } else if (op == WACCLexer.DIVIDE) {
-            return new DivideInstruction(i1, i2, currentReg);
-        }  else {
-            return new ModInstruction(i1, i2, currentReg);
+            binaryOp = new DivideInstruction(i1, i2, currentReg,numOfMsg);
+        } else {
+            binaryOp = new ModInstruction(i1, i2, currentReg,numOfMsg);
         }
+        numOfMsg = binaryOp.setCheckError();
+        ContainingDataOrLabelsInstruction dataAndLabels = binaryOp.getErrorPrint();
+        addDataAndLabels(dataAndLabels);
+        return binaryOp;
     }
 
     @Override
