@@ -7,6 +7,7 @@ import antlr.WACCParserBaseVisitor;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import wacc.instructions.*;
 import wacc.instructions.expressions.ExprInstruction;
+import wacc.instructions.PairLHSInstruction;
 import wacc.instructions.expressions.baseExpressions.*;
 import wacc.instructions.expressions.binaryExpressions.BinaryExprInstruction;
 import wacc.instructions.expressions.binaryExpressions.arithmeticExpressions.*;
@@ -14,9 +15,7 @@ import wacc.instructions.expressions.binaryExpressions.comparatorExpressions.*;
 import wacc.instructions.expressions.binaryExpressions.logicalExpressions.ANDInstruction;
 import wacc.instructions.expressions.binaryExpressions.logicalExpressions.ORInstruction;
 import wacc.instructions.expressions.unaryExpressions.*;
-import wacc.types.NullType;
-import wacc.types.PrimType;
-import wacc.types.Type;
+import wacc.types.*;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -192,7 +191,10 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitBlockStat(@NotNull WACCParser.BlockStatContext ctx) {
-        return super.visitBlockStat(ctx);
+        stack.newScope();
+        Instruction ins = visit(ctx.stat());
+        int scopeSize = stack.descope();
+        return new BlockInstruction(ins, scopeSize);
     }
 
     @Override
@@ -247,7 +249,8 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitFreeStat(@NotNull WACCParser.FreeStatContext ctx) {
-        return super.visitFreeStat(ctx);
+        ExprInstruction expr = (ExprInstruction) visit(ctx.expr());
+        return new FreeInstruction(expr);
     }
 
     @Override
@@ -284,11 +287,22 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         if(e != null) {
             return visit(e);
         }
-
+        boolean capped = true;
         ExprInstruction i1 = (ExprInstruction) visit(ctx.expr6(0));
-        currentReg++;
+        if(currentReg < 10) {
+            currentReg++;
+            capped = false;
+        } else {
+            stack.newScope();
+            stack.add("", null);
+        }
         ExprInstruction i2 = (ExprInstruction) visit(ctx.expr6(1));
-        currentReg--;
+        if(capped) {
+            stack.descope();
+        } else {
+            currentReg--;
+        }
+
         return new ORInstruction(i1, i2, currentReg);
 
     }
@@ -299,11 +313,21 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         if(e != null) {
             return visit(e);
         }
-
+        boolean capped = true;
         ExprInstruction i1 = (ExprInstruction) visit(ctx.expr5(0));
-        currentReg++;
+        if(currentReg < 10) {
+            currentReg++;
+            capped = false;
+        } else {
+            stack.newScope();
+            stack.add("", null);
+        }
         ExprInstruction i2 = (ExprInstruction) visit(ctx.expr5(1));
-        currentReg--;
+        if(capped) {
+            stack.descope();
+        } else {
+            currentReg--;
+        }
         return new ANDInstruction(i1, i2, currentReg);
     }
 
@@ -313,11 +337,21 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         if(e != null) {
             return visit(e);
         }
-
+        boolean capped = true;
         ExprInstruction i1 = (ExprInstruction) visit(ctx.expr4(0));
-        currentReg++;
+        if(currentReg < 10) {
+            currentReg++;
+            capped = false;
+        } else {
+            stack.newScope();
+            stack.add("", null);
+        }
         ExprInstruction i2 = (ExprInstruction) visit(ctx.expr4(1));
-        currentReg--;
+        if(capped) {
+            stack.descope();
+        } else {
+            currentReg--;
+        }
         int op = ((TerminalNode) ctx.binaryOper4().getChild(0)).getSymbol().getType();
         if(op == WACCLexer.EQ) {
             return new EQInstruction(i1, i2, currentReg);
@@ -333,11 +367,21 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         if(e != null) {
             return visit(e);
         }
-
+        boolean capped = true;
         ExprInstruction i1 = (ExprInstruction) visit(ctx.expr3(0));
-        currentReg++;
+        if(currentReg < 10) {
+            currentReg++;
+            capped = false;
+        } else {
+            stack.newScope();
+            stack.add("", null);
+        }
         ExprInstruction i2 = (ExprInstruction) visit(ctx.expr3(1));
-        currentReg--;
+        if(capped) {
+            stack.descope();
+        } else {
+            currentReg--;
+        }
         int op = ((TerminalNode) ctx.binaryOper3().getChild(0)).getSymbol().getType();
         if(op == WACCLexer.GT) {
             return new GTInstruction(i1, i2, currentReg);
@@ -357,11 +401,21 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         if(e != null) {
             return visit(e);
         }
-
+        boolean capped = true;
         ExprInstruction i1 = (ExprInstruction) visit(ctx.expr2(0));
-        currentReg++;
+        if(currentReg < 10) {
+            currentReg++;
+            capped = false;
+        } else {
+            stack.newScope();
+            stack.add("", null);
+        }
         ExprInstruction i2 = (ExprInstruction) visit(ctx.expr2(1));
-        currentReg--;
+        if(capped) {
+            stack.descope();
+        } else {
+            currentReg--;
+        }
         int op = ((TerminalNode) ctx.binaryOper2().getChild(0)).getSymbol().getType();
         BinaryExprInstruction plusOrMinus;
         if(op == WACCLexer.PLUS) {
@@ -382,10 +436,21 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
             return visit(ctx.getChild(0));
         }
 
+        boolean capped = true;
         ExprInstruction i1 = (ExprInstruction) visit(ctx.expr1(0));
-        currentReg++;
+        if(currentReg < 10) {
+            currentReg++;
+            capped = false;
+        } else {
+            stack.newScope();
+            stack.add("", null);
+        }
         ExprInstruction i2 = (ExprInstruction) visit(ctx.expr1(1));
-        currentReg--;
+        if(capped) {
+            stack.descope();
+        } else {
+            currentReg--;
+        }
         int op = ((TerminalNode) ctx.binaryOper1().getChild(0)).getSymbol().getType();
 
         BinaryExprInstruction binaryOp;
@@ -409,7 +474,16 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitArrayLiter(@NotNull WACCParser.ArrayLiterContext ctx) {
-        return super.visitArrayLiter(ctx);
+        List<WACCParser.ExprContext> exprs = ctx.expr();
+        List<ExprInstruction> elems = new LinkedList<>();
+
+        for (WACCParser.ExprContext expr : exprs) {
+            ExprInstruction exprIns = (ExprInstruction) visit(expr);
+            elems.add(exprIns);
+            stack.add(expr.getText(), exprIns.getType());
+        }
+
+        return new ArrayLiterInstruction(elems, currentReg);
     }
 
     @Override
@@ -429,14 +503,23 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitIntLiter(@NotNull WACCParser.IntLiterContext ctx) {
-        int value = Integer.parseInt(ctx.INT().getText());
+        String value = ctx.getText();
+        value = value.replaceFirst("0+(?!$)", "");
+
         return new IntLiterInstruction(value, currentReg);
     }
 
     @Override
     public Instruction visitCharLiter(@NotNull WACCParser.CharLiterContext ctx) {
-        char value = ctx.CHAR_LITERAL().getText().charAt(0);
-        return new CharLiterInstruction(value, currentReg);
+        char value = ctx.CHAR_LITERAL().getText().charAt(1);
+        String valStr;
+        if (value == '\\') {
+            value = ctx.CHAR_LITERAL().getText().charAt(2);
+            valStr = "" + EscapedCharacters.getAscii(value);
+        } else {
+            valStr = "\'" + value + "\'";
+        }
+        return new CharLiterInstruction(valStr, currentReg);
     }
 
     @Override
@@ -466,7 +549,20 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitArrayElem(@NotNull WACCParser.ArrayElemContext ctx) {
-        return super.visitArrayElem(ctx);
+        String id = ctx.identifier().getText();
+        String locationString = stack.getLocationString(id);
+        Type type = ((ArrayType)stack.getType(id)).getContentsType();
+
+        List<ExprInstruction> exprs = new LinkedList<>();
+        for (WACCParser.ExprContext e : ctx.expr()) {
+            exprs.add((ExprInstruction) visit(e));
+        }
+
+        if (ctx.getParent() instanceof WACCParser.AssignLHSContext) {
+            return new ArrayElemLHSInstruction(locationString, type, currentReg, exprs);
+        } else {
+            return new ArrayElemInstruction(locationString, type, currentReg, exprs);
+        }
     }
 
     @Override
@@ -490,7 +586,10 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitNewPair(@NotNull WACCParser.NewPairContext ctx) {
-        return super.visitNewPair(ctx);
+        ExprInstruction exprA = (ExprInstruction) visit(ctx.expr(0));
+        ExprInstruction exprB = (ExprInstruction) visit(ctx.expr(1));
+
+        return new NewPairInstruction(currentReg, exprA, exprB);
     }
 
     @Override
@@ -513,6 +612,21 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     public Instruction visitAssignLHS(@NotNull WACCParser.AssignLHSContext ctx) {
 
         return new AssignLHSInstruction((LocatableInstruction) visit(ctx.getChild(0)));
+    }
+
+    @Override
+    public Instruction visitPairElem(@NotNull WACCParser.PairElemContext ctx) {
+        TerminalNode pairOp = (TerminalNode) ctx.getChild(0);
+        int pairOpToken = pairOp.getSymbol().getType();
+        boolean isTokenFST = pairOpToken == WACCLexer.FST;
+
+        ExprInstruction expr = (ExprInstruction) visit(ctx.expr());
+
+        if (ctx.getParent() instanceof WACCParser.AssignRHSContext) {
+            return new PairRHSInstruction(isTokenFST, expr);
+        } else {
+            return new PairLHSInstruction(isTokenFST, expr);
+        }
     }
 
     @Override
@@ -565,18 +679,10 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         return super.visitBinaryOper6(ctx);
     }
 
+
     @Override
     public Instruction visitParam(@NotNull WACCParser.ParamContext ctx) {
         return super.visitParam(ctx);
     }
 
-    @Override
-    public Instruction visitExpr(@NotNull WACCParser.ExprContext ctx) {
-        return super.visitExpr(ctx);
-    }
-
-    @Override
-    public Instruction visitPairElem(@NotNull WACCParser.PairElemContext ctx) {
-        return super.visitPairElem(ctx);
-    }
 }

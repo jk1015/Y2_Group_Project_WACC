@@ -31,7 +31,14 @@ public abstract class BinaryExprInstruction extends ExprInstruction {
 
     public void toAssembly(PrintStream out) {
         expr1.toAssembly(out);
+        if(expr1.getLocationString().equals("r10")) {
+            out.println("PUSH {r10}");
+        }
         expr2.toAssembly(out);
+        if(expr1.getLocationString().equals("r10")) {
+            out.println("POP {r11}");
+            expr1.setRegister(11);
+        }
     }
 
     public abstract int setCheckError();

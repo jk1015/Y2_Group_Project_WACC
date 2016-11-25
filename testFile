@@ -70,6 +70,10 @@ actual = `#{runCmd}`
 File.delete(assembled)
 acExit = $?.exitstatus
 exExit = getExitCode(ARGV[0])
+if (acExit == 1) then
+  puts "Failed to assemble."
+  exit(1)
+end
 if (acExit != exExit) then
   puts "Expected error code #{exExit} got #{acExit}"
   exit(150)

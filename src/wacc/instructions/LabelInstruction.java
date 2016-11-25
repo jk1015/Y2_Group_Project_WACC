@@ -78,7 +78,7 @@ public class LabelInstruction implements Instruction{
                 out.println("BL fflush");
                 break;
             case "p_print_string":
-                out.println("LDR r1, r0 ");
+                out.println("LDR r1, [r0]");
                 out.println("ADD r2, r0, #4");
                 if (msg.length<2){
                     out.println("LDR r0, =" + msg[0]);
