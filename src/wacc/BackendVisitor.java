@@ -159,26 +159,89 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         return new InitAssignInstruction(expr, stack.getOffsetString(var));
     }
 
-    private Type parseType(@NotNull WACCParser.TypeContext type) {
+    private Type parseType(WACCParser.TypeContext type) {
 
-        Type varType = new NullType();
-        if(type.getChild(0) instanceof WACCParser.BaseTypeContext) {
-            int t = ((TerminalNode) (type.getChild(0)).getChild(0)).getSymbol().getType();
-            if(t == WACCLexer.BOOL_TYPE) {
-                varType = PrimType.BOOL;
-            } else if (t == WACCLexer.INT_TYPE) {
-                varType = PrimType.INT;
-            } else if (t == WACCLexer.CHAR_TYPE) {
-                varType = PrimType.CHAR;
-            } else {
-                varType = PrimType.STRING;
-            }
+        Type varType;
+
+        if(type.arrayType() != null) {
+            varType = parseArrayType(type.arrayType());
+        } else if(type.pairType() != null) {
+            varType = parsePairType(type.pairType());
+        } else {
+            varType = parseBaseType(type.baseType());
         }
 
-        //TODO IMPLEMENT ARRAY AND PAIR TYPES
+        return varType;
+
+    }
+
+
+    private Type parseBaseType(@NotNull WACCParser.BaseTypeContext type) {
+
+        Type varType;
+
+        int t = ((TerminalNode) type.getChild(0)).getSymbol().getType();
+
+        if(t == WACCLexer.BOOL_TYPE) {
+            varType = PrimType.BOOL;
+        } else if (t == WACCLexer.INT_TYPE) {
+            varType = PrimType.INT;
+        } else if (t == WACCLexer.CHAR_TYPE) {
+           varType = PrimType.CHAR;
+        } else {
+            varType = PrimType.STRING;
+        }
+
 
         return varType;
     }
+
+    private Type parseArrayType(@NotNull WACCParser.ArrayTypeContext type) {
+
+        Type varType;
+        int dimension = type.CLOSE_SQUARE().size();
+
+
+        if(type.pairType() != null) {
+            varType = parsePairType(type.pairType());
+        } else {
+            varType = parseBaseType(type.baseType());
+        }
+
+        for (int i = 0; i < dimension; i++) {
+            varType = new ArrayType(varType);
+        }
+
+        return varType;
+    }
+
+    private Type parsePairType(@NotNull WACCParser.PairTypeContext type) {
+
+        Type type1;
+        Type type2;
+        WACCParser.PairElemTypeContext t1 = type.pairElemType(0);
+        WACCParser.PairElemTypeContext t2 = type.pairElemType(1);
+
+        if(t1.baseType() != null) {
+            type1 = parseBaseType(t1.baseType());
+        } else if (t1.arrayType() != null) {
+            type1 = parseArrayType(t1.arrayType());
+        } else {
+            type1 = new NullType();
+        }
+
+        if(t2.baseType() != null) {
+            type2 = parseBaseType(t2.baseType());
+        } else if (t2.arrayType() != null) {
+            type2 = parseArrayType(t2.arrayType());
+        } else {
+            type2 = new NullType();
+        }
+
+        return new PairType(type1, type2);
+    }
+
+
 
     @Override
     public Instruction visitAssignStat(@NotNull WACCParser.AssignStatContext ctx) {
@@ -537,7 +600,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     public Instruction visitArrayElem(@NotNull WACCParser.ArrayElemContext ctx) {
         String id = ctx.identifier().getText();
         String locationString = stack.getOffsetString(id);
-        Type type = ((ArrayType)stack.getType(id)).getContentsType();
+        Type type = ((ArrayType) stack.getType(id)).getContentsType();
 
         List<ExprInstruction> exprs = new LinkedList<>();
         for (WACCParser.ExprContext e : ctx.expr()) {
