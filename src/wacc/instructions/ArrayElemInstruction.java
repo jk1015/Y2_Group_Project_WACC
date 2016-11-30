@@ -33,18 +33,18 @@ public class ArrayElemInstruction extends ExprInstruction {
 
     @Override
     public void toAssembly(PrintStream out) {
-        out.println("LDR r" + currentReg + " " +  locationString);
+        out.println("ADD r" + currentReg + ", sp, #" + locationString);
         for (ExprInstruction expr : exprs) {
             expr.toAssembly(out);
-            out.println("MOV r0, r" + currentReg);
-            out.println("MOV r1, " + expr.getLocationString());
+            out.println("LDR r" + currentReg + ", [r" + currentReg + "]");
+            out.println("MOV r0, " + expr.getLocationString());
+            out.println("MOV r1, r" + currentReg);
             out.println("BL p_check_array_bounds");
             out.println("ADD r" + currentReg + ", r" + currentReg + ", #4");
-            out.println("ADD r" + currentReg + ", r" + currentReg + " " + expr.getLocationString() + ", LSL #2");
-            out.println("LDR r" + currentReg + ", [r" + currentReg + "]");
+            out.println("ADD r" + currentReg + ", r" + currentReg + ", " + expr.getLocationString() + ", LSL #2");
+
         }
-
-
+        out.println("LDR r" + currentReg + ", [r" + currentReg + "]");
     }
 
     @Override
@@ -58,8 +58,8 @@ public class ArrayElemInstruction extends ExprInstruction {
     }
 
     public int setErrorChecking() {
-        String[] ascii = {"\"ArrayIndexOutOfBoundsError: negative index\\0\"",
-                "\"ArrayIndexOutOfBoundsError: index too large\\0\""};
+        String[] ascii = {"\"ArrayIndexOutOfBoundsError: negative index\\n\\0\"",
+                "\"ArrayIndexOutOfBoundsError: index too large\\n\\0\""};
         numOfMsg = canThrowRuntimeError.addDataAndLabels("p_check_array_bounds", ascii);
 
         numOfMsg = canThrowRuntimeError.addDataAndLabels("p_throw_runtime_error", ascii);

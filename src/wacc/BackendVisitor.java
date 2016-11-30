@@ -613,21 +613,26 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitArrayElem(@NotNull WACCParser.ArrayElemContext ctx) {
-        currentReg++;
+
         String id = ctx.identifier().getText();
 
         String locationString = "" + stack.get(id);
 
-        Type type = ((ArrayType) stack.getType(id)).getContentsType();
+        Type type = stack.getType(id);
+
+        for(TerminalNode c:ctx.CLOSE_SQUARE()) {
+            type = ((ArrayType) type).getContentsType();
+        }
 
         List<ExprInstruction> exprs = new LinkedList<>();
-        currentReg++;
+        currentReg += 2;
         for (WACCParser.ExprContext e : ctx.expr()) {
             exprs.add((ExprInstruction) visit(e));
         }
-        currentReg--;
+        currentReg -= 2;
         CanThrowRuntimeError arrayIns;
         if (ctx.getParent() instanceof WACCParser.AssignLHSContext) {
+            currentReg++;
             ArrayElemLHSInstruction array = new ArrayElemLHSInstruction(
                     locationString, type, currentReg, exprs, numOfMsg);
             numOfMsg = array.setErrorChecking();

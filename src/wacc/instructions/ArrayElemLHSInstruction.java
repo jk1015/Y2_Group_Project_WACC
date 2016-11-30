@@ -40,7 +40,7 @@ public class ArrayElemLHSInstruction implements LocatableInstruction{
         out.println("ADD r" + currentReg + ", r" + currentReg + ", #4");
         out.println("ADD r" + currentReg + ", r" + currentReg + ", " + current.getLocationString() + ", LSL #2");
 
-        while (it.hasNext()) {
+        while (it.hasNext() ) {
             out.println("LDR r" + currentReg + ", [r" + currentReg + "]");
             current = it.next();
             current.toAssembly(out);
@@ -64,8 +64,8 @@ public class ArrayElemLHSInstruction implements LocatableInstruction{
     }
 
     public int setErrorChecking() {
-        String[] ascii = {"\"ArrayIndexOutOfBoundsError: negative index\\0\"",
-                "\"ArrayIndexOutOfBoundsError: index too large\\0\""};
+        String[] ascii = {"\"ArrayIndexOutOfBoundsError: negative index\\n\\0\"",
+                "\"ArrayIndexOutOfBoundsError: index too large\\n\\0\""};
         numOfMsg = canThrowRuntimeError.addDataAndLabels("p_check_array_bounds", ascii);
 
         numOfMsg = canThrowRuntimeError.addDataAndLabels("p_throw_runtime_error", ascii);
