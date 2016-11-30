@@ -1,16 +1,14 @@
 package wacc.instructions;
 
 
-import wacc.instructions.statement.ContainingDataOrLabelsInstruction;
-
 public class CanThrowRuntimeError extends ContainingDataOrLabelsInstruction {
 
-    public CanThrowRuntimeError(int numOfMsg){
+    protected CanThrowRuntimeError(int numOfMsg){
         this.numOfMsg = numOfMsg;
     }
 
 
-    public int addDataAndLabels(String name, String[] ascii) {
+    protected int addDataAndLabels(String name, String[] ascii) {
         String prefix = "msg_";
         String[] namesOfMsg = new String[ascii.length];
         for (int i = 0; i<ascii.length; i++){
