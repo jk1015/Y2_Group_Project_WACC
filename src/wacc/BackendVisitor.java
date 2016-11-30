@@ -706,20 +706,22 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         int pairOpToken = pairOp.getSymbol().getType();
         boolean isTokenFST = pairOpToken == WACCLexer.FST;
 
-        ExprInstruction expr = (ExprInstruction) visit(ctx.expr());
-
         CanThrowRuntimeError pairIns;
         if (ctx.getParent() instanceof WACCParser.AssignRHSContext) {
+            ExprInstruction expr = (ExprInstruction) visit(ctx.expr());
             PairRHSInstruction pair = new PairRHSInstruction(isTokenFST, expr, numOfMsg);
             numOfMsg = pair.setErrorChecking();
             pairIns = pair.getCanThrowRuntimeError();
             addDataAndLabels(pairIns);
             return pair;
         } else {
+            currentReg++;
+            ExprInstruction expr = (ExprInstruction) visit(ctx.expr());
             PairLHSInstruction pair = new PairLHSInstruction(isTokenFST, expr, numOfMsg);
             numOfMsg = pair.setErrorChecking();
             pairIns = pair.getCanThrowRuntimeError();
             addDataAndLabels(pairIns);
+            currentReg--;
             return pair;
         }
     }

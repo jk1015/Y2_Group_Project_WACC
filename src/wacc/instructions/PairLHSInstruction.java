@@ -23,7 +23,7 @@ public class PairLHSInstruction implements LocatableInstruction {
 
     @Override
     public String getLocationString() {
-        return expr.getLocationString();
+        return "[" + expr.getLocationString() + "]";
     }
 
     @Override
@@ -38,7 +38,7 @@ public class PairLHSInstruction implements LocatableInstruction {
     @Override
     public void toAssembly(PrintStream out) {
         String exprLocation = expr.getLocationString();
-        out.println(expr);
+        expr.toAssembly(out);
         out.println("MOV r0, " + exprLocation);
         out.println("BL p_check_null_pointer");
         out.println("LDR " + exprLocation + ", [" + exprLocation + "]");
@@ -48,8 +48,8 @@ public class PairLHSInstruction implements LocatableInstruction {
     }
 
     public int setErrorChecking() {
-        String[] ascii = {"NullReferenceError: dereference a null reference\n\0"};
-        numOfMsg = canThrowRuntimeError.addDataAndLabels("BL p_check_null_pointer", ascii);
+        String[] ascii = {"\"NullReferenceError: dereference a null reference\\n\\0\""};
+        numOfMsg = canThrowRuntimeError.addDataAndLabels("p_check_null_pointer", ascii);
 
         numOfMsg = canThrowRuntimeError.addDataAndLabels("p_throw_runtime_error", ascii);
         String[] stringAscii = {"\"%.*s\\0\""};

@@ -49,8 +49,8 @@ public class PairRHSInstruction implements LocatableInstruction {
     }
 
     public int setErrorChecking() {
-        String[] ascii = {"NullReferenceError: dereference a null reference\n\0"};
-        numOfMsg = canThrowRuntimeError.addDataAndLabels("BL p_check_null_pointer", ascii);
+        String[] ascii = {"\"NullReferenceError: dereference a null reference\\n\\0\""};
+        numOfMsg = canThrowRuntimeError.addDataAndLabels("p_check_null_pointer", ascii);
 
         numOfMsg = canThrowRuntimeError.addDataAndLabels("p_throw_runtime_error", ascii);
         String[] stringAscii = {"\"%.*s\\0\""};
