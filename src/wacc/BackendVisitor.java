@@ -160,6 +160,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         return new InitAssignInstruction(expr, stack.getOffsetString(var));
     }
 
+
     private Type parseType(WACCParser.TypeContext type) {
 
         Type varType;
@@ -175,7 +176,6 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         return varType;
 
     }
-
 
     private Type parseBaseType(@NotNull WACCParser.BaseTypeContext type) {
 
@@ -241,7 +241,6 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
         return new PairType(type1, type2);
     }
-
 
 
     @Override
@@ -614,27 +613,39 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitArrayElem(@NotNull WACCParser.ArrayElemContext ctx) {
+
         String id = ctx.identifier().getText();
-        String locationString = stack.getOffsetString(id);
-        Type type = ((ArrayType) stack.getType(id)).getContentsType();
+
+        String locationString = "" + stack.get(id);
+
+        Type type = stack.getType(id);
+
+        for(TerminalNode c:ctx.CLOSE_SQUARE()) {
+            type = ((ArrayType) type).getContentsType();
+        }
 
         List<ExprInstruction> exprs = new LinkedList<>();
+        currentReg += 2;
         for (WACCParser.ExprContext e : ctx.expr()) {
             exprs.add((ExprInstruction) visit(e));
         }
+        currentReg -= 2;
         CanThrowRuntimeError arrayIns;
         if (ctx.getParent() instanceof WACCParser.AssignLHSContext) {
+            currentReg++;
             ArrayElemLHSInstruction array = new ArrayElemLHSInstruction(
                     locationString, type, currentReg, exprs, numOfMsg);
             numOfMsg = array.setErrorChecking();
             arrayIns = array.getCanThrowRuntimeError();
             addDataAndLabels(arrayIns);
+            currentReg--;
             return array;
         } else {
             ArrayElemInstruction array = new ArrayElemInstruction(locationString, type, currentReg, exprs, numOfMsg);
             numOfMsg = array.setErrorChecking();
             arrayIns = array.getCanThrowRuntimeError();
             addDataAndLabels(arrayIns);
+            currentReg--;
             return array;
         }
     }
