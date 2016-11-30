@@ -21,6 +21,7 @@ import wacc.instructions.statement.*;
 import wacc.types.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -31,7 +32,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     private List<DataInstruction> data = new ArrayList<>();
     private List<LabelInstruction> labels = new ArrayList<>();
-    private int numOfMsg = 0;
+    private HashMap<String,String> dataMap = new HashMap<>();
 
     private int currentReg;
 
@@ -47,12 +48,11 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         ArrayList<LabelInstruction> labelInstructions = ins.getLabel();
 
         if (dataInstructions != null){
-            for (DataInstruction dataIns : dataInstructions){
-             if (true){
-                 data.add(dataIns);
-             }
+            for (DataInstruction dataInstruction : dataInstructions){
+                if (!data.contains(dataInstruction)){
+                    data.add(dataInstruction);
+                }
             }
-
         }
 
         if (labelInstructions != null){
@@ -287,28 +287,27 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitReadStat(@NotNull WACCParser.ReadStatContext ctx) {
         AssignLHSInstruction assignLHSInstruction = (AssignLHSInstruction) visitAssignLHS(ctx.assignLHS());
-        ReadInstruction readInstruction = new ReadInstruction(assignLHSInstruction,numOfMsg);
-        numOfMsg = readInstruction.addDataAndLabels();
-        addDataAndLabels(readInstruction);
+        ReadInstruction readInstruction = new ReadInstruction(assignLHSInstruction,dataMap);
+        dataMap = readInstruction.addDataAndLabels();
+        addDataAndLabels(readInstruction.getDataAndLabels());
         return readInstruction;
     }
 
     @Override
     public Instruction visitPrintStat(@NotNull WACCParser.PrintStatContext ctx) {
         ExprInstruction expr = (ExprInstruction) visitExpr(ctx.expr());
-        PrintInstruction print = new PrintInstruction(expr,numOfMsg);
-        numOfMsg = print.addDataAndLabels();
-        addDataAndLabels(print);
+        PrintInstruction print = new PrintInstruction(expr,dataMap);
+        dataMap = print.addDataAndLabels();
+        addDataAndLabels(print.getDataAndLabels());
         return print;
     }
 
     @Override
     public Instruction visitPrintlnStat(@NotNull WACCParser.PrintlnStatContext ctx) {
         ExprInstruction expr = (ExprInstruction) visitExpr(ctx.expr());
-        PrintlnInstruction print = new PrintlnInstruction(expr,numOfMsg);
-        print.addDataAndLabels();
-        numOfMsg += 3;
-        addDataAndLabels(print);
+        PrintlnInstruction print = new PrintlnInstruction(expr,dataMap);
+        dataMap = print.addDataAndLabels();
+        addDataAndLabels(print.getDataAndLabels());
         return print;
     }
 
@@ -332,8 +331,8 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
             return new NotInstruction(i, currentReg);
         } else if (op == WACCLexer.MINUS) {
 
-            NegInstruction negInstruction = new NegInstruction(i, currentReg,numOfMsg);
-            numOfMsg = negInstruction.setCheckError();
+            NegInstruction negInstruction = new NegInstruction(i, currentReg,dataMap);
+            dataMap = negInstruction.setCheckError();
             addDataAndLabels(negInstruction.getDataAndLabels());
             return negInstruction;
         } else if (op == WACCLexer.LEN){
@@ -488,11 +487,11 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         int op = ((TerminalNode) ctx.binaryOper2().getChild(0)).getSymbol().getType();
         BinaryExprInstruction plusOrMinus;
         if(op == WACCLexer.PLUS) {
-            plusOrMinus = new PlusInstruction(i1, i2, currentReg,numOfMsg);
+            plusOrMinus = new PlusInstruction(i1, i2, currentReg,dataMap);
         } else {
-            plusOrMinus = new MinusInstruction(i1, i2, currentReg,numOfMsg);
+            plusOrMinus = new MinusInstruction(i1, i2, currentReg,dataMap);
         }
-        numOfMsg = plusOrMinus.setCheckError();
+        dataMap = plusOrMinus.setCheckError();
         ContainingDataOrLabelsInstruction dataAndLabels = plusOrMinus.getErrorPrint();
         addDataAndLabels(dataAndLabels);
         return plusOrMinus;
@@ -524,13 +523,13 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
         BinaryExprInstruction binaryOp;
         if(op == WACCLexer.MULTIPLY) {
-            binaryOp = new MultiplyInstruction(i1, i2, currentReg, currentReg + 1,numOfMsg);
+            binaryOp = new MultiplyInstruction(i1, i2, currentReg, currentReg + 1,dataMap);
         } else if (op == WACCLexer.DIVIDE) {
-            binaryOp = new DivideInstruction(i1, i2, currentReg,numOfMsg);
+            binaryOp = new DivideInstruction(i1, i2, currentReg,dataMap);
         } else {
-            binaryOp = new ModInstruction(i1, i2, currentReg,numOfMsg);
+            binaryOp = new ModInstruction(i1, i2, currentReg,dataMap);
         }
-        numOfMsg = binaryOp.setCheckError();
+        dataMap = binaryOp.setCheckError();
         ContainingDataOrLabelsInstruction dataAndLabels = binaryOp.getErrorPrint();
         addDataAndLabels(dataAndLabels);
         return binaryOp;
@@ -562,10 +561,10 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         }
         stringList.add(literal);
         */
-        StringLiterInstruction stringLiterInstruction =  new StringLiterInstruction(numOfMsg, currentReg, literal);
+        StringLiterInstruction stringLiterInstruction =  new StringLiterInstruction(dataMap.size(), currentReg, literal);
         DataInstruction dataString = stringLiterInstruction.setData(literal);
         data.add(dataString);
-        numOfMsg++;
+        dataMap.put("msg_" + dataMap.size(), dataString.getAscii());
         return stringLiterInstruction;
     }
 
@@ -625,19 +624,16 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         for (WACCParser.ExprContext e : ctx.expr()) {
             exprs.add((ExprInstruction) visit(e));
         }
-        CanThrowRuntimeError arrayIns;
         if (ctx.getParent() instanceof WACCParser.AssignLHSContext) {
             ArrayElemLHSInstruction array = new ArrayElemLHSInstruction(
-                    locationString, type, currentReg, exprs, numOfMsg);
-            numOfMsg = array.setErrorChecking();
-            arrayIns = array.getCanThrowRuntimeError();
-            addDataAndLabels(arrayIns);
+                    locationString, type, currentReg, exprs, dataMap);
+            dataMap = array.setErrorChecking();
+            addDataAndLabels(array.getDataAndLabels());
             return array;
         } else {
-            ArrayElemInstruction array = new ArrayElemInstruction(locationString, type, currentReg, exprs, numOfMsg);
-            numOfMsg = array.setErrorChecking();
-            arrayIns = array.getCanThrowRuntimeError();
-            addDataAndLabels(arrayIns);
+            ArrayElemInstruction array = new ArrayElemInstruction(locationString, type, currentReg, exprs, dataMap);
+            dataMap = array.setErrorChecking();
+            addDataAndLabels(array.getDataAndLabels());
             return array;
         }
     }
@@ -699,19 +695,15 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         boolean isTokenFST = pairOpToken == WACCLexer.FST;
 
         ExprInstruction expr = (ExprInstruction) visit(ctx.expr());
-
-        CanThrowRuntimeError pairIns;
         if (ctx.getParent() instanceof WACCParser.AssignRHSContext) {
-            PairRHSInstruction pair = new PairRHSInstruction(isTokenFST, expr, numOfMsg);
-            numOfMsg = pair.setErrorChecking();
-            pairIns = pair.getCanThrowRuntimeError();
-            addDataAndLabels(pairIns);
+            PairRHSInstruction pair = new PairRHSInstruction(isTokenFST, expr, dataMap);
+            dataMap = pair.setErrorChecking();
+            addDataAndLabels(pair.getDataAndLabels());
             return pair;
         } else {
-            PairLHSInstruction pair = new PairLHSInstruction(isTokenFST, expr, numOfMsg);
-            numOfMsg = pair.setErrorChecking();
-            pairIns = pair.getCanThrowRuntimeError();
-            addDataAndLabels(pairIns);
+            PairLHSInstruction pair = new PairLHSInstruction(isTokenFST, expr, dataMap);
+            dataMap = pair.setErrorChecking();
+            addDataAndLabels(pair.getDataAndLabels());
             return pair;
         }
     }

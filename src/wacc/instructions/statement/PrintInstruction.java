@@ -1,19 +1,29 @@
 package wacc.instructions.statement;
 
 
+import wacc.instructions.Instruction;
 import wacc.instructions.locatable.expressions.ExprInstruction;
 import wacc.instructions.locatable.expressions.baseExpressions.StringLiterInstruction;
 import wacc.types.PrimType;
 import wacc.types.Type;
 
 import java.io.PrintStream;
+import java.util.HashMap;
 
-public class PrintInstruction extends ContainingDataOrLabelsInstruction {
+public class PrintInstruction implements Instruction {
 
+    private final ExprInstruction expr;
+    private final Type type;
+    private final String nameOfLabel;
+    protected HashMap<String, String> dataMap;
+    protected ContainingDataOrLabelsInstruction dataAndLabels;
 
-    public PrintInstruction(ExprInstruction expr, int numOfMsg) {
-        super(expr,numOfMsg);
+    public PrintInstruction(ExprInstruction expr, HashMap<String,String> dataMap) {
+        this.expr = expr;
+        this.dataMap = dataMap;
         this.nameOfLabel = getType("p_print_",expr);
+        this.type = expr.getType();
+        this.dataAndLabels = new ContainingDataOrLabelsInstruction(dataMap);
     }
 
     @Override
@@ -24,41 +34,31 @@ public class PrintInstruction extends ContainingDataOrLabelsInstruction {
         out.println("BL " + nameOfLabel);
     }
 
-    public int addDataAndLabels() {
-        String prefix = "msg_";
-        if (!type.checkType(PrimType.CHAR)) {
-            if (type.checkType(PrimType.INT)) {
-                String nameOfMsg = setData(prefix + numOfMsg,"\"%d\\0\"");
-                numOfMsg++;
-                String[] namesOfMsg = {nameOfMsg};
-                setLabel(nameOfLabel, namesOfMsg);
-            } else if (type.checkType(PrimType.STRING) ||
-                    type.checkType(PrimType.BOOL)){
-                String nameOfMsg1;
-                String nameOfMsg2;
+    public HashMap<String,String> addDataAndLabels() {
+        if (type.checkType(PrimType.CHAR)) {
 
-                if (type.checkType(PrimType.STRING)) {
-                    nameOfMsg1 = setData(prefix + numOfMsg,((StringLiterInstruction) expr).getStringLiter());
-                    numOfMsg++;
-                    nameOfMsg2 = setData(prefix + numOfMsg,"\"%.*s\\0\"");
-                    numOfMsg++;
-
-                } else {
-                    nameOfMsg1 = setData(prefix + numOfMsg,"\"true\\0\"");
-                    numOfMsg++;
-                    nameOfMsg2 = setData(prefix + numOfMsg,"\"false\\0\"");
-                    numOfMsg++;
-                }
-                String[] namesOfMsg = {nameOfMsg1, nameOfMsg2};
-                setLabel(nameOfLabel, namesOfMsg);
-            }else {
-                String nameOfMsg = setData(prefix + numOfMsg,"\"%p\\0\"");
-                numOfMsg++;
-                String[] namesOfMsg = {nameOfMsg};
-                setLabel(nameOfLabel, namesOfMsg);
+        } else if (type.checkType(PrimType.INT)) {
+            String[] ascii = {"\"%d\\0\""};
+            dataMap = dataAndLabels.addDataAndLabels(nameOfLabel,ascii);
+        } else if (type.checkType(PrimType.STRING) ||
+                type.checkType(PrimType.BOOL)){
+            String[] ascii = new String[2];
+            if (type.checkType(PrimType.STRING)) {
+                String ascii0 = ((StringLiterInstruction) expr).getStringLiter();
+                ascii[0] = ascii0;
+                ascii[1] = "\"%.*s\\0\"";
+                dataMap = dataAndLabels.addDataAndLabels(nameOfLabel,ascii);
+            } else {
+                ascii[0] = "\"true\\0\"";
+                ascii[1] = "\"false\\0\"";
+                dataMap = dataAndLabels.addDataAndLabels(nameOfLabel,ascii);
             }
+
+        }else {
+            String[] ascii = {"\"%p\\0\""};
+            dataMap = dataAndLabels.addDataAndLabels(nameOfLabel,ascii);
         }
-        return numOfMsg;
+        return dataMap;
     }
 
     protected String getType(String string, ExprInstruction exprIns) {
@@ -76,6 +76,10 @@ public class PrintInstruction extends ContainingDataOrLabelsInstruction {
             return "p_print_reference";
         }
 
+    }
+
+    public ContainingDataOrLabelsInstruction getDataAndLabels(){
+        return dataAndLabels;
     }
 
 }
