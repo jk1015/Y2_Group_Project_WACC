@@ -160,6 +160,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         return new InitAssignInstruction(expr, stack.getOffsetString(var));
     }
 
+
     private Type parseType(WACCParser.TypeContext type) {
 
         Type varType;
@@ -175,7 +176,6 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         return varType;
 
     }
-
 
     private Type parseBaseType(@NotNull WACCParser.BaseTypeContext type) {
 
@@ -241,7 +241,6 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
         return new PairType(type1, type2);
     }
-
 
 
     @Override
@@ -614,14 +613,19 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitArrayElem(@NotNull WACCParser.ArrayElemContext ctx) {
+        currentReg++;
         String id = ctx.identifier().getText();
-        String locationString = stack.getOffsetString(id);
+
+        String locationString = "" + stack.get(id);
+
         Type type = ((ArrayType) stack.getType(id)).getContentsType();
 
         List<ExprInstruction> exprs = new LinkedList<>();
+        currentReg++;
         for (WACCParser.ExprContext e : ctx.expr()) {
             exprs.add((ExprInstruction) visit(e));
         }
+        currentReg--;
         CanThrowRuntimeError arrayIns;
         if (ctx.getParent() instanceof WACCParser.AssignLHSContext) {
             ArrayElemLHSInstruction array = new ArrayElemLHSInstruction(
@@ -629,12 +633,14 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
             numOfMsg = array.setErrorChecking();
             arrayIns = array.getCanThrowRuntimeError();
             addDataAndLabels(arrayIns);
+            currentReg--;
             return array;
         } else {
             ArrayElemInstruction array = new ArrayElemInstruction(locationString, type, currentReg, exprs, numOfMsg);
             numOfMsg = array.setErrorChecking();
             arrayIns = array.getCanThrowRuntimeError();
             addDataAndLabels(arrayIns);
+            currentReg--;
             return array;
         }
     }

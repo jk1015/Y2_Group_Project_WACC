@@ -58,8 +58,8 @@ public class ArrayElemInstruction extends ExprInstruction {
     }
 
     public int setErrorChecking() {
-        String[] ascii = {"ArrayIndexOutOfBoundsError: negative index\n\0",
-                "ArrayIndexOutOfBoundsError: index too large\n\0"};
+        String[] ascii = {"\"ArrayIndexOutOfBoundsError: negative index\\0\"",
+                "\"ArrayIndexOutOfBoundsError: index too large\\0\""};
         numOfMsg = canThrowRuntimeError.addDataAndLabels("p_check_array_bounds", ascii);
 
         numOfMsg = canThrowRuntimeError.addDataAndLabels("p_throw_runtime_error", ascii);
