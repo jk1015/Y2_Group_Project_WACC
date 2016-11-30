@@ -1,0 +1,44 @@
+\documentclass[]{article}
+
+\usepackage{datetime}
+
+\newcommand{\spec}[1]{\textit{#1}\par\noindent}
+
+% Uncomment the following to hide spec:
+% \renewcommand{\spec}[1]{}
+
+\newdate{date}{9}{12}{2016}
+\date{\displaydate{date}}
+
+\title{WACC Compiler Report}
+\author{
+	Anantachok Duangsarot \\
+	\and
+	James Knight \\
+	\and
+	Jaspreet Randhawa \\
+	\and
+	Max Smith \\
+}
+
+\begin{document}
+
+\maketitle
+
+\section{The Product}
+\spec{An analysis and critical evaluation of the quality of the WACC compiler you have built. You should consider both whether it meets the functional specification and whether you judge that it forms a sound basis for future development. You may wish to address performance issues.}
+...
+
+\section{The Project Management}
+\spec{An analysis of the organisation of your group and your use of project management tools (such as Git). You should describe how your group was structured, how you coordinated your work and detail any tools that helped/hindered your progress. You should also discuss what went well and what you would do differently if you were to do the lab again.}
+...
+
+\section{The Design Choices}
+\spec{An analysis of the design choices that you made during the WACC lab. You should discuss the design patterns you used when designing your code and why you chose to use them.}
+...
+
+\section{Beyond the Specification}
+\spec{An evaluation of your extensions to your WACC compiler. You should describe all of the language extensions, optimisations or other aspects that you have added to your compiler, including how these features can be accessed or viewed. You should also briefly discuss what future extensions you would like to add to your WACC compiler if you had more time.}
+...
+
+\end{document}
