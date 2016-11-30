@@ -6,18 +6,15 @@ import org.antlr.v4.runtime.misc.NotNull;
 import antlr.WACCParserBaseVisitor;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import wacc.instructions.*;
-import wacc.instructions.locatable.LocatableInstruction;
-import wacc.instructions.locatable.assignment.*;
-import wacc.instructions.locatable.expressions.ExprInstruction;
-import wacc.instructions.locatable.assignment.PairLHSInstruction;
-import wacc.instructions.locatable.expressions.baseExpressions.*;
-import wacc.instructions.locatable.expressions.binaryExpressions.BinaryExprInstruction;
-import wacc.instructions.locatable.expressions.binaryExpressions.arithmeticExpressions.*;
-import wacc.instructions.locatable.expressions.binaryExpressions.comparatorExpressions.*;
-import wacc.instructions.locatable.expressions.binaryExpressions.logicalExpressions.ANDInstruction;
-import wacc.instructions.locatable.expressions.binaryExpressions.logicalExpressions.ORInstruction;
-import wacc.instructions.locatable.expressions.unaryExpressions.*;
-import wacc.instructions.statement.*;
+import wacc.instructions.expressions.ExprInstruction;
+import wacc.instructions.PairLHSInstruction;
+import wacc.instructions.expressions.baseExpressions.*;
+import wacc.instructions.expressions.binaryExpressions.BinaryExprInstruction;
+import wacc.instructions.expressions.binaryExpressions.arithmeticExpressions.*;
+import wacc.instructions.expressions.binaryExpressions.comparatorExpressions.*;
+import wacc.instructions.expressions.binaryExpressions.logicalExpressions.ANDInstruction;
+import wacc.instructions.expressions.binaryExpressions.logicalExpressions.ORInstruction;
+import wacc.instructions.expressions.unaryExpressions.*;
 import wacc.types.*;
 
 import java.util.ArrayList;
@@ -163,6 +160,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         return new InitAssignInstruction(expr, stack.getOffsetString(var));
     }
 
+
     private Type parseType(WACCParser.TypeContext type) {
 
         Type varType;
@@ -178,7 +176,6 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         return varType;
 
     }
-
 
     private Type parseBaseType(@NotNull WACCParser.BaseTypeContext type) {
 
@@ -244,7 +241,6 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
         return new PairType(type1, type2);
     }
-
 
 
     @Override
@@ -617,23 +613,34 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitArrayElem(@NotNull WACCParser.ArrayElemContext ctx) {
         String id = ctx.identifier().getText();
-        String locationString = stack.getOffsetString(id);
-        Type type = ((ArrayType) stack.getType(id)).getContentsType();
+
+        String locationString = "" + stack.get(id);
+
+        Type type = stack.getType(id);
+
+        for(TerminalNode c:ctx.CLOSE_SQUARE()) {
+            type = ((ArrayType) type).getContentsType();
+        }
 
         List<ExprInstruction> exprs = new LinkedList<>();
+        currentReg += 2;
         for (WACCParser.ExprContext e : ctx.expr()) {
             exprs.add((ExprInstruction) visit(e));
         }
+        currentReg -= 2;
         if (ctx.getParent() instanceof WACCParser.AssignLHSContext) {
+            currentReg++;
             ArrayElemLHSInstruction array = new ArrayElemLHSInstruction(
                     locationString, type, currentReg, exprs, dataMap);
             dataMap = array.setErrorChecking();
             addDataAndLabels(array.getDataAndLabels());
+            currentReg--;
             return array;
         } else {
             ArrayElemInstruction array = new ArrayElemInstruction(locationString, type, currentReg, exprs, dataMap);
             dataMap = array.setErrorChecking();
             addDataAndLabels(array.getDataAndLabels());
+            currentReg--;
             return array;
         }
     }
@@ -693,17 +700,19 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         TerminalNode pairOp = (TerminalNode) ctx.getChild(0);
         int pairOpToken = pairOp.getSymbol().getType();
         boolean isTokenFST = pairOpToken == WACCLexer.FST;
-
-        ExprInstruction expr = (ExprInstruction) visit(ctx.expr());
         if (ctx.getParent() instanceof WACCParser.AssignRHSContext) {
+            ExprInstruction expr = (ExprInstruction) visit(ctx.expr());
             PairRHSInstruction pair = new PairRHSInstruction(isTokenFST, expr, dataMap);
             dataMap = pair.setErrorChecking();
             addDataAndLabels(pair.getDataAndLabels());
             return pair;
         } else {
+            currentReg++;
+            ExprInstruction expr = (ExprInstruction) visit(ctx.expr());
             PairLHSInstruction pair = new PairLHSInstruction(isTokenFST, expr, dataMap);
             dataMap = pair.setErrorChecking();
             addDataAndLabels(pair.getDataAndLabels());
+            currentReg--;
             return pair;
         }
     }

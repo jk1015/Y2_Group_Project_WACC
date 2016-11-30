@@ -1,7 +1,5 @@
 package wacc.instructions;
 
-import wacc.instructions.statement.FunctionInstruction;
-
 import java.io.PrintStream;
 import java.util.List;
 
