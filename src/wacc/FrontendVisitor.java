@@ -25,6 +25,7 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
 	private String currentFunction; 
 	private boolean hasReturn;
     private HashMap<String, FunctionType> calledFunctions;
+    private HashMap<String, StructType> structs;
     private Type lhsRequiredType;
 
 	public FrontendVisitor() {
@@ -32,6 +33,7 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
 		currentFunction = "";
 		hasReturn = false;
         calledFunctions = new HashMap<>();
+        structs = new HashMap<>();
     }
 
     @Override
@@ -50,6 +52,19 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
             }
 
         }
+        return null;
+    }
+
+    @Override
+    public Type visitStruct(@NotNull WACCParser.StructContext ctx) {
+        String id = ctx.identifier(0).getText();
+        List<Type> typeList = new ArrayList<>();
+        List<String> idList = new ArrayList<>();
+        for(int i = 1; i < ctx.identifier().size(); i++) {
+            idList.add(ctx.identifier(i).getText());
+            typeList.add(visit(ctx.type(i - 1)));
+        }
+        structs.put(id, new StructType(id, typeList, idList));
         return null;
     }
 
@@ -409,6 +424,7 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
         return PrimType.INT;
     }
 
+
     // LITERALS
 
     @Override
@@ -484,6 +500,15 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
     // TYPES
 
     @Override
+    public Type visitStructType(@NotNull WACCParser.StructTypeContext ctx) {
+        StructType retType = structs.get(ctx.identifier().getText());
+        if(retType == null) {
+            throw new UndeclaredVariableException(ctx);
+        }
+        return retType;
+    }
+
+    @Override
     public Type visitBaseType(WACCParser.BaseTypeContext ctx) {
         int type = ((TerminalNode) ctx.getChild(0)).getSymbol().getType();
         switch (type) {
@@ -521,6 +546,21 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
     }
 
     // OTHER
+
+    @Override
+    public Type visitStructContents(@NotNull WACCParser.StructContentsContext ctx) {
+        StructType struct = structs.get(ctx.identifier(0));
+        if(struct == null) {
+            throw new UndeclaredVariableException(ctx);
+        }
+
+        Type conType = struct.getType(ctx.identifier(1).getText());
+        if(struct == null) {
+            throw new UndeclaredVariableException(ctx);
+        }
+
+        return conType;
+    }
 
     @Override
     public Type visitArrayElem(WACCParser.ArrayElemContext ctx) {

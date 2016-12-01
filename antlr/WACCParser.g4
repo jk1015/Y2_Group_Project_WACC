@@ -4,9 +4,11 @@ options {
   tokenVocab=WACCLexer;
 }
 
-program: BEGIN function* stat END EOF;
+program: BEGIN struct* function* stat END EOF;
 
 function: type identifier OPEN_PARENTHESES paramList? CLOSE_PARENTHESES IS stat END;
+
+struct: STRUCT identifier IS (type identifier)* END;
 
 paramList: param (COMMA param)*;
 
@@ -32,6 +34,7 @@ stat: SKIPPER                           #skipStat
 assignLHS: identifier
   | arrayElem
   | pairElem
+  | structContents
   ;
 
 assignRHS: expr
@@ -39,6 +42,7 @@ assignRHS: expr
   | newPair
   | pairElem
   | callFunction
+  | structContents
   ;
 
 newPair: NEWPAIR OPEN_PARENTHESES expr COMMA expr CLOSE_PARENTHESES;
@@ -54,6 +58,7 @@ pairElem: FST expr
 type: baseType
   | arrayType
   | pairType
+  | structType
   ;
 
 baseType: INT_TYPE
@@ -65,6 +70,8 @@ baseType: INT_TYPE
 arrayType: (baseType | pairType) (OPEN_SQUARE CLOSE_SQUARE)+;
 
 pairType: PAIR OPEN_PARENTHESES pairElemType COMMA pairElemType CLOSE_PARENTHESES;
+
+structType: identifier;
 
 pairElemType: baseType
   | arrayType
@@ -145,6 +152,8 @@ expr5: expr5 binaryOper5 expr5
 expr6: expr6 binaryOper6 expr6
   | expr5
   ;
+
+structContents: identifier DOT identifier;
 
 arrayElem: identifier (OPEN_SQUARE expr CLOSE_SQUARE)+;
 

@@ -41,6 +41,7 @@ SEMICOLON : ';' ;
 COMMA : ',' ;
 
 //blocks
+STRUCT: 'struct';
 BEGIN: 'begin';
 END: 'end' ;
 IS: 'is' ;
@@ -65,6 +66,9 @@ FI: 'fi' ;
 WHILE: 'while' ;
 DO: 'do' ;
 DONE: 'done' ;
+
+//structs
+DOT: '.';
 
 //pairs
 PAIR: 'pair' ;
