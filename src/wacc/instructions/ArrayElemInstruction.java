@@ -61,8 +61,8 @@ public class ArrayElemInstruction extends ExprInstruction {
 
 
     public HashMap<String, String> setErrorChecking() {
-        String[] ascii = {"ArrayIndexOutOfBoundsError: negative index\n\0",
-                "ArrayIndexOutOfBoundsError: index too large\n\0"};
+        String[] ascii = {"\"ArrayIndexOutOfBoundsError: negative index\\n\\0\"",
+                "\"ArrayIndexOutOfBoundsError: index too large\\n\\0\""};
         dataMap = dataAndLabels.addDataAndLabels("p_check_array_bounds", ascii);
         dataMap = dataAndLabels.addDataAndLabels("p_throw_runtime_error", ascii);
 
