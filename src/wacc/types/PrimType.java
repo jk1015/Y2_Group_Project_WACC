@@ -1,7 +1,7 @@
 package wacc.types;
 
 public enum PrimType implements Type {
-	BOOL, CHAR, INT, STRING;
+	BOOL, CHAR, INT, STRING, FLOAT;
 	
 	@Override
 	public boolean checkType(Type type2) {
@@ -18,10 +18,11 @@ public enum PrimType implements Type {
 	@Override
 	public String toString() {
 		switch(this) {
-		case BOOL: return "bool";
-		case CHAR: return "char";
-		case INT: return "int";
-		default: throw new IllegalArgumentException();
+			case BOOL: return "bool";
+			case CHAR: return "char";
+			case INT: return "int";
+			case FLOAT: return  "float";
+			default: throw new IllegalArgumentException();
 		}
 	}
 }

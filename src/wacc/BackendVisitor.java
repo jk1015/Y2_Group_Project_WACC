@@ -589,6 +589,13 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     }
 
     @Override
+    public Instruction visitFloatLiter(@NotNull WACCParser.FloatLiterContext ctx){
+        String value = ctx.getText();
+        float valueInFloat = Float.parseFloat(value);
+        return new FloatLiterInstruction(valueInFloat, currentReg);
+    }
+
+    @Override
     public Instruction visitCharLiter(@NotNull WACCParser.CharLiterContext ctx) {
         char value = ctx.CHAR_LITERAL().getText().charAt(1);
         String valStr;

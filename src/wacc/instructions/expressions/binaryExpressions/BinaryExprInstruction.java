@@ -11,7 +11,7 @@ import java.io.PrintStream;
  */
 public abstract class BinaryExprInstruction extends ExprInstruction {
     protected ContainingDataOrLabelsInstruction errorPrint;
-    private ExprInstruction expr1, expr2;
+    protected ExprInstruction expr1, expr2;
     protected int numOfMsg;
 
     public BinaryExprInstruction(ExprInstruction expr1, ExprInstruction expr2, int register, Type type, int numOfMsg) {

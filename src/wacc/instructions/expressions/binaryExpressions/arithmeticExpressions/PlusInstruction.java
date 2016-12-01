@@ -1,6 +1,7 @@
 package wacc.instructions.expressions.binaryExpressions.arithmeticExpressions;
 
 import wacc.instructions.expressions.ExprInstruction;
+import wacc.instructions.expressions.baseExpressions.FloatLiterInstruction;
 import wacc.instructions.expressions.binaryExpressions.BinaryExprInstruction;
 import wacc.types.PrimType;
 
@@ -20,9 +21,16 @@ public class PlusInstruction extends BinaryExprInstruction {
     @Override
     public void toAssembly(PrintStream out) {
         super.toAssembly(out);
-        out.println("ADDS " + getLocationString() + ", "
+        if (expr1 instanceof FloatLiterInstruction ||
+                expr2 instanceof FloatLiterInstruction){
+            out.println("FLD " + getExpr1String());
+            out.println("FLD " + getExpr2String());
+            out.println("FADDP r0");
+        }else {
+            out.println("ADDS " + getLocationString() + ", "
                     + getExpr1String() + ", " + getExpr2String());
-        out.println("BLVS p_throw_overflow_error");
+            out.println("BLVS p_throw_overflow_error");
+        }
     }
 
     @Override

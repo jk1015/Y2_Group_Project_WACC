@@ -2,6 +2,7 @@ package wacc.instructions.expressions.binaryExpressions.arithmeticExpressions;
 
 import wacc.instructions.ContainingDataOrLabelsInstruction;
 import wacc.instructions.expressions.ExprInstruction;
+import wacc.instructions.expressions.baseExpressions.FloatLiterInstruction;
 import wacc.instructions.expressions.binaryExpressions.BinaryExprInstruction;
 import wacc.types.PrimType;
 
@@ -21,11 +22,18 @@ public class DivideInstruction extends BinaryExprInstruction {
     @Override
     public void toAssembly(PrintStream out) {
         super.toAssembly(out);
-        out.println("MOV r0, " + getExpr1String());
-        out.println("MOV r1, " + getExpr2String());
-        out.println("BL p_check_divide_by_zero");
-        out.println("BL __aeabi_idiv");
-        out.println("MOV " + getLocationString() + ", r0");
+        if (expr1 instanceof FloatLiterInstruction ||
+                expr2 instanceof FloatLiterInstruction){
+            out.println("FLD " + getExpr1String());
+            out.println("FLD " + getExpr2String());
+            out.println("FDIVP r0");
+        }else {
+            out.println("MOV r0, " + getExpr1String());
+            out.println("MOV r1, " + getExpr2String());
+            out.println("BL p_check_divide_by_zero");
+            out.println("BL __aeabi_idiv");
+            out.println("MOV " + getLocationString() + ", r0");
+        }
     }
 
     @Override

@@ -588,5 +588,9 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
         return pair;
     }
 
+    @Override
+    public Type visitFloatLiter(@NotNull WACCParser.FloatLiterContext ctx) {
+        return PrimType.FLOAT;
+    }
 }
 
