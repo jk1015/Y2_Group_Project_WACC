@@ -3,9 +3,10 @@ lexer grammar WACCLexer;
 //general operators (multiple uses)
 PLUS: '+' ;
 MINUS: '-' ;
+MULTIPLY: '*' ;
+AMP: '&' ;
 
 //binary operators
-MULTIPLY: '*' ;
 DIVIDE: '/' ;
 MOD: '%' ;
 GT: '>' ;
