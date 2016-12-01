@@ -1,5 +1,6 @@
 package wacc.instructions;
 import wacc.instructions.expressions.ExprInstruction;
+import wacc.instructions.expressions.baseExpressions.IdentifierExprInstruction;
 import wacc.instructions.expressions.baseExpressions.StringLiterInstruction;
 import wacc.types.PrimType;
 import wacc.types.Type;
@@ -40,7 +41,12 @@ public class PrintInstruction implements Instruction {
                 type.checkType(PrimType.BOOL)){
             String[] ascii = new String[2];
             if (type.checkType(PrimType.STRING)) {
-                String ascii0 = ((StringLiterInstruction) expr).getStringLiter();
+                String ascii0;
+                if (expr instanceof IdentifierExprInstruction){
+                    ascii0 = ((IdentifierExprInstruction) expr).getStringValue();
+                }else {
+                    ascii0 = ((StringLiterInstruction) expr).getStringLiter();
+                }
                 ascii[0] = ascii0;
                 ascii[1] = "\"%.*s\\0\"";
                 dataMap = dataAndLabels.addDataAndLabels(nameOfLabel,ascii);

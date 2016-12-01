@@ -30,6 +30,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     private List<DataInstruction> data = new ArrayList<>();
     private List<LabelInstruction> labels = new ArrayList<>();
     private HashMap<String,String> dataMap = new HashMap<>();
+    private HashMap<String,String> identifier = new HashMap<>();
 
     private int currentReg;
 
@@ -155,7 +156,11 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         WACCParser.TypeContext type = ctx.type();
 
         Type varType = parseType(type);
-
+        if (varType.checkType(PrimType.STRING)){
+            StringLiterInstruction string = (StringLiterInstruction)expr;
+            String stringValue = string.getStringLiter();
+            identifier.put(var,stringValue);
+        }
         stack.add(var, varType);
         return new InitAssignInstruction(expr, stack.getOffsetString(var));
     }
@@ -560,7 +565,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         StringLiterInstruction stringLiterInstruction =  new StringLiterInstruction(dataMap.size(), currentReg, literal);
         DataInstruction dataString = stringLiterInstruction.setData(literal);
         data.add(dataString);
-        dataMap.put("msg_" + dataMap.size(), dataString.getAscii());
+        //dataMap.put("msg_" + dataMap.size(), dataString.getAscii());
         return stringLiterInstruction;
     }
 
@@ -655,13 +660,15 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         String id = ctx.IDENTIFIER().getText();
         String locationString = stack.getOffsetString(id);
         Type type = stack.getType(id);
+        if (type.checkType(PrimType.STRING)){
+            String stringValue = identifier.get(id);
+            return new IdentifierExprInstruction(locationString, type, currentReg,stringValue);
+        }
         if (ctx.getParent() instanceof WACCParser.BaseExprContext) {
             return new IdentifierExprInstruction(locationString, type, currentReg);
         } else {
             return new IdentifierInstruction(locationString, type);
         }
-
-
     }
 
     @Override
