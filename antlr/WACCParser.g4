@@ -67,7 +67,7 @@ arrayType: (baseType | pairType) (OPEN_SQUARE CLOSE_SQUARE)+;
 
 pairType: PAIR OPEN_PARENTHESES pairElemType COMMA pairElemType CLOSE_PARENTHESES;
 
-ptrType: ptrBaseType (MULTIPLY)*;
+ptrType: ptrBaseType (MULTIPLY)+;
 
 ptrBaseType: baseType
   | arrayType
@@ -159,7 +159,7 @@ expr6: expr6 binaryOper6 expr6
 
 refIdent: AMP identifier;
 
-derefIdent: (MULTIPLY)* identifier;
+derefIdent: (MULTIPLY)+ identifier;
 
 arrayElem: identifier (OPEN_SQUARE expr CLOSE_SQUARE)+;
 
