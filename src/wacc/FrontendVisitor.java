@@ -54,6 +54,16 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
     }
 
     @Override
+    public Type visitDerefIdent(@NotNull WACCParser.DerefIdentContext ctx) {
+        Type type = visit(ctx.identifier());
+        if (type.checkType(new PtrType(new NullType()))) {
+            throw new InvalidTypeException(ctx, "Can't dereference a non-pointer");
+        }
+        //TODO: check multiple *s
+        return ((PtrType) type).deref();
+    }
+
+    @Override
     public Type visitFunction(WACCParser.FunctionContext ctx) {
         // Add to symbol table, check validity of children under new movePointer
         //Check that statement contains a return
@@ -239,6 +249,12 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
     }
 
     @Override
+    public Type visitRefIdent(@NotNull WACCParser.RefIdentContext ctx) {
+        //TODO
+        return new PtrType(visitIdentifier(ctx.identifier()));
+    }
+
+    @Override
     public Type visitPrintStat(@NotNull WACCParser.PrintStatContext ctx) {
         return visit(ctx.expr());
     }
@@ -256,6 +272,12 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
             return type;
         }
         throw new InvalidTypeException(ctx, "Expected pair or array, got " + type);
+    }
+
+    @Override
+    public Type visitPtrBaseType(@NotNull WACCParser.PtrBaseTypeContext ctx) {
+        //TODO
+        return super.visitPtrBaseType(ctx);
     }
 
     @Override
@@ -493,6 +515,11 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
             case WACCLexer.STRING_TYPE: return new ArrayType(PrimType.CHAR);
         }
         return null;
+    }
+
+    @Override
+    public Type visitPtrType(@NotNull WACCParser.PtrTypeContext ctx) {
+        return super.visitPtrType(ctx);
     }
 
     @Override
