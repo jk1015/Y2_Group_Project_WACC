@@ -37,10 +37,10 @@ public  class ContainingDataOrLabelsInstruction {
         addLabel(labelInstruction);
     }
 
-    public void setData(String name,String ascii) {
+    public void setData(String ascii,String name) {
         DataInstruction dataInstruction = new DataInstruction(name, ascii);
         addData(dataInstruction);
-        dataMap.put(name,ascii);
+        dataMap.put(ascii,name);
     }
 
     public HashMap<String,String> addDataAndLabels(String name, String[] ascii) {
@@ -50,10 +50,10 @@ public  class ContainingDataOrLabelsInstruction {
         for (int i = 0; i < ascii.length; i++) {
             if (!dataMap.containsKey(ascii[i])) {
                 nameOfMsg = prefix + numOfMsg;
-                setData(nameOfMsg,ascii[i]);
+                setData(ascii[i],nameOfMsg);
                 numOfMsg++;
             } else {
-                nameOfMsg = dataMap.get(ascii);
+                nameOfMsg = dataMap.get(ascii[i]);
             }
             namesOfMsg[i] = nameOfMsg;
         }
