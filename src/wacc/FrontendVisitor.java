@@ -453,8 +453,23 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
     public Type visitIntLiter(WACCParser.IntLiterContext ctx) {
         // Return int, check
         String intToken = ctx.getText();
+
+        char numberBase = intToken.charAt(intToken.length()-1);
+        int radix;
+
+        if (Character.isAlphabetic(numberBase)) {
+            intToken = intToken.substring(0, intToken.length()-1);
+        }
+
+        switch (numberBase) {
+            case 'h' : radix = 16; break;
+            case 'o' : radix = 8; break;
+            case 'b' : radix = 2; break;
+            default: radix = 10;
+        }
+
         try {
-            Integer.parseInt(intToken);
+            Integer.parseInt(intToken, radix);
         } catch (NumberFormatException e) {
             throw new IntegerSizeException(ctx, "Integer " + intToken + " larger than WACCMAXINT");
         }

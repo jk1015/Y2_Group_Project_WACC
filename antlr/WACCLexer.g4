@@ -95,8 +95,16 @@ fragment ALPHANUMERIC: (LETTER | DIGIT);
 //numbers
 fragment DIGIT : '0'..'9' ;
 
+//hexadecimals
+fragment HEXADECIMAL : '0'..'9' | 'a'..'f' | 'A'..'F' ;
 
-INT: DIGIT+;
+//octals
+fragment OCTAL : '0'..'7' ;
+
+//binary
+fragment BINARY : '0' | '1' ;
+
+INT: DIGIT+ | (HEXADECIMAL)+'h' | (OCTAL)+'o' | (BINARY)+'b' ;
 BOOL_LITERAL: 'true' | 'false';
 PAIR_LITERAL: NULL;
 CHAR_LITERAL: '\'' CHARACTER '\'' ;
