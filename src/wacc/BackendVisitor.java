@@ -565,7 +565,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         StringLiterInstruction stringLiterInstruction =  new StringLiterInstruction(dataMap.size(), currentReg, literal);
         DataInstruction dataString = stringLiterInstruction.setData(literal);
         data.add(dataString);
-        //dataMap.put("msg_" + dataMap.size(), dataString.getAscii());
+        dataMap.put("msg_" + dataMap.size(), dataString.getAscii());
         return stringLiterInstruction;
     }
 
@@ -617,12 +617,10 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitArrayElem(@NotNull WACCParser.ArrayElemContext ctx) {
+
         String id = ctx.identifier().getText();
-
         String locationString = "" + stack.get(id);
-
         Type type = stack.getType(id);
-
         for(TerminalNode c:ctx.CLOSE_SQUARE()) {
             type = ((ArrayType) type).getContentsType();
         }
