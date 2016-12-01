@@ -4,25 +4,44 @@ import wacc.LabelMaker;
 import wacc.instructions.expressions.ExprInstruction;
 
 import java.io.PrintStream;
+import java.util.List;
 
 public class IfInstruction implements Instruction {
 
-    final private ExprInstruction expr;
+    final private List<ExprInstruction> exprs;
     final private LabelMaker labelMaker;
-    final private Instruction stat1;
-    final private Instruction stat2;
-    final private int scopeSize1;
-    final private int scopeSize2;
+    final private List<Instruction> stats;
+    final private List<Integer> scopeSizes;
 
-    public IfInstruction(ExprInstruction expr, Instruction stat1, Instruction stat2, int scopeSize1, int scopeSize2) {
-        this.expr = expr;
-        this.stat1 = stat1;
-        this.stat2 = stat2;
-        this.scopeSize1 = scopeSize1;
-        this.scopeSize2 = scopeSize2;
+    public IfInstruction(List<ExprInstruction> exprs, List<Instruction> stats, List<Integer> scopeSizes) {
+        this.exprs = exprs;
+        this.stats = stats;
+        this.scopeSizes = scopeSizes;
         labelMaker = LabelMaker.getLabelMaker();
     }
 
+    @Override
+    public void toAssembly(PrintStream out) {
+        for (int i = 0; i < stats.size(); i++) {
+            if (i < exprs.size()) {
+                ExprInstruction expr = exprs.get(i);
+                expr.toAssembly(out);
+                out.println("CMP " + expr.getLocationString() + ", #0");
+                out.println("BEQ " + labelMaker.getLabel(this, i));
+            }
+            stats.get(i).toAssembly(out);
+            int scopeSize = scopeSizes.get(i);
+            if (scopeSize > 0) {
+                out.println("ADD sp, sp, #" + scopeSize);
+            }
+            if (i < stats.size() - 1) {
+                out.println("B " + labelMaker.getLabel(this, stats.size() - 1));
+            }
+            out.println(labelMaker.getLabel(this, i) + ":");
+        }
+    }
+
+    /*
     @Override
     public void toAssembly(PrintStream out) {
         expr.toAssembly(out);
@@ -40,4 +59,6 @@ public class IfInstruction implements Instruction {
         }
         out.println(labelMaker.getLabel(this, 1) + ":");
     }
+    */
+
 }

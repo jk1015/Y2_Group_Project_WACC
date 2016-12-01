@@ -23,7 +23,7 @@ stat: SKIPPER                           #skipStat
   | EXIT expr                           #exitStat
   | PRINT expr                          #printStat
   | PRINTLN expr                        #printlnStat
-  | IF expr THEN stat ELSE stat FI      #ifStat
+  | IF expr THEN stat (ELIF expr THEN stat)* (ELSE stat)? FI      #ifStat
   | WHILE expr DO stat DONE             #whileStat
   | BEGIN stat END                      #blockStat
   | stat SEMICOLON stat                 #seqStat

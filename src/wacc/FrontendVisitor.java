@@ -7,6 +7,7 @@ import antlr.WACCParser;
 import antlr.WACCParser.ExprContext;
 import antlr.WACCParser.ReadStatContext;
 import antlr.WACCParserBaseVisitor;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.ParseTree;
 import wacc.exceptions.*;
@@ -212,19 +213,25 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
     public Type visitIfStat(WACCParser.IfStatContext ctx) {
         // Check condition is boolean, check statements are valid.
 
-        Type type = visitExpr(ctx.expr());
-        if (!PrimType.BOOL.checkType(type)){
-            throw new InvalidTypeException(ctx, PrimType.BOOL, type);
+        for (ExprContext exprCtx : ctx.expr()) {
+            Type type = visitExpr(exprCtx);
+            if (!PrimType.BOOL.checkType(type)){
+                throw new InvalidTypeException(exprCtx, PrimType.BOOL, type);
+            }
         }
+
         symbolTable.enterNewScope();
         visit(ctx.stat(0));
         symbolTable.exitScope();
-        boolean tempReturn = hasReturn;
-        hasReturn = false;
-        symbolTable.enterNewScope();
-        visit(ctx.stat(1));
-        symbolTable.exitScope();
-        hasReturn = tempReturn && hasReturn;
+        
+        for (int i = 1; i < ctx.stat().size(); i++) {
+            boolean tempReturn = hasReturn;
+            hasReturn = false;
+            symbolTable.enterNewScope();
+            visit(ctx.stat(i));
+            symbolTable.exitScope();
+            hasReturn = tempReturn && hasReturn;
+        }
 
         return null;
     }

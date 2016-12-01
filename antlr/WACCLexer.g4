@@ -60,6 +60,7 @@ IF: 'if' ;
 THEN: 'then' ;
 ELSE: 'else' ;
 FI: 'fi' ;
+ELIF: 'elif';
 
 //loops
 WHILE: 'while' ;
