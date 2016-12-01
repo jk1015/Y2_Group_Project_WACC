@@ -568,9 +568,24 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitIntLiter(@NotNull WACCParser.IntLiterContext ctx) {
         String value = ctx.getText();
-        value = value.replaceFirst("(?<=^[\\+-]?)0+(?!$)", "");
 
-        return new IntLiterInstruction(value, currentReg);
+        char numberBase = value.charAt(value.length()-1);
+        int radix;
+
+        if (Character.isAlphabetic(numberBase)) {
+            value = value.substring(0, value.length()-1);
+        }
+
+        switch (numberBase) {
+            case 'h' : radix = 16; break;
+            case 'o' : radix = 8; break;
+            case 'b' : radix = 2; break;
+            default: radix = 10;
+        }
+
+        int decValue = Integer.parseInt(value, radix);
+
+        return new IntLiterInstruction(decValue, currentReg);
     }
 
     @Override
@@ -641,6 +656,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
             currentReg--;
             return array;
         } else {
+            //TODO: why not currentReg++; here?
             ArrayElemInstruction array = new ArrayElemInstruction(locationString, type, currentReg, exprs, numOfMsg);
             numOfMsg = array.setErrorChecking();
             arrayIns = array.getCanThrowRuntimeError();
