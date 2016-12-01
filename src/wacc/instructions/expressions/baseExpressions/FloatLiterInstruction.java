@@ -21,7 +21,7 @@ public class FloatLiterInstruction extends ExprInstruction {
 
     @Override
     public void toAssembly(PrintStream out) {
-        out.println("FLD" + valueInFloat);
+        out.println("FLD " + valueInFloat);
 
     }
 }
