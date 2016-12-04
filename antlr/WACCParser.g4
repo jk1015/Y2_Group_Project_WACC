@@ -32,6 +32,7 @@ stat: SKIPPER                           #skipStat
 assignLHS: identifier
   | arrayElem
   | pairElem
+  | derefIdent
   ;
 
 assignRHS: expr
