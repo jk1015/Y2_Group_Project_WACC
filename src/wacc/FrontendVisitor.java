@@ -56,11 +56,14 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
     @Override
     public Type visitDerefIdent(@NotNull WACCParser.DerefIdentContext ctx) {
         Type type = visit(ctx.identifier());
-        if (type.checkType(new PtrType(new NullType()))) {
-            throw new InvalidTypeException(ctx, "Can't dereference a non-pointer");
+        int count = ctx.MULTIPLY().size();
+        for (int i = 0; i < count; i++) {
+            if (!(type instanceof PtrType)) {
+                throw new InvalidTypeException(ctx, "Can't dereference a non-pointer");
+            }
+            type = ((PtrType) type).deref();
         }
-        //TODO: check multiple *s
-        return ((PtrType) type).deref();
+        return type;
     }
 
     @Override
@@ -250,7 +253,6 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
 
     @Override
     public Type visitRefIdent(@NotNull WACCParser.RefIdentContext ctx) {
-        //TODO
         return new PtrType(visitIdentifier(ctx.identifier()));
     }
 
@@ -272,12 +274,6 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
             return type;
         }
         throw new InvalidTypeException(ctx, "Expected pair or array, got " + type);
-    }
-
-    @Override
-    public Type visitPtrBaseType(@NotNull WACCParser.PtrBaseTypeContext ctx) {
-        //TODO
-        return super.visitPtrBaseType(ctx);
     }
 
     @Override
@@ -519,7 +515,11 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
 
     @Override
     public Type visitPtrType(@NotNull WACCParser.PtrTypeContext ctx) {
-        return super.visitPtrType(ctx);
+        Type type = visit(ctx.ptrBaseType());
+        for (int i = 0; i < ctx.MULTIPLY().size(); i++) {
+            type = new PtrType(type);
+        }
+        return type;
     }
 
     @Override
