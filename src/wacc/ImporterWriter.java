@@ -10,11 +10,13 @@ import wacc.exceptions.WACCSemanticErrorException;
 import wacc.exceptions.WACCSyntaxErrorException;
 
 import java.io.*;
+import java.nio.file.Path;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 class ImporterWriter {
 
+    private final String basePath = new File("").getAbsolutePath()+"/";
     private final String outputFolder = ".temp/";
     private final String outputFileLocation = "out.wacc";
     private int currentOutputFile;
@@ -24,13 +26,13 @@ class ImporterWriter {
     public ImporterWriter(InputStream in) {
         this.in = in;
         currentOutputFile = 0;
-        this.fout = new File(outputFolder+outputFileLocation);
+        this.fout = new File(basePath+outputFolder+outputFileLocation);
     }
 
     private ImporterWriter(InputStream in, int n) {
         this.in = in;
         currentOutputFile = n;
-        this.fout = new File(outputFolder+currentOutputFile+outputFileLocation);
+        this.fout = new File(basePath+outputFolder+currentOutputFile+outputFileLocation);
     }
 
     public File importDependencies() {

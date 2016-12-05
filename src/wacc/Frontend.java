@@ -3,6 +3,7 @@ package wacc;
 import static java.lang.System.exit;
 
 import java.io.*;
+import java.nio.file.Path;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -71,7 +72,6 @@ public class Frontend {
             return compilerStatus;
         }
 
-        System.out.println();
         System.out.println("Main Program : Syntax and Semantic checking is successful");
 
         BackendVisitor back = new BackendVisitor(null);
