@@ -33,14 +33,15 @@ public class PrintInstruction extends ContainingDataOrLabelsInstruction {
                 numOfMsg++;
                 String[] namesOfMsg = {nameOfMsg};
                 setLabel(nameOfLabel, namesOfMsg);
-            } else if (type.checkType(PrimType.STRING) ||
+            } else if (type instanceof StringLiterInstruction ||
                     type.checkType(PrimType.BOOL)){
                 String nameOfMsg1;
                 String nameOfMsg2;
 
                 if (type.checkType(PrimType.STRING)) {
-                    nameOfMsg1 = setData(prefix + numOfMsg,((StringLiterInstruction) expr).getStringLiter());
+                    nameOfMsg1 = setData(prefix + numOfMsg, ((StringLiterInstruction) expr).getStringLiter());
                     numOfMsg++;
+
                     nameOfMsg2 = setData(prefix + numOfMsg,"\"%.*s\\0\"");
                     numOfMsg++;
 
@@ -52,7 +53,12 @@ public class PrintInstruction extends ContainingDataOrLabelsInstruction {
                 }
                 String[] namesOfMsg = {nameOfMsg1, nameOfMsg2};
                 setLabel(nameOfLabel, namesOfMsg);
-            }else {
+            } else if (type.checkType(PrimType.STRING)) {
+                String[] namesOfMsg = { setData(prefix + numOfMsg,"\"%.*s\\0\"") };
+                numOfMsg++;
+                setLabel(nameOfLabel, namesOfMsg);
+
+            } else {
                 String nameOfMsg = setData(prefix + numOfMsg,"\"%p\\0\"");
                 numOfMsg++;
                 String[] namesOfMsg = {nameOfMsg};
