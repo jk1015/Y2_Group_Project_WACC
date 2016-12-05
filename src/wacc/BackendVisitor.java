@@ -264,19 +264,32 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         stack.newScope();
         Instruction stat = visit(ctx.stat());
         int scopeSize = stack.descope();
-        return new WhileInstruction(expr, stat, scopeSize, ctx.getRuleIndex());
+        return new WhileInstruction(expr, stat, scopeSize, getIdentOfStat(ctx));
+    }
+
+    private int getIdentOfStat(@NotNull WACCParser.StatContext ctx) {
+        if (ctx instanceof WACCParser.WhileStatContext){
+            WACCParser.WhileStatContext whileStatContext = (WACCParser.WhileStatContext) ctx;
+            return whileStatContext.hashCode();
+        }else {
+            WACCParser.IfStatContext ifStatContext = (WACCParser.IfStatContext) ctx;
+            return ifStatContext.hashCode();
+        }
     }
 
     @Override
     public Instruction visitBreakStat(@NotNull WACCParser.BreakStatContext ctx){
         WACCParser.StatContext parent = (WACCParser.StatContext) ctx.getParent();
-        return new BreakInstruction(parent.getRuleIndex());
+        if (parent instanceof WACCParser.SeqStatContext){
+            parent = (WACCParser.StatContext) parent.getParent();
+        }
+        return new BreakInstruction(getIdentOfStat(parent));
     }
 
     @Override
     public Instruction visitContinueStat(@NotNull WACCParser.ContinueStatContext ctx){
         WACCParser.StatContext parent = (WACCParser.StatContext) ctx.getParent();
-        return new ContinueInstruction(parent.getRuleIndex());
+        return new ContinueInstruction(getIdentOfStat(parent) + 2);
     }
 
     @Override
@@ -288,7 +301,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         stack.newScope();
         Instruction stat2 = visit(ctx.stat(1));
         int scopeSize2 = stack.descope();
-        IfInstruction ins = new IfInstruction(expr, stat1, stat2, scopeSize1, scopeSize2, ctx.getRuleIndex());
+        IfInstruction ins = new IfInstruction(expr, stat1, stat2, scopeSize1, scopeSize2, getIdentOfStat(ctx));
         return ins;
     }
 
