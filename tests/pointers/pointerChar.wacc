@@ -1,0 +1,12 @@
+# Simple pointer use
+
+# Output:
+# a
+
+# Program:
+
+begin
+  char x = 'a';
+  char* y = &x;
+  print *y;
+end

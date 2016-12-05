@@ -1,0 +1,13 @@
+# Variable assignment via pointers
+
+# Output:
+# 10
+
+# Program:
+
+begin
+  int x = 5;
+  int *y = &x;
+  *y = 10;
+  print x;
+end
