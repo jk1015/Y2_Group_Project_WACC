@@ -40,6 +40,8 @@ SEMICOLON : ';' ;
 
 COMMA : ',' ;
 
+DOT : '.';
+
 //blocks
 BEGIN: 'begin';
 END: 'end' ;
@@ -65,6 +67,8 @@ FI: 'fi' ;
 WHILE: 'while' ;
 DO: 'do' ;
 DONE: 'done' ;
+BREAK: 'break' ;
+CONTINUE: 'continue' ;
 
 //pairs
 PAIR: 'pair' ;
@@ -77,6 +81,7 @@ INT_TYPE: 'int' ;
 BOOL_TYPE: 'bool' ;
 CHAR_TYPE: 'char' ;
 STRING_TYPE: 'string' ;
+FLOAT_TYPE: 'float' ;
 
 //null
 fragment NULL: 'null' ;
@@ -108,6 +113,7 @@ BOOL_LITERAL: 'true' | 'false';
 PAIR_LITERAL: NULL;
 CHAR_LITERAL: '\'' CHARACTER '\'' ;
 STRING_LITERAL: '"' CHARACTER* '"' ;
+FLOAT_LITER: (DIGIT)+ DOT (DIGIT)+ 'f';
 
 IDENTIFIER: ('_' | LETTER) ('_' | ALPHANUMERIC)* ;
 

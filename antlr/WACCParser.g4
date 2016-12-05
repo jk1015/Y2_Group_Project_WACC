@@ -25,6 +25,8 @@ stat: SKIPPER                           #skipStat
   | PRINTLN expr                        #printlnStat
   | IF expr THEN stat ELSE stat FI      #ifStat
   | WHILE expr DO stat DONE             #whileStat
+  | BREAK                               #breakStat
+  | CONTINUE                            #continueStat
   | BEGIN stat END                      #blockStat
   | stat SEMICOLON stat                 #seqStat
   ;
@@ -60,6 +62,7 @@ baseType: INT_TYPE
   | BOOL_TYPE
   | CHAR_TYPE
   | STRING_TYPE
+  | FLOAT_TYPE
   ;
 
 arrayType: (baseType | pairType) (OPEN_SQUARE CLOSE_SQUARE)+;
@@ -118,6 +121,7 @@ baseExpr: intLiter
   | pairLiter
   | identifier
   | arrayElem
+  | floatLiter
   ;
 
 expr1: expr1 binaryOper1 expr1
@@ -159,3 +163,5 @@ charLiter: CHAR_LITERAL;
 stringLiter: STRING_LITERAL;
 
 pairLiter: PAIR_LITERAL;
+
+floatLiter: (PLUS | MINUS)? FLOAT_LITER;
