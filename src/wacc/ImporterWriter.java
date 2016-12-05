@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 
 class ImporterWriter {
 
+    private final String outputFolder = ".temp/";
     private final String outputFileLocation = "out.wacc";
     private int currentOutputFile;
     private InputStream in;
@@ -23,13 +24,13 @@ class ImporterWriter {
     public ImporterWriter(InputStream in) {
         this.in = in;
         currentOutputFile = 0;
-        this.fout = new File(outputFileLocation);
+        this.fout = new File(outputFolder+outputFileLocation);
     }
 
     private ImporterWriter(InputStream in, int n) {
         this.in = in;
         currentOutputFile = n;
-        this.fout = new File(currentOutputFile+outputFileLocation);
+        this.fout = new File(outputFolder+currentOutputFile+outputFileLocation);
     }
 
     public File importDependencies() {
@@ -86,10 +87,7 @@ class ImporterWriter {
             ParseTree tree = parser.header();
             FrontendVisitor semanticAnalysis = new FrontendVisitor();
             semanticAnalysis.visit(tree);
-        } catch (WACCSemanticErrorException e) {
-            printErrorInHeader(e , dependencyName);
-            throw e;
-        } catch (WACCSyntaxErrorException e) {
+        } catch (WACCSemanticErrorException | WACCSyntaxErrorException e) {
             printErrorInHeader(e , dependencyName);
             throw e;
         }
