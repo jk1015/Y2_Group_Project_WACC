@@ -92,7 +92,7 @@ class ImporterWriter {
             throw e;
         }
 
-        System.out.println("Syntax and Semantic checking of " + dependencyName + " successful.");
+        System.out.println(dependencyName + " : Syntax and Semantic checking of successful.");
     }
 
     private void copyContentsOfDependencyIntoOutputFile(BufferedReader bin, BufferedWriter bw) throws IOException {

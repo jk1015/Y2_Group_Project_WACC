@@ -72,7 +72,7 @@ public class Frontend {
         }
 
         System.out.println();
-        System.out.println("Syntax and Semantic checking of main program is successful");
+        System.out.println("Main Program : Syntax and Semantic checking is successful");
 
         BackendVisitor back = new BackendVisitor(null);
         back.visit(tree).toAssembly(out);
