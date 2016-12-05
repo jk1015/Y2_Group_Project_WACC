@@ -16,6 +16,6 @@ public class RefIdentInstruction extends ExprInstruction {
 
     @Override
     public void toAssembly(PrintStream out) {
-        out.println("ADD " + getLocationString() + ", sp, " + stackOffset);
+        out.println("ADD " + getLocationString() + ", sp, #" + stackOffset);
     }
 }

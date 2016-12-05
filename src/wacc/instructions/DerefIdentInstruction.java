@@ -20,7 +20,7 @@ public class DerefIdentInstruction extends ExprInstruction {
     public void toAssembly(PrintStream out) {
         out.println("LDR " + getLocationString() + ", [sp, #" + location + "]");
         for (int i = 0; i < derefNum; i++) {
-            out.println("LDR " + getLocationString() + ", [r" + location + "]");
+            out.println("LDR " + getLocationString() + ", [" + getLocationString() + "]");
         }
     }
 }

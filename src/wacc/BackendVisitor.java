@@ -169,6 +169,8 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
             varType = parseArrayType(type.arrayType());
         } else if(type.pairType() != null) {
             varType = parsePairType(type.pairType());
+        } else if (type.ptrType() != null) {
+            varType = parsePtrType(type.ptrType());
         } else {
             varType = parseBaseType(type.baseType());
         }
@@ -227,6 +229,8 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
             type1 = parseBaseType(t1.baseType());
         } else if (t1.arrayType() != null) {
             type1 = parseArrayType(t1.arrayType());
+        } else if (t1.ptrType() != null) {
+            type1 = parsePtrType(t1.ptrType());
         } else {
             type1 = new NullType();
         }
@@ -235,6 +239,8 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
             type2 = parseBaseType(t2.baseType());
         } else if (t2.arrayType() != null) {
             type2 = parseArrayType(t2.arrayType());
+        } else if (t2.ptrType() != null) {
+            type2 = parsePtrType(t2.ptrType());
         } else {
             type2 = new NullType();
         }
@@ -242,6 +248,31 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         return new PairType(type1, type2);
     }
 
+    private Type parsePtrType(@NotNull WACCParser.PtrTypeContext type) {
+        WACCParser.PtrBaseTypeContext ctx2 = type.ptrBaseType();
+        Type varType = parsePtrBaseType(ctx2);
+        int ptrNum = type.MULTIPLY().size();
+
+        for (int i = 0; i < ptrNum; i++) {
+            varType = new PtrType(varType);
+        }
+
+        return varType;
+    }
+
+    private Type parsePtrBaseType(@NotNull WACCParser.PtrBaseTypeContext type) {
+        Type varType;
+
+        if(type.arrayType() != null) {
+            varType = parseArrayType(type.arrayType());
+        } else if(type.pairType() != null) {
+            varType = parsePairType(type.pairType());
+        } else {
+            varType = parseBaseType(type.baseType());
+        }
+
+        return varType;
+    }
 
     @Override
     public Instruction visitAssignStat(@NotNull WACCParser.AssignStatContext ctx) {
@@ -786,8 +817,8 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
             currentReg++;
             DerefIdentInstruction ins = new DerefIdentInstruction(currentReg, type, location, derefNum);
             currentReg--;
+            return ins;
         }
-        return super.visitDerefIdent(ctx);
     }
 
     @Override
