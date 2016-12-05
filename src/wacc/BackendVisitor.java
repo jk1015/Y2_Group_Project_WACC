@@ -290,6 +290,11 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     }
 
     @Override
+    public Instruction visitRefIdent(@NotNull WACCParser.RefIdentContext ctx) {
+        return super.visitRefIdent(ctx);
+    }
+
+    @Override
     public Instruction visitPrintStat(@NotNull WACCParser.PrintStatContext ctx) {
         ExprInstruction expr = (ExprInstruction) visitExpr(ctx.expr());
         PrintInstruction print = new PrintInstruction(expr,numOfMsg);
@@ -672,6 +677,11 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     }
 
     @Override
+    public Instruction visitPtrBaseType(@NotNull WACCParser.PtrBaseTypeContext ctx) {
+        return super.visitPtrBaseType(ctx);
+    }
+
+    @Override
     public Instruction visitIdentifier(@NotNull WACCParser.IdentifierContext ctx) {
         String id = ctx.IDENTIFIER().getText();
         String locationString = stack.getOffsetString(id);
@@ -753,6 +763,24 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     }
 
     @Override
+    public Instruction visitDerefIdent(@NotNull WACCParser.DerefIdentContext ctx) {
+        String id = ctx.identifier().getText();
+        String location = "" + stack.get(id);
+        Type type = stack.getType(id);
+
+        for (int i = 0; i < ctx.MULTIPLY().size(); i++) {
+            type = ((PtrType) type).deref();
+        }
+
+        if (ctx.getParent() instanceof WACCParser.AssignLHSContext) {
+
+        } else {
+
+        }
+        return super.visitDerefIdent(ctx);
+    }
+
+    @Override
     public Instruction visitParamList(@NotNull WACCParser.ParamListContext ctx) {
         return super.visitParamList(ctx);
     }
@@ -780,6 +808,11 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitBinaryOper4(@NotNull WACCParser.BinaryOper4Context ctx) {
         return super.visitBinaryOper4(ctx);
+    }
+
+    @Override
+    public Instruction visitPtrType(@NotNull WACCParser.PtrTypeContext ctx) {
+        return super.visitPtrType(ctx);
     }
 
     @Override
