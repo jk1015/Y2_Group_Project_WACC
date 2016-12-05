@@ -278,8 +278,14 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitAssignStat(@NotNull WACCParser.AssignStatContext ctx) {
-        LocatableInstruction lhs = ((LocatableInstruction) visit(ctx.assignLHS()));
+        AssignLHSInstruction lhs = ((AssignLHSInstruction) visitAssignLHS(ctx.assignLHS()));
+        if (lhs.usesRegister()) {
+            currentReg++;
+        }
         LocatableInstruction rhs = ((LocatableInstruction) visit(ctx.assignRHS()));
+        if (lhs.usesRegister()) {
+            currentReg--;
+        }
         return new AssignInstruction(lhs, rhs);
     }
 
@@ -811,14 +817,10 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         }
 
         if (ctx.getParent() instanceof WACCParser.AssignLHSContext) {
-            currentReg++;
             DerefIdentLHSInstruction ins = new DerefIdentLHSInstruction(location, type, currentReg, derefNum);
-            currentReg--;
             return ins;
         } else {
-            currentReg++;
             DerefIdentInstruction ins = new DerefIdentInstruction(currentReg, type, location, derefNum);
-            currentReg--;
             return ins;
         }
     }

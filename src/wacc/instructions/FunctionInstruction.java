@@ -26,6 +26,7 @@ public class FunctionInstruction implements Instruction {
         statement.toAssembly(out);
 
         out.println("ADD sp, sp, #" + scopeSize);
+
         // set pc
         out.println("POP {pc}");
         out.println(".ltorg");
