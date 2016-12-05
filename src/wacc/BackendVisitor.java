@@ -268,28 +268,27 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     }
 
     private int getIdentOfStat(@NotNull WACCParser.StatContext ctx) {
-        if (ctx instanceof WACCParser.WhileStatContext){
-            WACCParser.WhileStatContext whileStatContext = (WACCParser.WhileStatContext) ctx;
-            return whileStatContext.hashCode();
-        }else {
-            WACCParser.IfStatContext ifStatContext = (WACCParser.IfStatContext) ctx;
-            return ifStatContext.hashCode();
-        }
+       return ctx.hashCode();
     }
 
-    @Override
-    public Instruction visitBreakStat(@NotNull WACCParser.BreakStatContext ctx){
+    private WACCParser.StatContext getParentStatContext(@NotNull WACCParser.StatContext ctx) {
         WACCParser.StatContext parent = (WACCParser.StatContext) ctx.getParent();
         if (parent instanceof WACCParser.SeqStatContext){
             parent = (WACCParser.StatContext) parent.getParent();
         }
+        return parent;
+    }
+
+    @Override
+    public Instruction visitBreakStat(@NotNull WACCParser.BreakStatContext ctx){
+        WACCParser.StatContext parent = getParentStatContext(ctx);
         return new BreakInstruction(getIdentOfStat(parent));
     }
 
     @Override
     public Instruction visitContinueStat(@NotNull WACCParser.ContinueStatContext ctx){
-        WACCParser.StatContext parent = (WACCParser.StatContext) ctx.getParent();
-        return new ContinueInstruction(getIdentOfStat(parent) + 2);
+        WACCParser.StatContext parent = getParentStatContext(ctx);
+        return new ContinueInstruction(getIdentOfStat(parent));
     }
 
     @Override

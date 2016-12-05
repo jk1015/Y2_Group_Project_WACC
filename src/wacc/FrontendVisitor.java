@@ -26,6 +26,7 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
 	private boolean hasReturn;
     private HashMap<String, FunctionType> calledFunctions;
     private Type lhsRequiredType;
+    private boolean inALoopOrIfStat;
 
 	public FrontendVisitor() {
 		symbolTable = new ScopedSymbolTable();
@@ -194,18 +195,41 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
         symbolTable.exitScope();
         return null;
     }
+    @Override
+    public Type visitBreakStat(@NotNull WACCParser.BreakStatContext ctx){
+        breakOrIfError(ctx, "break");
+        return null;
+    }
+
+    @Override
+    public Type visitContinueStat(@NotNull WACCParser.ContinueStatContext ctx){
+        breakOrIfError(ctx, "continue");
+        return null;
+    }
+
+    private void breakOrIfError(@NotNull WACCParser.StatContext ctx, String name) {
+        if (!inALoopOrIfStat){
+            throw new InvalidBreakOrContinueException(ctx, name + " statement must be in a loop or if statement");
+        }
+    }
 
     @Override
     public Type visitWhileStat(WACCParser.WhileStatContext ctx) {
         // Check condition is boolean, check children are valid.
         Type type = visit(ctx.expr());
         if (type.checkType(PrimType.BOOL)) {
-            symbolTable.enterNewScope();
-            visit(ctx.stat());
-            symbolTable.exitScope();
+            enterLoopOrStat(ctx.stat());
             return null;
         }
         throw new InvalidTypeException(ctx, PrimType.BOOL, type);
+    }
+
+    private void enterLoopOrStat(WACCParser.StatContext ctx) {
+        symbolTable.enterNewScope();
+        inALoopOrIfStat = true;
+        visit(ctx);
+        inALoopOrIfStat = false;
+        symbolTable.exitScope();
     }
 
     @Override
@@ -216,16 +240,11 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
         if (!PrimType.BOOL.checkType(type)){
             throw new InvalidTypeException(ctx, PrimType.BOOL, type);
         }
-        symbolTable.enterNewScope();
-        visit(ctx.stat(0));
-        symbolTable.exitScope();
+        enterLoopOrStat(ctx.stat(0));
         boolean tempReturn = hasReturn;
         hasReturn = false;
-        symbolTable.enterNewScope();
-        visit(ctx.stat(1));
-        symbolTable.exitScope();
+        enterLoopOrStat(ctx.stat(1));
         hasReturn = tempReturn && hasReturn;
-
         return null;
     }
 
