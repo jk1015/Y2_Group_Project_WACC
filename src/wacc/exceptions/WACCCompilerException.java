@@ -2,6 +2,7 @@ package wacc.exceptions;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
+import wacc.WACCErrorListener;
 
 @SuppressWarnings("serial")
 public abstract class WACCCompilerException extends ParseCancellationException {

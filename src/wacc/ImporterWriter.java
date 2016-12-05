@@ -4,7 +4,6 @@ import antlr.WACCLexer;
 import antlr.WACCParser;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import wacc.exceptions.WACCCompilerException;
 import wacc.exceptions.WACCSemanticErrorException;
@@ -13,8 +12,6 @@ import wacc.exceptions.WACCSyntaxErrorException;
 import java.io.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static java.lang.System.exit;
 
 class ImporterWriter {
 
@@ -85,11 +82,17 @@ class ImporterWriter {
         parser.removeErrorListeners();
         parser.addErrorListener(WACCErrorListener.INSTANCE);
 
-        ParseTree tree = parser.header();
-
-        FrontendVisitor semanticAnalysis = new FrontendVisitor();
-
-        semanticAnalysis.visit(tree);
+        try {
+            ParseTree tree = parser.header();
+            FrontendVisitor semanticAnalysis = new FrontendVisitor();
+            semanticAnalysis.visit(tree);
+        } catch (WACCSemanticErrorException e) {
+            printErrorInHeader(e , dependencyName);
+            throw e;
+        } catch (WACCSyntaxErrorException e) {
+            printErrorInHeader(e , dependencyName);
+            throw e;
+        }
 
         System.out.println("Syntax and Semantic checking of " + dependencyName + " successful.");
     }
@@ -113,5 +116,9 @@ class ImporterWriter {
         }
 
         bw.newLine();
+    }
+
+    private void printErrorInHeader(WACCCompilerException e, String dependencyName) {
+        System.out.println(dependencyName + " : " + e);
     }
 }
