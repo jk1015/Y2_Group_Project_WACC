@@ -2,6 +2,10 @@
 # Ruby front-end for your compiler.
 # You are free to change the language used for this script,
 # but do *not* change its name.
+
+# Compile script makes temporary folder to put temporary wacc files in.
+# This script deletes this folder in case of an exception in the java program
+
 require 'fileutils'
 
 begin 
