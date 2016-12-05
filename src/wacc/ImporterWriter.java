@@ -63,8 +63,7 @@ class ImporterWriter {
     private void copyContentsOfDependencyIntoOutputFile(BufferedReader bin, BufferedWriter bw) throws IOException {
         String transfer;
         while ((transfer = bin.readLine()) != null) {
-            bw.write(transfer);
-            bw.newLine();
+            bw.write(transfer + ' ');
         }
     }
 }
