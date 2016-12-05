@@ -20,12 +20,15 @@ public class DerefIdentLHSInstruction implements LocatableInstruction {
 
     @Override
     public void toAssembly(PrintStream out) {
-
+        out.println("ldr r" + currentReg + ", [sp, #" + locationString + "]");
+        for (int i = 0; i < derefNum - 1; i++) {
+            out.println("ldr r" + currentReg + ", [r" + locationString + "]");
+        }
     }
 
     @Override
     public String getLocationString() {
-        return "[r"+currentReg + "]";
+        return "[r" + currentReg + "]";
     }
 
     @Override

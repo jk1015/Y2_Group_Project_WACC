@@ -291,7 +291,11 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitRefIdent(@NotNull WACCParser.RefIdentContext ctx) {
-        return super.visitRefIdent(ctx);
+        String ident = ctx.identifier().getText();
+        int stackOffset = stack.get(ident);
+        Type type = stack.getType(ident);
+        type = new PtrType(type);
+        return new RefIdentInstruction(currentReg, type, stackOffset);
     }
 
     @Override
@@ -767,15 +771,21 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         String id = ctx.identifier().getText();
         String location = "" + stack.get(id);
         Type type = stack.getType(id);
+        int derefNum = ctx.MULTIPLY().size();
 
-        for (int i = 0; i < ctx.MULTIPLY().size(); i++) {
+        for (int i = 0; i < derefNum; i++) {
             type = ((PtrType) type).deref();
         }
 
         if (ctx.getParent() instanceof WACCParser.AssignLHSContext) {
-
+            currentReg++;
+            DerefIdentLHSInstruction ins = new DerefIdentLHSInstruction(location, type, currentReg, derefNum);
+            currentReg--;
+            return ins;
         } else {
-
+            currentReg++;
+            DerefIdentInstruction ins = new DerefIdentInstruction(currentReg, type, location, derefNum);
+            currentReg--;
         }
         return super.visitDerefIdent(ctx);
     }
