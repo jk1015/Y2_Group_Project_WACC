@@ -6,6 +6,8 @@ options {
 
 program: BEGIN function* stat END EOF;
 
+header: function* EOF;
+
 function: type identifier OPEN_PARENTHESES paramList? CLOSE_PARENTHESES IS stat END;
 
 paramList: param (COMMA param)*;
