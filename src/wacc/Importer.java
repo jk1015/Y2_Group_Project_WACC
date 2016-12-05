@@ -1,5 +1,8 @@
 package wacc;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+
 public class Importer {
 
 
@@ -8,7 +11,15 @@ public class Importer {
             throw new IllegalArgumentException();
         }
 
-        ImporterWriter iw = new ImporterWriter(args[0]);
+        FileInputStream fin = null;
+
+        try {
+            fin = new FileInputStream(args[0]);
+        }
+        catch (FileNotFoundException e) {
+        }
+
+        ImporterWriter iw = new ImporterWriter(fin);
         iw.importDependencies();
     }
 }

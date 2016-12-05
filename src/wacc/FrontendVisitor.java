@@ -38,6 +38,19 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
     public Type visitProgram(@NotNull WACCParser.ProgramContext ctx) {
         super.visitProgram(ctx);
 
+        checkThatFunctionsHaveBeenDefinedCorrectly();
+        return null;
+    }
+
+    @Override
+    public Type visitHeader(@NotNull WACCParser.HeaderContext ctx) {
+        super.visitChildren(ctx);
+
+        checkThatFunctionsHaveBeenDefinedCorrectly();
+        return null;
+    }
+
+    private void checkThatFunctionsHaveBeenDefinedCorrectly() {
         Set<String> functionNames = calledFunctions.keySet();
 
         for(String name: functionNames) {
@@ -48,9 +61,7 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
                 }
                 throw new UndeclaredFunctionException(name + " is undefined should be of type " + fType);
             }
-
         }
-        return null;
     }
 
     @Override

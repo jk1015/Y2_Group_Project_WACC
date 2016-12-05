@@ -1,31 +1,43 @@
 package wacc;
 
+import antlr.WACCLexer;
+import antlr.WACCParser;
+import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.tree.ParseTree;
+import wacc.exceptions.WACCCompilerException;
+import wacc.exceptions.WACCSemanticErrorException;
+import wacc.exceptions.WACCSyntaxErrorException;
+
 import java.io.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static java.lang.System.exit;
 
 class ImporterWriter {
 
     private final String outputFileLocation = "out.wacc";
     private int currentOutputFile;
-    private File fin;
+    private InputStream in;
     private File fout;
 
-    public ImporterWriter(String s) {
-        this.fin = new File(s);
+    public ImporterWriter(InputStream in) {
+        this.in = in;
         currentOutputFile = 0;
         this.fout = new File(outputFileLocation);
     }
 
-    private ImporterWriter(String s, int n) {
-        this.fin = new File(s);
+    private ImporterWriter(InputStream in, int n) {
+        this.in = in;
         currentOutputFile = n;
         this.fout = new File(currentOutputFile+outputFileLocation);
     }
 
     public File importDependencies() {
         try {
-            BufferedReader br = new BufferedReader(new FileReader(fin));
+            BufferedReader br = new BufferedReader(new InputStreamReader(in));
             FileOutputStream fos = new FileOutputStream(fout);
             BufferedWriter outputWriter = new BufferedWriter(new OutputStreamWriter(fos));
             String inputLine;
@@ -37,8 +49,10 @@ class ImporterWriter {
                     String dependencyName = m.group(1);
 
                     // import sub-dependencies recursively into temporary file
-                    ImporterWriter iw = new ImporterWriter(dependencyName, ++currentOutputFile);
+                    ImporterWriter iw = new ImporterWriter(new FileInputStream(dependencyName), ++currentOutputFile);
                     File dependency = iw.importDependencies();
+
+                    errorCheck(dependency, dependencyName);
 
                     // copy contents of temporary file into output file
                     BufferedReader inputReader = new BufferedReader(new FileReader(dependency));
@@ -60,10 +74,44 @@ class ImporterWriter {
         return fout;
     }
 
+    private void errorCheck(File dependency, String dependencyName) throws IOException {
+        ANTLRInputStream input;
+        input = new ANTLRInputStream(new FileInputStream(dependency));
+
+        WACCLexer lexer = new WACCLexer(input);
+        CommonTokenStream tokenStream = new CommonTokenStream(lexer);
+
+        WACCParser parser = new WACCParser(tokenStream);
+        parser.removeErrorListeners();
+        parser.addErrorListener(WACCErrorListener.INSTANCE);
+
+        ParseTree tree = parser.header();
+
+        FrontendVisitor semanticAnalysis = new FrontendVisitor();
+
+        semanticAnalysis.visit(tree);
+
+        System.out.println("Syntax and Semantic checking of " + dependencyName + " successful.");
+    }
+
     private void copyContentsOfDependencyIntoOutputFile(BufferedReader bin, BufferedWriter bw) throws IOException {
-        String transfer;
-        while ((transfer = bin.readLine()) != null) {
-            bw.write(transfer + ' ');
+        String transfer = bin.readLine();
+
+        if (transfer == null) {
+            bw.newLine();
+            return;
         }
+
+        while (true) {
+            bw.write(transfer);
+            transfer = bin.readLine();
+            if (transfer != null) {
+                bw.write(' ');
+            } else {
+                break;
+            }
+        }
+
+        bw.newLine();
     }
 }
