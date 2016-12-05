@@ -21,7 +21,17 @@ public class FloatLiterInstruction extends ExprInstruction {
 
     @Override
     public void toAssembly(PrintStream out) {
-        out.println("FLD " + valueInFloat);
+        out.println("VMOV.I32 d" + currentReg + hex(valueInFloat));
 
+    }
+
+    public static String hex(int n) {
+        // call toUpperCase() if that's required
+        return String.format("0x%8s", Integer.toHexString(n)).replace(' ', '0');
+    }
+
+    public static String hex(float f) {
+        // change the float to raw integer bits(according to the OP's requirement)
+        return hex(Float.floatToRawIntBits(f));
     }
 }

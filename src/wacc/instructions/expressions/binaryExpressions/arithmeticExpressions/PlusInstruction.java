@@ -24,13 +24,13 @@ public class PlusInstruction extends BinaryExprInstruction {
         super.toAssembly(out);
         if (expr1 instanceof FloatLiterInstruction &&
                 expr2 instanceof FloatLiterInstruction) {
-            out.println("FADDP r0");
+            out.println("FADDP st(1) st(0)");
         }else if(expr1 instanceof FloatLiterInstruction) {
             out.println("FLD " + ((IntLiterInstruction)expr2).getValue());
-            out.println("FADDP r0");
+            out.println("FADDP st(1) st(0)");
         }else if(expr2 instanceof FloatLiterInstruction){
             out.println("FLD " + ((IntLiterInstruction)expr1).getValue());
-            out.println("FADDP r0");
+            out.println("FADDP st(1) st(0)");
         }else {
             out.println("ADDS " + getLocationString() + ", "
                     + getExpr1String() + ", " + getExpr2String());
