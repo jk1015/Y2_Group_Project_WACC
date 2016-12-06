@@ -10,6 +10,8 @@
 *.aux
 *.dvi
 *.ps
+*.synctex.gz
+*.synctex
 
 #ignore junk files from compiling C code
 *.o
