@@ -2,9 +2,8 @@ package wacc;
 
 import static java.lang.System.exit;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
+import java.io.*;
+import java.nio.file.Path;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -20,8 +19,26 @@ import wacc.exceptions.WACCSyntaxErrorException;
 public class Frontend {
 	
 	public CompilerStatus run(InputStream in, PrintStream out) throws IOException {
+        ImporterWriter iw = new ImporterWriter(in);
+
+        CompilerStatus compilerStatus = CompilerStatus.SUCCESS;
+
+        File fileAfterImports = null;
+
+        try {
+            fileAfterImports = iw.importDependencies();
+        } catch (WACCSyntaxErrorException e) {
+            compilerStatus = CompilerStatus.SYNTAX_ERROR;
+        } catch (WACCSemanticErrorException e) {
+            compilerStatus = CompilerStatus.SEMANTIC_ERROR;
+        }
+
+        if (compilerStatus != CompilerStatus.SUCCESS) {
+            return compilerStatus;
+        }
+
         ANTLRInputStream input;
-		input = new ANTLRInputStream(in);
+		input = new ANTLRInputStream(new FileInputStream(fileAfterImports));
 
         WACCLexer lexer = new WACCLexer(input);
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
@@ -35,21 +52,19 @@ public class Frontend {
         try {
             tree = parser.program();
         } catch (WACCCompilerException e) {
-            System.out.println(e);
+            printErrorInMainProgram(e);
             exit(CompilerStatus.SYNTAX_ERROR.code());
         }
 
         FrontendVisitor semanticAnalysis = new FrontendVisitor();
 
-        CompilerStatus compilerStatus = CompilerStatus.SUCCESS;
-
         try {
         	semanticAnalysis.visit(tree);
         } catch (WACCSyntaxErrorException e) {
-        	System.err.println(e);
+        	printErrorInMainProgram(e);
         	compilerStatus = CompilerStatus.SYNTAX_ERROR;
         } catch (WACCSemanticErrorException e) {
-        	System.err.println(e);
+            printErrorInMainProgram(e);
         	compilerStatus = CompilerStatus.SEMANTIC_ERROR;
         }
 
@@ -57,12 +72,16 @@ public class Frontend {
             return compilerStatus;
         }
 
-        System.out.println("Syntax and Semantic checking successful.");
+        System.out.println("Main Program : Syntax and Semantic checking is successful");
 
         BackendVisitor back = new BackendVisitor(null);
         back.visit(tree).toAssembly(out);
 
         return compilerStatus;
 	}
-	
+
+    private void printErrorInMainProgram(WACCCompilerException e) {
+        System.out.println("Main Program : " + e);
+    }
+
 }

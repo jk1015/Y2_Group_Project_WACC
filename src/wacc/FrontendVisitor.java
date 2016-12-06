@@ -40,6 +40,19 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
     public Type visitProgram(@NotNull WACCParser.ProgramContext ctx) {
         super.visitProgram(ctx);
 
+        checkThatFunctionsHaveBeenDefinedCorrectly();
+        return null;
+    }
+
+    @Override
+    public Type visitHeader(@NotNull WACCParser.HeaderContext ctx) {
+        super.visitChildren(ctx);
+
+        checkThatFunctionsHaveBeenDefinedCorrectly();
+        return null;
+    }
+
+    private void checkThatFunctionsHaveBeenDefinedCorrectly() {
         Set<String> functionNames = calledFunctions.keySet();
 
         for(String name: functionNames) {
@@ -50,9 +63,20 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
                 }
                 throw new UndeclaredFunctionException(name + " is undefined should be of type " + fType);
             }
-
         }
-        return null;
+    }
+
+    @Override
+    public Type visitDerefIdent(@NotNull WACCParser.DerefIdentContext ctx) {
+        Type type = visit(ctx.identifier());
+        int count = ctx.MULTIPLY().size();
+        for (int i = 0; i < count; i++) {
+            if (!(type instanceof PtrType)) {
+                throw new InvalidTypeException(ctx, "Can't dereference a non-pointer");
+            }
+            type = ((PtrType) type).deref();
+        }
+        return type;
     }
 
     @Override
@@ -251,6 +275,11 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
             throw new InvalidTypeException(ctx, "Can't read into booleans or pairs.");
         }
         return null;
+    }
+
+    @Override
+    public Type visitRefIdent(@NotNull WACCParser.RefIdentContext ctx) {
+        return new PtrType(visitIdentifier(ctx.identifier()));
     }
 
     @Override
@@ -518,6 +547,15 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
             case WACCLexer.STRING_TYPE: return new ArrayType(PrimType.CHAR);
         }
         return null;
+    }
+
+    @Override
+    public Type visitPtrType(@NotNull WACCParser.PtrTypeContext ctx) {
+        Type type = visit(ctx.ptrBaseType());
+        for (int i = 0; i < ctx.MULTIPLY().size(); i++) {
+            type = new PtrType(type);
+        }
+        return type;
     }
 
     @Override

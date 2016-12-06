@@ -6,6 +6,8 @@ options {
 
 program: BEGIN struct* function* stat END EOF;
 
+header: function* EOF;
+
 function: type identifier OPEN_PARENTHESES paramList? CLOSE_PARENTHESES IS stat END;
 
 struct: STRUCT identifier IS (type identifier)* END;
@@ -35,6 +37,7 @@ assignLHS: identifier
   | arrayElem
   | pairElem
   | structContents
+  | derefIdent
   ;
 
 assignRHS: expr
@@ -59,6 +62,7 @@ type: baseType
   | arrayType
   | pairType
   | structType
+  | ptrType
   ;
 
 baseType: INT_TYPE
@@ -73,9 +77,17 @@ pairType: PAIR OPEN_PARENTHESES pairElemType COMMA pairElemType CLOSE_PARENTHESE
 
 structType: identifier;
 
+ptrType: ptrBaseType (MULTIPLY)+;
+
+ptrBaseType: baseType
+  | arrayType
+  | pairType
+  ;
+
 pairElemType: baseType
   | arrayType
   | pairNullType
+  | ptrType
   ;
 
 pairNullType: PAIR;
@@ -124,6 +136,8 @@ baseExpr: intLiter
   | stringLiter
   | pairLiter
   | identifier
+  | refIdent
+  | derefIdent
   | arrayElem
   ;
 
@@ -153,7 +167,12 @@ expr6: expr6 binaryOper6 expr6
   | expr5
   ;
 
+
 structContents: identifier DOT identifier;
+
+refIdent: AMP identifier;
+
+derefIdent: (MULTIPLY)+ identifier;
 
 arrayElem: identifier (OPEN_SQUARE expr CLOSE_SQUARE)+;
 

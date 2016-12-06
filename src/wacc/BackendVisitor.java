@@ -200,6 +200,8 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
             varType = parseArrayType(type.arrayType());
         } else if(type.pairType() != null) {
             varType = parsePairType(type.pairType());
+        } else if (type.ptrType() != null) {
+            varType = parsePtrType(type.ptrType());
         } else {
             varType = parseBaseType(type.baseType());
         }
@@ -258,6 +260,8 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
             type1 = parseBaseType(t1.baseType());
         } else if (t1.arrayType() != null) {
             type1 = parseArrayType(t1.arrayType());
+        } else if (t1.ptrType() != null) {
+            type1 = parsePtrType(t1.ptrType());
         } else {
             type1 = new NullType();
         }
@@ -266,6 +270,8 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
             type2 = parseBaseType(t2.baseType());
         } else if (t2.arrayType() != null) {
             type2 = parseArrayType(t2.arrayType());
+        } else if (t2.ptrType() != null) {
+            type2 = parsePtrType(t2.ptrType());
         } else {
             type2 = new NullType();
         }
@@ -273,11 +279,42 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         return new PairType(type1, type2);
     }
 
+    private Type parsePtrType(@NotNull WACCParser.PtrTypeContext type) {
+        WACCParser.PtrBaseTypeContext ctx2 = type.ptrBaseType();
+        Type varType = parsePtrBaseType(ctx2);
+        int ptrNum = type.MULTIPLY().size();
+
+        for (int i = 0; i < ptrNum; i++) {
+            varType = new PtrType(varType);
+        }
+
+        return varType;
+    }
+
+    private Type parsePtrBaseType(@NotNull WACCParser.PtrBaseTypeContext type) {
+        Type varType;
+
+        if(type.arrayType() != null) {
+            varType = parseArrayType(type.arrayType());
+        } else if(type.pairType() != null) {
+            varType = parsePairType(type.pairType());
+        } else {
+            varType = parseBaseType(type.baseType());
+        }
+
+        return varType;
+    }
 
     @Override
     public Instruction visitAssignStat(@NotNull WACCParser.AssignStatContext ctx) {
-        LocatableInstruction lhs = ((LocatableInstruction) visit(ctx.assignLHS()));
+        AssignLHSInstruction lhs = ((AssignLHSInstruction) visitAssignLHS(ctx.assignLHS()));
+        if (lhs.usesRegister()) {
+            currentReg++;
+        }
         LocatableInstruction rhs = ((LocatableInstruction) visit(ctx.assignRHS()));
+        if (lhs.usesRegister()) {
+            currentReg--;
+        }
         return new AssignInstruction(lhs, rhs);
     }
 
@@ -318,6 +355,15 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         numOfMsg = readInstruction.addDataAndLabels();
         addDataAndLabels(readInstruction);
         return readInstruction;
+    }
+
+    @Override
+    public Instruction visitRefIdent(@NotNull WACCParser.RefIdentContext ctx) {
+        String ident = ctx.identifier().getText();
+        int stackOffset = stack.get(ident);
+        Type type = stack.getType(ident);
+        type = new PtrType(type);
+        return new RefIdentInstruction(currentReg, type, stackOffset);
     }
 
     @Override
@@ -703,6 +749,11 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     }
 
     @Override
+    public Instruction visitPtrBaseType(@NotNull WACCParser.PtrBaseTypeContext ctx) {
+        return super.visitPtrBaseType(ctx);
+    }
+
+    @Override
     public Instruction visitIdentifier(@NotNull WACCParser.IdentifierContext ctx) {
         String id = ctx.IDENTIFIER().getText();
         String locationString = stack.getOffsetString(id);
@@ -784,6 +835,26 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     }
 
     @Override
+    public Instruction visitDerefIdent(@NotNull WACCParser.DerefIdentContext ctx) {
+        String id = ctx.identifier().getText();
+        String location = "" + stack.get(id);
+        Type type = stack.getType(id);
+        int derefNum = ctx.MULTIPLY().size();
+
+        for (int i = 0; i < derefNum; i++) {
+            type = ((PtrType) type).deref();
+        }
+
+        if (ctx.getParent() instanceof WACCParser.AssignLHSContext) {
+            DerefIdentLHSInstruction ins = new DerefIdentLHSInstruction(location, type, currentReg, derefNum);
+            return ins;
+        } else {
+            DerefIdentInstruction ins = new DerefIdentInstruction(currentReg, type, location, derefNum);
+            return ins;
+        }
+    }
+
+    @Override
     public Instruction visitParamList(@NotNull WACCParser.ParamListContext ctx) {
         return super.visitParamList(ctx);
     }
@@ -811,6 +882,11 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitBinaryOper4(@NotNull WACCParser.BinaryOper4Context ctx) {
         return super.visitBinaryOper4(ctx);
+    }
+
+    @Override
+    public Instruction visitPtrType(@NotNull WACCParser.PtrTypeContext ctx) {
+        return super.visitPtrType(ctx);
     }
 
     @Override
