@@ -18,8 +18,8 @@ import wacc.exceptions.WACCSyntaxErrorException;
 
 public class Frontend {
 	
-	public CompilerStatus run(InputStream in, PrintStream out) throws IOException {
-        ImporterWriter iw = new ImporterWriter(in);
+	public CompilerStatus run(InputStream in, PrintStream out, String sourcePath) throws IOException {
+        ImporterWriter iw = new ImporterWriter(in, sourcePath);
 
         CompilerStatus compilerStatus = CompilerStatus.SUCCESS;
 

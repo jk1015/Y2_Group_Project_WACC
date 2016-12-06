@@ -10,19 +10,22 @@ public class Compiler {
     	Frontend frontend = new Frontend();
     	InputStream in;
         PrintStream out;
-    	CompilerStatus status = CompilerStatus.SUCCESS;
+        String sourcePath;
+        CompilerStatus status = CompilerStatus.SUCCESS;
     	try {
     		if (args.length == 0) {
     			in = System.in;
+                sourcePath = new File("").getAbsolutePath()+"/";
     		} else {
     			in = new FileInputStream(args[0]);
+                sourcePath = new File(args[0]).getParentFile().getAbsolutePath()+"/";
     		}
     		if (args.length <= 1) {
                 out = System.out;
             } else {
                 out = new PrintStream(args[1]);
             }
-    		status = frontend.run(in, out);
+    		status = frontend.run(in, out, sourcePath);
     	} catch (FileNotFoundException e) {
     		System.err.println("File \"" + args[0] + "\" not found.");
     		exit(-1);

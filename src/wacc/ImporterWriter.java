@@ -10,29 +10,31 @@ import wacc.exceptions.WACCSemanticErrorException;
 import wacc.exceptions.WACCSyntaxErrorException;
 
 import java.io.*;
-import java.nio.file.Path;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 class ImporterWriter {
 
     private final String basePath = new File("").getAbsolutePath()+"/";
+    private String dependencyPath;
     private final String outputFolder = ".temp/";
     private final String outputFileLocation = "out.wacc";
-    private int currentOutputFile;
+    private int currentOutputFileNum;
     private InputStream in;
     private File fout;
 
-    public ImporterWriter(InputStream in) {
+    public ImporterWriter(InputStream in, String sourcePath) {
         this.in = in;
-        currentOutputFile = 0;
+        currentOutputFileNum = 0;
+        dependencyPath = sourcePath;
         this.fout = new File(basePath+outputFolder+outputFileLocation);
     }
 
-    private ImporterWriter(InputStream in, int n) {
+    private ImporterWriter(InputStream in, int n, String dependencyPath) {
         this.in = in;
-        currentOutputFile = n;
-        this.fout = new File(basePath+outputFolder+currentOutputFile+outputFileLocation);
+        currentOutputFileNum = n;
+        this.dependencyPath = dependencyPath;
+        this.fout = new File(basePath+outputFolder+currentOutputFileNum+outputFileLocation);
     }
 
     public File importDependencies() {
@@ -49,7 +51,11 @@ class ImporterWriter {
                     String dependencyName = m.group(1);
 
                     // import sub-dependencies recursively into temporary file
-                    ImporterWriter iw = new ImporterWriter(new FileInputStream(dependencyName), ++currentOutputFile);
+                    String dependencyFilePath = dependencyPath + dependencyName;
+                    String dependencyParentPath = new File(dependencyFilePath).getParentFile().getAbsolutePath()+"/";
+
+                    FileInputStream in = new FileInputStream(dependencyFilePath);
+                    ImporterWriter iw = new ImporterWriter(in, ++currentOutputFileNum, dependencyParentPath);
                     File dependency = iw.importDependencies();
 
                     errorCheck(dependency, dependencyName);
@@ -120,5 +126,9 @@ class ImporterWriter {
 
     private void printErrorInHeader(WACCCompilerException e, String dependencyName) {
         System.out.println(dependencyName + " : " + e);
+    }
+
+    public String getDependencyPath() {
+        return dependencyPath;
     }
 }
