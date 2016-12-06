@@ -273,6 +273,14 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitIfStat(@NotNull WACCParser.IfStatContext ctx) {
         ExprInstruction expr = (ExprInstruction) visit(ctx.expr());
+        if (expr instanceof BoolLiterInstruction) {
+            boolean exprValue = ((BoolLiterInstruction) expr).getValue();
+            if (exprValue) {
+                return visit(ctx.stat(0));
+            } else {
+                return visit(ctx.stat(1));
+            }
+        }
         stack.newScope();
         Instruction stat1 = visit(ctx.stat(0));
         int scopeSize1 = stack.descope();
