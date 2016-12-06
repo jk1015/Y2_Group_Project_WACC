@@ -39,19 +39,15 @@ The difficulty of future development is mixed. Whilst we think it's easy to make
 
 \section{The Project Management}
 \spec{An analysis of the organisation of your group and your use of project management tools (such as Git). You should describe how your group was structured, how you coordinated your work and detail any tools that helped/hindered your progress. You should also discuss what went well and what you would do differently if you were to do the lab again.}
-...
-\begin{itemize}
-\item Master branch only has functional code
-\item Each person had an individual branch
-\item Merged into development
-\item Once development worked, pushed into master
-\item Worked on general program structure together
-\item Split into individuals/pairs, split up instructions
-\item Wrote test suite in ruby, based on labTS
-\item Floating point vfpv3 arm emulator
-\item Good git use - merges were easy
-\item Start work earlier
-\end{itemize}
+We organised our project using Git. By using the Git branching tools, we managed to easily distinguish between functioning and non-functioning code, and avoid merge conflicts. Firstly, we made sure to reserve the master branch for functioning code. By making sure that only code that compiles and runs successfully is on the master branch, we always knew which version we had to run large-scale testing on.
+
+Non-tested code was put on the development branch. We tried to make sure that the code here would always compile, but we were less strict about that on this branch. Once we were confident that the code on development worked properly, we would merge it into master. Each individual group member would develop on their own branch, then merge onto the development branch once they were done. This allowed us to avoid merge conflicts, as there was never more than one person working on the same branch at the same time. 
+
+We worked together to build the general structure of the frontend and backend so that we all knew how the program would function, then divided tasks between each of us. Whilst a lot of the code was written individually, we also did some pair programming as we found that having a second pair of eyes was useful.
+
+We wrote a test suite in ruby, designed to mimic the test suite on LabTS. This meant we could test code quicker than using LabTS and allowed us to do testing without having to merge bad code onto the master branch. This turned out to be incredibly useful, and had added benefits such as being able to test only specific categories of tests to save time. This improved our productivity greatly as their was much less downtime from waiting for LabTS to test code.
+
+However, there are a few things that we would change if we were to do the lab again. Whilst we are very happy with the frontend, we think the backend could do with some improvement. Firstly, we would start on the backend earlier, as we were pressed for time which stopped us from doing as much as we had wanted. Also, we would spend some more time planning out the design of the backend and weighing out the pros and cons of different design patterns. The way we ended up doing it, we stumbled upon a lot of issues which could be fixed by changing the design, but at that point we were too far in to rewrite the program completely.
 
 \section{The Design Choices}
 \spec{An analysis of the design choices that you made during the WACC lab. You should discuss the design patterns you used when designing your code and why you chose to use them.}
