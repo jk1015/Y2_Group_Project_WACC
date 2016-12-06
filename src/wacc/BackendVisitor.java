@@ -2,12 +2,11 @@ package wacc;
 
 import antlr.WACCLexer;
 import antlr.WACCParser;
-import org.antlr.v4.runtime.misc.NotNull;
 import antlr.WACCParserBaseVisitor;
+import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import wacc.instructions.*;
 import wacc.instructions.expressions.ExprInstruction;
-import wacc.instructions.PairLHSInstruction;
 import wacc.instructions.expressions.baseExpressions.*;
 import wacc.instructions.expressions.binaryExpressions.BinaryExprInstruction;
 import wacc.instructions.expressions.binaryExpressions.arithmeticExpressions.*;
@@ -18,6 +17,7 @@ import wacc.instructions.expressions.unaryExpressions.*;
 import wacc.types.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -25,6 +25,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     private final ScopedSymbolTable symbolTable;
     private final MemoryStack stack;
+    private final HashMap<String, StructType> structs;
 
     private List<DataInstruction> data = new ArrayList<>();
     private List<LabelInstruction> labels = new ArrayList<>();
@@ -36,6 +37,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     public BackendVisitor(ScopedSymbolTable symbolTable) {
         this.symbolTable = symbolTable;
         this.stack = new MemoryStack();
+        this.structs = new HashMap<>();
         this.currentReg = 4;
     }
 
@@ -141,6 +143,33 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitReturnStat(@NotNull WACCParser.ReturnStatContext ctx) {
         return new ReturnInstruction((ExprInstruction) visit(ctx.expr()));
+    }
+
+    @Override
+    public Instruction visitStruct(@NotNull WACCParser.StructContext ctx) {
+        String id = ctx.identifier(0).getText();
+        List<Type> typeList = new ArrayList<>();
+        List<String> idList = new ArrayList<>();
+        for(int i = 1; i < ctx.identifier().size(); i++) {
+            idList.add(ctx.identifier(i).getText());
+            typeList.add(parseType(ctx.type(i)));
+        }
+        structs.put(id, new StructType(id, typeList, idList));
+        return null;
+    }
+
+    @Override
+    public Instruction visitStructContents(@NotNull WACCParser.StructContentsContext ctx) {
+        //TODO: Structs must be a fixed size, either write new syntax for fixed size arrays or only allow pointers
+        String structId = ctx.identifier(0).getText();
+        String fieldId = ctx.identifier(1).getText();
+
+        if(ctx.getParent() instanceof  WACCParser.AssignLHSContext) {
+
+        } else {
+
+        }
+        return null;
     }
 
     @Override

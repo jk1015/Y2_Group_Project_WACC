@@ -43,4 +43,18 @@ public class StructType implements Type {
             return contents.get(res);
         }
     }
+
+    public int getSize() {
+        int size = 0;
+        for(Type t: contents) {
+            if(t instanceof StructType) {
+                size += ((StructType) t).getSize();
+            } else {
+                size += 4;
+            }
+        }
+
+        return size;
+    }
+
 }
