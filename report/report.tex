@@ -27,16 +27,15 @@
 
 \section{The Product}
 \spec{An analysis and critical evaluation of the quality of the WACC compiler you have built. You should consider both whether it meets the functional specification and whether you judge that it forms a sound basis for future development. You may wish to address performance issues.}
-...
-\begin{itemize}
-\item Frontend was really good - meets specification very well
-\item Frontend made a strong base for building into the backend
-\item Backend is mostly functional, few cases that it fails (examples, modifying strings)
-\item Backend emphasises function over form - unoptimised
-\item 'Hacks' in backend that we did that should be removed (e.g. adding to the stack pointer after every variable declaration, duplicate strings, ect.)
-\item Easy to add extra function to the compiler
-\item Hard to add some compiler optimisations due to instructions knowing little about the program state
-\end{itemize}
+Firstly, the frontend of our compiler turned out very well. The lexer and parser represent the specification perfectly, with the ANTLR framework performing the bulk of the work for the lexical and syntactic analysis. The semantic analysis was more challenging, with ANTLR only providing a groundwork through the visitor pattern. In the end though, we successfully managed to meet the specification, passing all of the example tests provided. This frontend gave us a strong building block for starting the backend, as we knew that we wouldn't have to go back to fix it and all of our efforts could be focused on the backend.
+
+The backend was a much more challenging task. Some early decisions of the backend's design made things more difficult as time went on. Overall, we managed to get it to a point in which it passed most of the specification, however there are still some things that the compiler fails to do, for example treating strings as mutable char arrays.
+
+We made a decision to have the compiler generate functional code over optimised code so that we had more time to complete the specification, however this results in some ugly code generated. For example, instead of moving the stack pointer by the number of variables needed every time we enter a new scope, we instead move the stack pointer every time a variable is declared, vastly increasing the number of SUB commands in a program with many variables.
+
+Also, the compiler doesn't check whether a string has already been used previously in the program. This means, if a program uses the same string multiple times, it will appear at the head of the file multiple times. This can make the code difficult to read.
+
+The difficulty of future development is mixed. Whilst we think it's easy to make certain improvements, such as extending the language specification in many ways (some of which we have done in our extension), other improvments such as some compiler optimisations are more difficult. The way the backend is designed, instructions know very little about the program state other than their own children in the tree. This makes it hard to make changes that rely on knowing things like the number of registers that are going to be used or when variables are used, which makes it hard to make many of the optimisations.
 
 \section{The Project Management}
 \spec{An analysis of the organisation of your group and your use of project management tools (such as Git). You should describe how your group was structured, how you coordinated your work and detail any tools that helped/hindered your progress. You should also discuss what went well and what you would do differently if you were to do the lab again.}
