@@ -34,6 +34,7 @@ stat: SKIPPER                           #skipStat
 assignLHS: identifier
   | arrayElem
   | pairElem
+  | derefIdent
   ;
 
 assignRHS: expr
@@ -56,6 +57,7 @@ pairElem: FST expr
 type: baseType
   | arrayType
   | pairType
+  | ptrType
   ;
 
 baseType: INT_TYPE
@@ -68,9 +70,17 @@ arrayType: (baseType | pairType) (OPEN_SQUARE CLOSE_SQUARE)+;
 
 pairType: PAIR OPEN_PARENTHESES pairElemType COMMA pairElemType CLOSE_PARENTHESES;
 
+ptrType: ptrBaseType (MULTIPLY)+;
+
+ptrBaseType: baseType
+  | arrayType
+  | pairType
+  ;
+
 pairElemType: baseType
   | arrayType
   | pairNullType
+  | ptrType
   ;
 
 pairNullType: PAIR;
@@ -119,6 +129,8 @@ baseExpr: intLiter
   | stringLiter
   | pairLiter
   | identifier
+  | refIdent
+  | derefIdent
   | arrayElem
   ;
 
@@ -147,6 +159,10 @@ expr5: expr5 binaryOper5 expr5
 expr6: expr6 binaryOper6 expr6
   | expr5
   ;
+
+refIdent: AMP identifier;
+
+derefIdent: (MULTIPLY)+ identifier;
 
 arrayElem: identifier (OPEN_SQUARE expr CLOSE_SQUARE)+;
 

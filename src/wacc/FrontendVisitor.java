@@ -65,6 +65,19 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
     }
 
     @Override
+    public Type visitDerefIdent(@NotNull WACCParser.DerefIdentContext ctx) {
+        Type type = visit(ctx.identifier());
+        int count = ctx.MULTIPLY().size();
+        for (int i = 0; i < count; i++) {
+            if (!(type instanceof PtrType)) {
+                throw new InvalidTypeException(ctx, "Can't dereference a non-pointer");
+            }
+            type = ((PtrType) type).deref();
+        }
+        return type;
+    }
+
+    @Override
     public Type visitFunction(WACCParser.FunctionContext ctx) {
         // Add to symbol table, check validity of children under new movePointer
         //Check that statement contains a return
@@ -247,6 +260,11 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
             throw new InvalidTypeException(ctx, "Can't read into booleans or pairs.");
         }
         return null;
+    }
+
+    @Override
+    public Type visitRefIdent(@NotNull WACCParser.RefIdentContext ctx) {
+        return new PtrType(visitIdentifier(ctx.identifier()));
     }
 
     @Override
@@ -504,6 +522,15 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
             case WACCLexer.STRING_TYPE: return new ArrayType(PrimType.CHAR);
         }
         return null;
+    }
+
+    @Override
+    public Type visitPtrType(@NotNull WACCParser.PtrTypeContext ctx) {
+        Type type = visit(ctx.ptrBaseType());
+        for (int i = 0; i < ctx.MULTIPLY().size(); i++) {
+            type = new PtrType(type);
+        }
+        return type;
     }
 
     @Override

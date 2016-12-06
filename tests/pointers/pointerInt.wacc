@@ -1,0 +1,12 @@
+# Simple pointer use
+
+# Output:
+# 5
+
+# Program:
+
+begin
+  int x = 5;
+  int *y = &x;
+  print *y;
+end

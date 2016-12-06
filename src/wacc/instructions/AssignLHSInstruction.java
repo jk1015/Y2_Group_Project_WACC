@@ -37,4 +37,8 @@ public class AssignLHSInstruction implements LocatableInstruction {
     public Type getType() {
         return ins.getType();
     }
+
+    public boolean usesRegister() {
+        return ins instanceof DerefIdentLHSInstruction;
+    }
 }
