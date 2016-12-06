@@ -15,9 +15,9 @@ import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;F
+import java.util.regex.Pattern;
 
-class ImporterWriter {
+class Importer {
 
     private final String sourceBasePath = new File("").getAbsolutePath()+"/";
     private String currentBasePath;
@@ -32,7 +32,7 @@ class ImporterWriter {
 
     private Set<String> importedFilePaths;
 
-    public ImporterWriter(InputStream in, String sourcePath) {
+    public Importer(InputStream in, String sourcePath) {
         this.in = in;
         fileNum = 0;
         currentBasePath = sourcePath;
@@ -40,7 +40,7 @@ class ImporterWriter {
         this.fout = new File(sourceBasePath+outputFolder+outputFileLocation);
     }
 
-    private ImporterWriter(InputStream in, int n, String dependencyPath, Set<String> importedFilePaths) {
+    private Importer(InputStream in, int n, String dependencyPath, Set<String> importedFilePaths) {
         this.in = in;
         fileNum = n;
         this.currentBasePath = dependencyPath;
@@ -90,7 +90,7 @@ class ImporterWriter {
                 System.out.println(dnfe.getMessage());
                 throw dnfe;
             }
-            ImporterWriter iw = new ImporterWriter(in, ++fileNum, dependencyParentPath, importedFilePaths);
+            Importer iw = new Importer(in, ++fileNum, dependencyParentPath, importedFilePaths);
             
             File dependency = iw.importDependencies();
             errorCheck(dependency, dependencyFilePath);
