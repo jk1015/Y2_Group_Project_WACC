@@ -38,6 +38,8 @@ public class AssignLHSInstruction implements LocatableInstruction {
         return ins.getType();
     }
 
+
+    @Override
     public boolean usesRegister() {
         return ins instanceof DerefIdentLHSInstruction;
     }

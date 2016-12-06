@@ -18,6 +18,11 @@ public abstract class ExprInstruction implements LocatableInstruction {
         return type;
     }
 
+    @Override
+    public boolean usesRegister() {
+        return true;
+    }
+
     public String getLocationString() {
         return "r" + register;
     }

@@ -10,7 +10,7 @@ public class DerefIdentInstruction extends ExprInstruction {
     private final String location;
     private final int derefNum;
 
-    public DerefIdentInstruction(int register, Type type, String location, int derefNum) {
+    public DerefIdentInstruction(int register, String location, Type type, int derefNum) {
         super(register, type);
         this.location = location;
         this.derefNum = derefNum;
@@ -18,7 +18,7 @@ public class DerefIdentInstruction extends ExprInstruction {
 
     @Override
     public void toAssembly(PrintStream out) {
-        out.println("LDR " + getLocationString() + ", [sp, #" + location + "]");
+        out.println("LDR " + getLocationString() + ", " + location);
         for (int i = 0; i < derefNum; i++) {
             out.println("LDR " + getLocationString() + ", [" + getLocationString() + "]");
         }

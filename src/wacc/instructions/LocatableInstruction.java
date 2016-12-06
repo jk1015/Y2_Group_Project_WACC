@@ -6,4 +6,5 @@ public interface LocatableInstruction extends Instruction {
 
     String getLocationString();
     Type getType();
+    boolean usesRegister();
 }

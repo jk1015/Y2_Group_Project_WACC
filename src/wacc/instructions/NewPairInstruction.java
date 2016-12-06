@@ -45,4 +45,9 @@ public class NewPairInstruction implements LocatableInstruction {
     public Type getType() {
         return new PairType(exprA.getType(), exprB.getType());
     }
+
+    @Override
+    public boolean usesRegister() {
+        return true;
+    }
 }

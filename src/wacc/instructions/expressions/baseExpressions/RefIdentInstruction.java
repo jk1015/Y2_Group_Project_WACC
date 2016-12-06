@@ -7,15 +7,15 @@ import java.io.PrintStream;
 
 public class RefIdentInstruction extends ExprInstruction {
 
-    private final int stackOffset;
+    private final String location;
 
-    public RefIdentInstruction(int register, Type type, int stackOffset) {
+    public RefIdentInstruction(int register, Type type, String location) {
         super(register, type);
-        this.stackOffset = stackOffset;
+        this.location = location;
     }
 
     @Override
     public void toAssembly(PrintStream out) {
-        out.println("ADD " + getLocationString() + ", sp, #" + stackOffset);
+        out.println("LDR " + getLocationString() + ", " + location);
     }
 }

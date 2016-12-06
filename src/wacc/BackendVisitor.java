@@ -152,7 +152,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         List<String> idList = new ArrayList<>();
         for(int i = 1; i < ctx.identifier().size(); i++) {
             idList.add(ctx.identifier(i).getText());
-            typeList.add(parseType(ctx.type(i)));
+            typeList.add(parseFixedSizeType(ctx.fixedSizeType(i)));
         }
         structs.put(id, new StructType(id, typeList, idList));
         return null;
@@ -191,6 +191,20 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         return new InitAssignInstruction(expr, stack.getOffsetString(var));
     }
 
+    private Type parseFixedSizeType(WACCParser.FixedSizeTypeContext type) {
+
+        Type varType;
+
+        if (type.ptrType() != null) {
+            varType = parsePtrType(type.ptrType());
+        } else if (type.baseType() != null) {
+            varType = parseBaseType(type.baseType());
+        } else {
+            varType = parseStructType(type.structType());
+        }
+
+        return varType;
+    }
 
     private Type parseType(WACCParser.TypeContext type) {
 
@@ -202,13 +216,21 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
             varType = parsePairType(type.pairType());
         } else if (type.ptrType() != null) {
             varType = parsePtrType(type.ptrType());
-        } else {
+        } else if (type.baseType() != null) {
             varType = parseBaseType(type.baseType());
+        } else {
+            varType = parseStructType(type.structType());
         }
 
         return varType;
 
     }
+
+    private Type parseStructType(@NotNull WACCParser.StructTypeContext type) {
+        String id = type.identifier().getText();
+        return structs.get(id);
+    }
+
 
     private Type parseBaseType(@NotNull WACCParser.BaseTypeContext type) {
 
@@ -358,12 +380,14 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     }
 
     @Override
-    public Instruction visitRefIdent(@NotNull WACCParser.RefIdentContext ctx) {
-        String ident = ctx.identifier().getText();
-        int stackOffset = stack.get(ident);
-        Type type = stack.getType(ident);
+    public Instruction visitRefLHS(@NotNull WACCParser.RefLHSContext ctx) {
+
+        LocatableInstruction ins = (LocatableInstruction) visit(ctx.assignLHS());
+        Type type = ins.getType();
+        String location = ins.getLocationString();
+
         type = new PtrType(type);
-        return new RefIdentInstruction(currentReg, type, stackOffset);
+        return new RefIdentInstruction(currentReg, type, location);
     }
 
     @Override
@@ -835,23 +859,32 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     }
 
     @Override
-    public Instruction visitDerefIdent(@NotNull WACCParser.DerefIdentContext ctx) {
-        String id = ctx.identifier().getText();
-        String location = "" + stack.get(id);
-        Type type = stack.getType(id);
-        int derefNum = ctx.MULTIPLY().size();
+    public Instruction visitDerefLHS(@NotNull WACCParser.DerefLHSContext ctx) {
 
+        WACCParser.AssignLHSContext lhs = ctx.assignLHS();
+        LocatableInstruction ins = (LocatableInstruction) visit(lhs);
+
+        String location = ins.getLocationString();
+
+        int derefNum = ctx.MULTIPLY().size();
+        Type type = ins.getType();
         for (int i = 0; i < derefNum; i++) {
             type = ((PtrType) type).deref();
         }
 
-        if (ctx.getParent() instanceof WACCParser.AssignLHSContext) {
-            DerefIdentLHSInstruction ins = new DerefIdentLHSInstruction(location, type, currentReg, derefNum);
-            return ins;
-        } else {
-            DerefIdentInstruction ins = new DerefIdentInstruction(currentReg, type, location, derefNum);
-            return ins;
+        if(ins.usesRegister()) {
+            currentReg++;
         }
+        Instruction retIns;
+        if (ctx.getParent() instanceof WACCParser.AssignLHSContext) {
+            retIns = new DerefIdentLHSInstruction(ins, location, type,currentReg, derefNum);
+        } else {
+            retIns = new DerefIdentInstruction(currentReg, location, type,derefNum);
+        }
+        if(ins.usesRegister()) {
+            currentReg--;
+        }
+        return retIns;
     }
 
     @Override

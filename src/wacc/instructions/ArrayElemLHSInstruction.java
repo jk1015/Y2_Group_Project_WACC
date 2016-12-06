@@ -63,6 +63,11 @@ public class ArrayElemLHSInstruction implements LocatableInstruction{
         return type;
     }
 
+    @Override
+    public boolean usesRegister() {
+        return true;
+    }
+
     public int setErrorChecking() {
         String[] ascii = {"\"ArrayIndexOutOfBoundsError: negative index\\n\\0\"",
                 "\"ArrayIndexOutOfBoundsError: index too large\\n\\0\""};

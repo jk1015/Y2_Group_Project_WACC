@@ -8,5 +8,5 @@
 begin
   char x = 'a';
   char* y = &x;
-  print *y;
+  print *y
 end

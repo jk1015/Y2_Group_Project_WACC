@@ -36,6 +36,11 @@ public class PairLHSInstruction implements LocatableInstruction {
     }
 
     @Override
+    public boolean usesRegister() {
+        return true;
+    }
+
+    @Override
     public void toAssembly(PrintStream out) {
         String exprLocation = expr.getLocationString();
         expr.toAssembly(out);

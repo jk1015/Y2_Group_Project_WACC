@@ -48,6 +48,11 @@ public class PairRHSInstruction implements LocatableInstruction {
         }
     }
 
+    @Override
+    public boolean usesRegister() {
+        return true;
+    }
+
     public int setErrorChecking() {
         String[] ascii = {"\"NullReferenceError: dereference a null reference\\n\\0\""};
         numOfMsg = canThrowRuntimeError.addDataAndLabels("p_check_null_pointer", ascii);
