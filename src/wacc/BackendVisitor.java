@@ -499,39 +499,61 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitExpr1(@NotNull WACCParser.Expr1Context ctx) {
 
-        if(ctx.getChildCount() == 1) {
+        if (ctx.getChildCount() == 1) {
             return visit(ctx.getChild(0));
         }
 
         boolean capped = true;
         ExprInstruction i1 = (ExprInstruction) visit(ctx.expr1(0));
-        if(currentReg < 10) {
-            currentReg++;
-            capped = false;
-        } else {
-            stack.newScope();
-            stack.add("", null);
+        boolean lhsIsIntLiter = i1 instanceof IntLiterInstruction;
+        if (!lhsIsIntLiter) {
+            if (currentReg < 10) {
+                currentReg++;
+                capped = false;
+            } else {
+                stack.newScope();
+                stack.add("", null);
+            }
         }
+
         ExprInstruction i2 = (ExprInstruction) visit(ctx.expr1(1));
-        if(capped) {
-            stack.descope();
-        } else {
-            currentReg--;
+        boolean rhsIsIntLiter = i1 instanceof IntLiterInstruction;
+        if (!rhsIsIntLiter) {
+            if (capped) {
+                stack.descope();
+            } else {
+                currentReg--;
+            }
         }
+
         int op = ((TerminalNode) ctx.binaryOper1().getChild(0)).getSymbol().getType();
 
-        BinaryExprInstruction binaryOp;
-        if(op == WACCLexer.MULTIPLY) {
-            binaryOp = new MultiplyInstruction(i1, i2, currentReg, currentReg + 1,numOfMsg);
-        } else if (op == WACCLexer.DIVIDE) {
-            binaryOp = new DivideInstruction(i1, i2, currentReg,numOfMsg);
+        if (rhsIsIntLiter && lhsIsIntLiter) {
+            IntLiterInstruction intLiter;
+            int lhsValue = ((IntLiterInstruction) i1).getValue();
+            int rhsValue = ((IntLiterInstruction) i2).getValue();
+            if (op == WACCLexer.MULTIPLY) {
+                intLiter = new IntLiterInstruction(lhsValue*rhsValue, currentReg);
+            } else if (op == WACCLexer.DIVIDE) {
+                intLiter = new IntLiterInstruction(lhsValue / rhsValue, currentReg);
+            } else {
+                intLiter = new IntLiterInstruction(lhsValue % rhsValue, currentReg);
+            }
+            return intLiter;
         } else {
-            binaryOp = new ModInstruction(i1, i2, currentReg,numOfMsg);
+            BinaryExprInstruction binaryOp;
+            if (op == WACCLexer.MULTIPLY) {
+                binaryOp = new MultiplyInstruction(i1, i2, currentReg, currentReg + 1, numOfMsg);
+            } else if (op == WACCLexer.DIVIDE) {
+                binaryOp = new DivideInstruction(i1, i2, currentReg, numOfMsg);
+            } else {
+                binaryOp = new ModInstruction(i1, i2, currentReg, numOfMsg);
+            }
+            numOfMsg = binaryOp.setCheckError();
+            ContainingDataOrLabelsInstruction dataAndLabels = binaryOp.getErrorPrint();
+            addDataAndLabels(dataAndLabels);
+            return binaryOp;
         }
-        numOfMsg = binaryOp.setCheckError();
-        ContainingDataOrLabelsInstruction dataAndLabels = binaryOp.getErrorPrint();
-        addDataAndLabels(dataAndLabels);
-        return binaryOp;
     }
 
     @Override
