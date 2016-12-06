@@ -379,6 +379,20 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
             boolean lhsValue = ((BoolLiterInstruction) i1).getValue();
             boolean rhsValue = ((BoolLiterInstruction) i2).getValue();
             return new BoolLiterInstruction(lhsValue || rhsValue, currentReg);
+        } else if (lhsIsConst) {
+            boolean lhsValue = ((BoolLiterInstruction) i1).getValue();
+            if (lhsValue) {
+                return new BoolLiterInstruction(true, currentReg);
+            } else {
+                return i2;
+            }
+        } else if (rhsIsConst) {
+            boolean rhsValue = ((BoolLiterInstruction) i2).getValue();
+            if (rhsValue) {
+                return new BoolLiterInstruction(true, currentReg);
+            } else {
+                return i1;
+            }
         } else {
             return new ORInstruction(i1, i2, currentReg);
         }
@@ -414,6 +428,20 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
             boolean lhsValue = ((BoolLiterInstruction) i1).getValue();
             boolean rhsValue = ((BoolLiterInstruction) i2).getValue();
             return new BoolLiterInstruction(lhsValue && rhsValue, currentReg);
+        } else if (lhsIsConst) {
+            boolean lhsValue = ((BoolLiterInstruction) i1).getValue();
+            if (lhsValue) {
+                return i2;
+            } else {
+                return new BoolLiterInstruction(false, currentReg);
+            }
+        } else if (rhsIsConst) {
+            boolean rhsValue = ((BoolLiterInstruction) i2).getValue();
+            if (rhsValue) {
+                return i2;
+            } else {
+                return new BoolLiterInstruction(false, currentReg);
+            }
         } else {
             return new ANDInstruction(i1, i2, currentReg);
         }
