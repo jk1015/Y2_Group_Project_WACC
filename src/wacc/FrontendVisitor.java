@@ -28,7 +28,8 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
     private HashMap<String, StructType> structs;
     private Type lhsRequiredType;
 
-	public FrontendVisitor() {
+
+    public FrontendVisitor() {
 		symbolTable = new ScopedSymbolTable();
 		currentFunction = "";
 		hasReturn = false;
@@ -84,11 +85,21 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
         String id = ctx.identifier(0).getText();
         List<Type> typeList = new ArrayList<>();
         List<String> idList = new ArrayList<>();
+        StructType tempStruct = new StructType(id, typeList, idList);
+        structs.put(id, tempStruct);
         for(int i = 1; i < ctx.identifier().size(); i++) {
-            idList.add(ctx.identifier(i).getText());
-            typeList.add(visit(ctx.fixedSizeType(i - 1)));
+            String nextId = ctx.identifier(i).getText();
+            if(idList.contains(nextId)) {
+                throw new RedeclaredVariableException(ctx);
+            }
+            idList.add(nextId);
+
+            Type t = visit(ctx.fixedSizeType(i - 1));
+            if(t.checkType(tempStruct)) {
+                throw new WACCSemanticErrorException(ctx, "Structs may not contain themselves");
+            }
+            typeList.add(t);
         }
-        structs.put(id, new StructType(id, typeList, idList));
         return null;
     }
 
@@ -584,6 +595,17 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
     }
 
     // OTHER
+
+    @Override
+    public Type visitStructList(@NotNull WACCParser.StructListContext ctx) {
+        List<Type> typeList = new ArrayList<>();
+        List<String> nameList = new ArrayList<>();
+        for(WACCParser.AssignRHSContext rhs: ctx.assignRHS()) {
+            typeList.add(visit(rhs));
+            nameList.add("");
+        }
+        return new StructType("#STRUCTLIST#",typeList, nameList);
+    }
 
     @Override
     public Type visitStructContents(@NotNull WACCParser.StructContentsContext ctx) {

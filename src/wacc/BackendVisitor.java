@@ -150,26 +150,28 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         String id = ctx.identifier(0).getText();
         List<Type> typeList = new ArrayList<>();
         List<String> idList = new ArrayList<>();
+        //The lists are passed by reference and filled after the fact
+        structs.put(id, new StructType(id, typeList, idList));
         for(int i = 1; i < ctx.identifier().size(); i++) {
             idList.add(ctx.identifier(i).getText());
             typeList.add(parseFixedSizeType(ctx.fixedSizeType(i)));
         }
-        structs.put(id, new StructType(id, typeList, idList));
         return null;
     }
 
     @Override
     public Instruction visitStructContents(@NotNull WACCParser.StructContentsContext ctx) {
-        //TODO: Structs must be a fixed size, either write new syntax for fixed size arrays or only allow pointers
-        String structId = ctx.identifier(0).getText();
+        WACCParser.IdentifierContext structId = ctx.identifier(0);
         String fieldId = ctx.identifier(1).getText();
+        IdentifierInstruction getStructIns = (IdentifierInstruction) visit(structId);
+        StructType struct = structs.get(structId);
 
-        if(ctx.getParent() instanceof  WACCParser.AssignLHSContext) {
 
+        if(ctx.getParent() instanceof WACCParser.AssignLHSContext) {
+            return new StructContentsLHSInstruction(getStructIns, struct, fieldId, currentReg);
         } else {
-
+            return new StructContentsExprInstruction(getStructIns, struct, fieldId, currentReg);
         }
-        return null;
     }
 
     @Override
@@ -630,6 +632,14 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         addDataAndLabels(dataAndLabels);
         return binaryOp;
     }
+
+
+    //TODO
+    @Override
+    public Instruction visitStructList(@NotNull WACCParser.StructListContext ctx) {
+        return super.visitStructList(ctx);
+    }
+    //TODO
 
     @Override
     public Instruction visitPairLiter(@NotNull WACCParser.PairLiterContext ctx) {

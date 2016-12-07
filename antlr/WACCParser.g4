@@ -45,8 +45,10 @@ assignRHS: expr
   | newPair
   | pairElem
   | callFunction
-  | structContents
+  | structList
   ;
+
+structList: OPEN_CURLY (assignRHS (COMMA assignRHS)*)? CLOSE_CURLY;
 
 newPair: NEWPAIR OPEN_PARENTHESES expr COMMA expr CLOSE_PARENTHESES;
 
@@ -144,6 +146,7 @@ baseExpr: intLiter
   | refLHS
   | derefLHS
   | arrayElem
+  | structContents
   ;
 
 expr1: expr1 binaryOper1 expr1
@@ -173,7 +176,7 @@ expr6: expr6 binaryOper6 expr6
   ;
 
 
-structContents: identifier DOT identifier;
+structContents: expr DOT identifier;
 
 refLHS: AMP assignLHS;
 
