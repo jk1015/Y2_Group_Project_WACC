@@ -51,15 +51,13 @@ However, there are a few things that we would change if we were to do the lab ag
 
 \section{The Design Choices}
 \spec{An analysis of the design choices that you made during the WACC lab. You should discuss the design patterns you used when designing your code and why you chose to use them.}
-...
-\begin{itemize}
-\item Frontend walks tree with antlr generated visitor pattern
-\item Error listener catches and handles syntax errors
-\item Backend walks tree with second visitor pattern
-\item Builds new tree of instructions
-\item Walks tree to generate assembly
-\item LabelMaker uses singleton pattern to avoid duplicate labels + allow static access
-\end{itemize}
+We used a variety of different patterns whilst designing the WACC lab. Firstly, we use a listener pattern for the error listener. This is an object that subscribes to the syntax parser. Whenever the parser throws an error, the error listener is notified, so it can handle that error by printing a useful error message for the user.
+
+Next, there is the most important one - the visitor pattern. The ANTLR tool that we used generates a default visitor pattern for traversing the Abstract Syntax Tree (AST). As each node of the tree contains different tokens, each node needs to be a different class. So that we can access the contents of these nodes and perform different operations on them, we need to use a visitor pattern, which provides a separate visit function for each of these different classes. We use this in our frontend, where we perform semantic analysis.
+
+We use a second visitor pattern in the backend, where we traverse the AST and generate the corresponding instructions. We do this by building an instruction tree - each node of the AST has it's own instruction class which may take a number of child instructions. Each instruction has a toAssembly method which takes a PrintStream and outputs the assembly for its instruction, calling its children's toAssembly methods in the process. By building the instruction tree as we walk the AST, we allow each node to know about the program state and instructions of its children. Then, after the whole tree is generated, we can call the toAssembly method of the head of the tree to print out the whole program.
+
+Control flow instructions use branching to navigate the program. This requires us to generate labels to denote where to branch to, but these labels need to be unique so that the assembly is valid. We do this using a LabelMaker class which implements the singleton pattern. This labelmaker contains a map of instructions to label names, allowing it to generate a unique label name for that instruction, and then retrieve that label name later. By having it as a singleton class, there can only ever be one LabelMaker generated, meaning there is only a single map. This stops any errors where two instructions generate two different LabelMakers, then end up generating the same label. As a side effect, this allows for static access to the LabelMaker, meaning it does not have to be passed to the instructions.
 
 \section{Beyond the Specification}
 \spec{An evaluation of your extensions to your WACC compiler. You should describe all of the language extensions, optimisations or other aspects that you have added to your compiler, including how these features can be accessed or viewed. You should also briefly discuss what future extensions you would like to add to your WACC compiler if you had more time.}
