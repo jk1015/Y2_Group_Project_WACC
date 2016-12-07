@@ -6,8 +6,8 @@ import wacc.types.Type;
 public abstract class ExprInstruction implements LocatableInstruction {
 
 
-    private int register;
-    private final Type type;
+    protected int register;
+    protected Type type;
 
     public ExprInstruction(int register, Type type) {
         this.register = register;

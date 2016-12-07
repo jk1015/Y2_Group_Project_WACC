@@ -2,6 +2,8 @@ package wacc.instructions.expressions.binaryExpressions;
 
 import wacc.instructions.ContainingDataOrLabelsInstruction;
 import wacc.instructions.expressions.ExprInstruction;
+import wacc.instructions.expressions.baseExpressions.FloatLiterInstruction;
+import wacc.types.PrimType;
 import wacc.types.Type;
 
 import java.io.PrintStream;
@@ -13,9 +15,14 @@ public abstract class BinaryExprInstruction extends ExprInstruction {
     protected ContainingDataOrLabelsInstruction errorPrint;
     protected ExprInstruction expr1, expr2;
     protected int numOfMsg;
+    protected float floatValue;
 
     public BinaryExprInstruction(ExprInstruction expr1, ExprInstruction expr2, int register, Type type, int numOfMsg) {
         super(register, type);
+        if ((expr1 instanceof FloatLiterInstruction ||
+                expr2 instanceof FloatLiterInstruction)){
+            this.type = PrimType.FLOAT;
+        }
         this.expr1 = expr1;
         this.expr2 = expr2;
         errorPrint = new ContainingDataOrLabelsInstruction();
@@ -62,6 +69,10 @@ public abstract class BinaryExprInstruction extends ExprInstruction {
         String[] namesOfMsg = {nameOfMsg};
         errorPrint.setLabel(name, namesOfMsg);
         return numOfMsg;
+    }
+
+    public float getFloatValue(){
+        return floatValue;
     }
 
 }

@@ -2,8 +2,6 @@ package wacc.instructions.expressions.binaryExpressions.arithmeticExpressions;
 
 import wacc.instructions.expressions.ExprInstruction;
 import wacc.instructions.expressions.baseExpressions.FloatLiterInstruction;
-import wacc.instructions.expressions.baseExpressions.IntLiterInstruction;
-import wacc.instructions.expressions.binaryExpressions.BinaryExprInstruction;
 import wacc.types.PrimType;
 
 import java.io.PrintStream;
@@ -11,7 +9,7 @@ import java.io.PrintStream;
 /**
  * Created by jk1015 on 22/11/16.
  */
-public class MultiplyInstruction extends BinaryExprInstruction {
+public class MultiplyInstruction extends ArithmeticInstruction {
 
     private int extraReg;
 
@@ -22,31 +20,27 @@ public class MultiplyInstruction extends BinaryExprInstruction {
 
 
     @Override
-    public void toAssembly(PrintStream out) {
-        super.toAssembly(out);
-        if (expr1 instanceof FloatLiterInstruction &&
-                expr2 instanceof FloatLiterInstruction) {
-            out.println("FMULP r0");
-        }else if(expr1 instanceof FloatLiterInstruction) {
-            out.println("FLD " + ((IntLiterInstruction)expr2).getValue());
-            out.println("FMULP r0");
-        }else if(expr2 instanceof FloatLiterInstruction){
-            out.println("FLD " + ((IntLiterInstruction)expr1).getValue());
-            out.println("FMULP r0");
-        }else {
+    public void assembly(PrintStream out) {
             out.println("SMULL " + getLocationString() + ", r" + extraReg + ", " + getExpr1String() + ", " + getExpr2String());
             out.println("CMP r" + extraReg + ", " + getLocationString() + ", ASR #31");
             out.println("BLNE p_throw_overflow_error");
-        }
+    }
+
+    @Override
+    protected float operate(float f1, float f2) {
+        return f1 * f2;
     }
 
     @Override
     public int setCheckError() {
-        numOfMsg = addDataAndLabels("p_throw_overflow_error",
+        if (!(expr1 instanceof FloatLiterInstruction ||
+                expr2 instanceof FloatLiterInstruction)) {
+            numOfMsg = addDataAndLabels("p_throw_overflow_error",
                     "\"OverflowError: the result is too small/large to store in a 4-byte signed-integer.\\n\"");
-        numOfMsg = addDataAndLabels("p_throw_runtime_error",
-                "\"OverflowError: the result is too small/large to store in a 4-byte signed-integer.\\n\"");
-        numOfMsg = addDataAndLabels("p_print_string", "\"%.*s\\0\"");
+            numOfMsg = addDataAndLabels("p_throw_runtime_error",
+                    "\"OverflowError: the result is too small/large to store in a 4-byte signed-integer.\\n\"");
+            numOfMsg = addDataAndLabels("p_print_string", "\"%.*s\\0\"");
+        }
         return numOfMsg;
     }
 }

@@ -1,6 +1,7 @@
 package wacc.instructions.expressions.baseExpressions;
 
-import wacc.instructions.Instruction;
+import wacc.BackendVisitor;
+import wacc.instructions.DataInstruction;
 import wacc.instructions.expressions.ExprInstruction;
 import wacc.types.PrimType;
 
@@ -9,29 +10,29 @@ import java.io.PrintStream;
 /**
  * Created by ad5115 on 01/12/16.
  */
-public class FloatLiterInstruction extends ExprInstruction {
+public strictfp class FloatLiterInstruction extends ExprInstruction {
     private float valueInFloat;
-    private int currentReg;
+    private int location;
 
-    public FloatLiterInstruction(float valueInFloat, int currentReg) {
+    public FloatLiterInstruction(int count, int currentReg, float valueInFloat) {
         super(currentReg, PrimType.FLOAT);
         this.valueInFloat = valueInFloat;
-        this.currentReg = currentReg;
+        this.location = count;
     }
 
     @Override
     public void toAssembly(PrintStream out) {
-        out.println("VMOV.I32 d" + currentReg + hex(valueInFloat));
-
+        out.print("LDR " + getLocationString() + ", ");
+        out.println("=msg_" + location);
     }
 
-    public static String hex(int n) {
-        // call toUpperCase() if that's required
-        return String.format("0x%8s", Integer.toHexString(n)).replace(' ', '0');
+    public DataInstruction setData(String ascii) {
+        String nameOfMsg = "msg_" + location;
+        DataInstruction dataInstruction = new DataInstruction(nameOfMsg, ascii);
+        return dataInstruction;
     }
 
-    public static String hex(float f) {
-        // change the float to raw integer bits(according to the OP's requirement)
-        return hex(Float.floatToRawIntBits(f));
+    public float getValueInFloat() {
+        return valueInFloat;
     }
 }

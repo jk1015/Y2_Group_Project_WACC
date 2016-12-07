@@ -1,9 +1,11 @@
 package wacc.instructions;
 
 
+import wacc.BackendVisitor;
 import wacc.instructions.expressions.ExprInstruction;
+import wacc.instructions.expressions.baseExpressions.FloatLiterInstruction;
 import wacc.instructions.expressions.baseExpressions.StringLiterInstruction;
-import wacc.types.ArrayType;
+import wacc.instructions.expressions.binaryExpressions.BinaryExprInstruction;
 import wacc.types.PrimType;
 import wacc.types.Type;
 
@@ -20,8 +22,14 @@ public class PrintInstruction extends ContainingDataOrLabelsInstruction {
     @Override
     public void toAssembly(PrintStream out) {
         expr.toAssembly(out);
-        String reg =expr.getLocationString();
-        out.println("MOV r0, " + reg);
+        String reg;
+        //if (isFloat){
+          //  reg ="s0";
+            //out.println("FMRS r0, " + reg);
+        //}else {
+            reg = expr.getLocationString();
+            out.println("MOV r0, " + reg);
+        //}
         out.println("BL " + nameOfLabel);
     }
 
@@ -29,12 +37,12 @@ public class PrintInstruction extends ContainingDataOrLabelsInstruction {
         String prefix = "msg_";
         if (!type.checkType(PrimType.CHAR)) {
             if (type.checkType(PrimType.INT)) {
-                String nameOfMsg = setData(prefix + numOfMsg,"\"%d\\0\"");
+                String nameOfMsg = setData(prefix + numOfMsg, "\"%d\\0\"");
                 numOfMsg++;
                 String[] namesOfMsg = {nameOfMsg};
                 setLabel(nameOfLabel, namesOfMsg);
             } else if (type.checkType(PrimType.STRING) ||
-                    type.checkType(PrimType.BOOL)){
+                    type.checkType(PrimType.BOOL) || type.checkType(PrimType.FLOAT)){
                 String nameOfMsg1;
                 String nameOfMsg2;
 
@@ -44,7 +52,18 @@ public class PrintInstruction extends ContainingDataOrLabelsInstruction {
                     nameOfMsg2 = setData(prefix + numOfMsg,"\"%.*s\\0\"");
                     numOfMsg++;
 
-                } else {
+                }else if(type.checkType(PrimType.FLOAT)) {
+                    float value;
+                    if (expr instanceof BinaryExprInstruction){
+                        value = ((BinaryExprInstruction) expr).getFloatValue();
+                    }else {
+                        value = ((FloatLiterInstruction) expr).getValueInFloat();
+                    }
+                    nameOfMsg1 = setData(prefix + numOfMsg, "\"" + value + "\"");
+                    numOfMsg++;
+                    nameOfMsg2 = setData(prefix + numOfMsg, "\"%.*s\\0\"");
+                    numOfMsg++;
+                }else {
                     nameOfMsg1 = setData(prefix + numOfMsg,"\"true\\0\"");
                     numOfMsg++;
                     nameOfMsg2 = setData(prefix + numOfMsg,"\"false\\0\"");
@@ -73,6 +92,8 @@ public class PrintInstruction extends ContainingDataOrLabelsInstruction {
                 return string + "bool";
         } else if (type.checkType(PrimType.STRING)){
                 return string + "string";
+        } else if (type.checkType(PrimType.FLOAT)){
+            return string + "float";
         }else {
             return "p_print_reference";
         }

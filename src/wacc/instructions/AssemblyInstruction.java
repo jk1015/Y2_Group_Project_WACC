@@ -13,7 +13,8 @@ public class AssemblyInstruction implements Instruction {
     private List<LabelInstruction> labels;
     private List<FunctionInstruction> funcs;
 
-    public AssemblyInstruction(List<DataInstruction> data, List<FunctionInstruction> funcs, ProgramInstruction program, List<LabelInstruction> labels) {
+    public AssemblyInstruction(List<DataInstruction> data, List<FunctionInstruction> funcs,
+                               ProgramInstruction program, List<LabelInstruction> labels) {
         this.data = data;
         this.program = program;
         this.labels = labels;
@@ -23,8 +24,10 @@ public class AssemblyInstruction implements Instruction {
 
     @Override
     public void toAssembly(PrintStream out) {
+
         if (data != null){
             out.println(".data");
+
         }
         for (DataInstruction d : data){
             d.toAssembly(out);

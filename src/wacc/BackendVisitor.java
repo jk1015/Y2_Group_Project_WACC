@@ -29,7 +29,6 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     private List<DataInstruction> data = new ArrayList<>();
     private List<LabelInstruction> labels = new ArrayList<>();
     private int numOfMsg = 0;
-
     private int currentReg;
 
 
@@ -616,7 +615,12 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     public Instruction visitFloatLiter(@NotNull WACCParser.FloatLiterContext ctx){
         String value = ctx.getText();
         float valueInFloat = Float.parseFloat(value);
-        return new FloatLiterInstruction(valueInFloat, currentReg);
+
+        FloatLiterInstruction floatLiterInstruction =  new FloatLiterInstruction(numOfMsg, currentReg, valueInFloat);
+        DataInstruction dataString = floatLiterInstruction.setData("\"" + valueInFloat + "\"");
+        data.add(dataString);
+        numOfMsg++;
+        return floatLiterInstruction;
     }
 
     @Override
