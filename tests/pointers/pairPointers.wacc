@@ -1,3 +1,5 @@
+# Dereferencing a pair of pointers
+
 # Output:
 # 1
 # 1
@@ -17,6 +19,3 @@ begin
   println *b;
   println *snd p
 end
-  
-  
-  
