@@ -382,11 +382,9 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitRefLHS(@NotNull WACCParser.RefLHSContext ctx) {
 
-        LocatableInstruction ins = (LocatableInstruction) visit(ctx.assignLHS());
+        AssignLHSInstruction ins = (AssignLHSInstruction) visit(ctx.assignLHS());
         Type type = ins.getType();
-        String location = ins.getLocationString();
 
-        type = new PtrType(type);
         return new RefIdentInstruction(currentReg, ins);
     }
 
@@ -805,7 +803,6 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         return super.visitArgList(ctx);
     }
 
-
     @Override
     public Instruction visitUnaryOper(@NotNull WACCParser.UnaryOperContext ctx) {
         return super.visitUnaryOper(ctx);
@@ -879,7 +876,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         if (ctx.getParent() instanceof WACCParser.AssignLHSContext) {
             retIns = new DerefIdentLHSInstruction(ins, location, type,currentReg, derefNum);
         } else {
-            retIns = new DerefIdentInstruction(currentReg, location, type,derefNum);
+            retIns = new DerefIdentInstruction(currentReg, location, type, derefNum, ins);
         }
         if(ins.usesRegister()) {
             currentReg--;
