@@ -1,0 +1,5 @@
+begin
+  pair (int, int) a = newpair (2, 1);
+  int* b = &snd a;
+  println *b
+end

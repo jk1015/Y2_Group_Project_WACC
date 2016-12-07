@@ -38,6 +38,11 @@ public class AssignLHSInstruction implements LocatableInstruction {
         return ins.getType();
     }
 
+    public boolean isOnHeap() {
+        return isOnHeap;
+    }
+
+    @Override
     public boolean usesRegister() {
         return ins instanceof DerefIdentLHSInstruction;
     }

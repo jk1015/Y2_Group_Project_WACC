@@ -67,8 +67,8 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
     }
 
     @Override
-    public Type visitDerefIdent(@NotNull WACCParser.DerefIdentContext ctx) {
-        Type type = visit(ctx.identifier());
+    public Type visitDerefLHS(@NotNull WACCParser.DerefLHSContext ctx) {
+        Type type = visit(ctx.assignLHS());
         int count = ctx.MULTIPLY().size();
         for (int i = 0; i < count; i++) {
             if (!(type instanceof PtrType)) {
@@ -86,7 +86,7 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
         List<String> idList = new ArrayList<>();
         for(int i = 1; i < ctx.identifier().size(); i++) {
             idList.add(ctx.identifier(i).getText());
-            typeList.add(visit(ctx.type(i - 1)));
+            typeList.add(visit(ctx.fixedSizeType(i - 1)));
         }
         structs.put(id, new StructType(id, typeList, idList));
         return null;
@@ -278,8 +278,8 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
     }
 
     @Override
-    public Type visitRefIdent(@NotNull WACCParser.RefIdentContext ctx) {
-        return new PtrType(visitIdentifier(ctx.identifier()));
+    public Type visitRefLHS(@NotNull WACCParser.RefLHSContext ctx) {
+        return new PtrType(visit(ctx.assignLHS()));
     }
 
     @Override

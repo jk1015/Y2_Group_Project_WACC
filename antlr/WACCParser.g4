@@ -10,7 +10,7 @@ header: function* EOF;
 
 function: type identifier OPEN_PARENTHESES paramList? CLOSE_PARENTHESES IS stat END;
 
-struct: STRUCT identifier IS (type identifier)* END;
+struct: STRUCT identifier IS (fixedSizeType identifier)* END;
 
 paramList: param (COMMA param)*;
 
@@ -37,7 +37,7 @@ assignLHS: identifier
   | arrayElem
   | pairElem
   | structContents
-  | derefIdent
+  | derefLHS
   ;
 
 assignRHS: expr
@@ -61,6 +61,11 @@ pairElem: FST expr
 type: baseType
   | arrayType
   | pairType
+  | structType
+  | ptrType
+  ;
+
+fixedSizeType: baseType
   | structType
   | ptrType
   ;
@@ -136,8 +141,8 @@ baseExpr: intLiter
   | stringLiter
   | pairLiter
   | identifier
-  | refIdent
-  | derefIdent
+  | refLHS
+  | derefLHS
   | arrayElem
   ;
 
@@ -170,9 +175,9 @@ expr6: expr6 binaryOper6 expr6
 
 structContents: identifier DOT identifier;
 
-refIdent: AMP identifier;
+refLHS: AMP assignLHS;
 
-derefIdent: (MULTIPLY)+ identifier;
+derefLHS: (MULTIPLY)+ assignLHS;
 
 arrayElem: identifier (OPEN_SQUARE expr CLOSE_SQUARE)+;
 

@@ -1,0 +1,22 @@
+# Output:
+# 1
+# 1
+# 2
+# 2
+
+# Program:
+
+begin
+  int y = 1;
+  int z = 2;
+  int* a = &y;
+  int* b = &z;
+  pair(int* ,int*) p = newpair(a, b);
+  println *a;
+  println *fst p;
+  println *b;
+  println *snd p
+end
+  
+  
+  
