@@ -8,5 +8,5 @@
 begin
   int x = 5;
   int *y = &x;
-  print *y;
+  print *y
 end

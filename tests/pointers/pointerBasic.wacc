@@ -7,5 +7,5 @@
 
 begin
   int x = 0;
-  int *y = &x;
+  int *y = &x
 end
