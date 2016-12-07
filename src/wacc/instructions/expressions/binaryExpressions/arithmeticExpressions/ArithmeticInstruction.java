@@ -13,13 +13,13 @@ import java.io.PrintStream;
 public abstract class ArithmeticInstruction extends BinaryExprInstruction{
 
     protected Instruction ins;
+    protected float f1;
+    protected float f2;
 
     public ArithmeticInstruction(ExprInstruction expr1, ExprInstruction expr2, int register, Type type, int numOfMsg) {
         super(expr1, expr2, register, PrimType.INT, numOfMsg);
         if (expr1 instanceof FloatLiterInstruction ||
                 expr2 instanceof FloatLiterInstruction) {
-            float f1;
-            float f2;
             if (expr1 instanceof FloatLiterInstruction &&
                     expr2 instanceof FloatLiterInstruction) {
                 f1 = ((FloatLiterInstruction) expr1).getValueInFloat();

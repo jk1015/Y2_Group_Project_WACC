@@ -8,7 +8,6 @@ import java.io.PrintStream;
 public class IntLiterInstruction extends ExprInstruction {
 
     private int value;
-    private int register;
 
     public IntLiterInstruction(int value, int register) {
         super(register, PrimType.INT);
@@ -24,5 +23,4 @@ public class IntLiterInstruction extends ExprInstruction {
     public int getValue(){
         return value;
     }
-
 }
