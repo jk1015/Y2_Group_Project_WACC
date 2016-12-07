@@ -387,7 +387,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         String location = ins.getLocationString();
 
         type = new PtrType(type);
-        return new RefIdentInstruction(currentReg, type, location);
+        return new RefIdentInstruction(currentReg, ins);
     }
 
     @Override
@@ -892,7 +892,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         return super.visitParamList(ctx);
     }
 
-   @Override
+    @Override
     public Instruction visitBaseExpr(@NotNull WACCParser.BaseExprContext ctx) {
         return super.visitBaseExpr(ctx);
     }
