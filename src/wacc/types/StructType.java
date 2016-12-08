@@ -13,7 +13,7 @@ public class StructType implements Type {
     private String name;
     private final List<Type> contents;
     private final List<String> ids;
-    private final String structListName = "#STRUCTLIST#";
+    public final static String structListName = "#STRUCTLIST#";
 
 
     public StructType(String name, List<Type> contents, List<String> ids) {
@@ -29,9 +29,15 @@ public class StructType implements Type {
         if(type2 instanceof StructType) {
             if(this.name == ((StructType) type2).name) {
                 return true;
-            } else if (((StructType) type2).name == structListName) {
-                for(String id : ids) {
-                    if (!((StructType) type2).getType(id).checkType(getType(id))) {
+            } else if (((StructType) type2).name == structListName || this.name == structListName) {
+
+                List<Type> thatContents = ((StructType) type2).contents;
+
+                if(contents.size() != thatContents.size()) {
+                    return false;
+                }
+                for(int i = 0; i < contents.size(); i++) {
+                    if (!thatContents.get(i).checkType(contents.get(i))) {
                         return false;
                     }
                     return true;
@@ -50,6 +56,15 @@ public class StructType implements Type {
             return new FailType();
         } else {
             return contents.get(res);
+        }
+    }
+
+    public Type getType(int i) {
+
+        if(i < 0 || i >= contents.size()) {
+            throw new IndexOutOfBoundsException();
+        } else {
+            return contents.get(i);
         }
     }
 

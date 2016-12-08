@@ -1,0 +1,15 @@
+begin
+  struct A is
+    int x
+    int y
+  end
+
+  A testA1 = {1, 2};
+  A testA2 = {3, 4};
+  testA1 = testA2;
+  print testA1.x;
+  print testA2.x;
+  testA1.x = 17;
+  print testA1.x;
+  print testA2.x
+end

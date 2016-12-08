@@ -6,7 +6,7 @@ options {
 
 program: BEGIN struct* function* stat END EOF;
 
-header: function* EOF;
+header: struct* function* EOF;
 
 function: type identifier OPEN_PARENTHESES paramList? CLOSE_PARENTHESES IS stat END;
 
@@ -89,6 +89,7 @@ ptrType: ptrBaseType (MULTIPLY)+;
 ptrBaseType: baseType
   | arrayType
   | pairType
+  | structType
   ;
 
 pairElemType: baseType
@@ -149,6 +150,7 @@ baseExpr: intLiter
   | structContents
   ;
 
+
 expr1: expr1 binaryOper1 expr1
   | baseExpr
   | unaryExpr
@@ -175,8 +177,12 @@ expr6: expr6 binaryOper6 expr6
   | expr5
   ;
 
+structContentsExpr: identifier
+                  | derefLHS
+                  | arrayElem
+                  ;
 
-structContents: expr DOT identifier;
+structContents: structContentsExpr (DOT identifier)+;
 
 refLHS: AMP assignLHS;
 
@@ -195,3 +201,4 @@ charLiter: CHAR_LITERAL;
 stringLiter: STRING_LITERAL;
 
 pairLiter: PAIR_LITERAL;
+

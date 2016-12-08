@@ -1,0 +1,9 @@
+begin
+  struct A is
+    int x
+    A* a
+  end
+
+  A nil = null;
+  A test = {1, &nil}
+end

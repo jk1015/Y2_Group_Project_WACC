@@ -68,6 +68,10 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     public Instruction visitProgram(@NotNull WACCParser.ProgramContext ctx) {
         // Visit functions then visit program.
 
+        for(WACCParser.StructContext s: ctx.struct()) {
+            visit(s);
+        }
+
         List<FunctionInstruction> funcs = new LinkedList<>();
         for(WACCParser.FunctionContext f: ctx.function()) {
             funcs.add((FunctionInstruction) visit(f));
@@ -154,23 +158,28 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         structs.put(id, new StructType(id, typeList, idList));
         for(int i = 1; i < ctx.identifier().size(); i++) {
             idList.add(ctx.identifier(i).getText());
-            typeList.add(parseFixedSizeType(ctx.fixedSizeType(i)));
+            System.out.print(ctx.fixedSizeType(i - 1).getText());
+            System.out.println(ctx.identifier(i).getText());
+            typeList.add(parseFixedSizeType(ctx.fixedSizeType(i - 1)));
         }
         return null;
     }
 
     @Override
     public Instruction visitStructContents(@NotNull WACCParser.StructContentsContext ctx) {
-        WACCParser.IdentifierContext structId = ctx.identifier(0);
-        String fieldId = ctx.identifier(1).getText();
-        IdentifierInstruction getStructIns = (IdentifierInstruction) visit(structId);
-        StructType struct = structs.get(structId);
+        WACCParser.StructContentsExprContext structExpr = ctx.structContentsExpr();
 
+        ExprInstruction getStructIns = (ExprInstruction) visit(structExpr);
+
+        List<String> fieldIds = new ArrayList<>();
+        for(WACCParser.IdentifierContext id: ctx.identifier()) {
+            fieldIds.add(id.getText());
+        }
 
         if(ctx.getParent() instanceof WACCParser.AssignLHSContext) {
-            return new StructContentsLHSInstruction(getStructIns, struct, fieldId, currentReg);
+            return new StructContentsLHSInstruction(getStructIns, fieldIds);
         } else {
-            return new StructContentsExprInstruction(getStructIns, struct, fieldId, currentReg);
+            return new StructContentsExprInstruction(getStructIns, fieldIds, currentReg);
         }
     }
 
@@ -190,6 +199,9 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         Type varType = parseType(type);
 
         stack.add(var, varType);
+        if(expr.getType() instanceof StructType && !(expr instanceof StructListInstruction)) {
+            return new InitAssignStructInstruction(expr, stack.getOffsetString(var));
+        }
         return new InitAssignInstruction(expr, stack.getOffsetString(var));
     }
 
@@ -332,13 +344,19 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitAssignStat(@NotNull WACCParser.AssignStatContext ctx) {
         AssignLHSInstruction lhs = ((AssignLHSInstruction) visitAssignLHS(ctx.assignLHS()));
+
         if (lhs.usesRegister()) {
+            System.out.println(ctx.getText());
             currentReg++;
         }
         LocatableInstruction rhs = ((LocatableInstruction) visit(ctx.assignRHS()));
         if (lhs.usesRegister()) {
             currentReg--;
         }
+        if(rhs.getType() instanceof StructType && !(rhs instanceof StructListInstruction)) {
+            return new StructAssignInstruction(lhs, rhs, currentReg + 2);
+        }
+
         return new AssignInstruction(lhs, rhs);
     }
 
@@ -634,12 +652,18 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     }
 
 
-    //TODO
     @Override
     public Instruction visitStructList(@NotNull WACCParser.StructListContext ctx) {
-        return super.visitStructList(ctx);
+
+        List<LocatableInstruction> assignList = new ArrayList<>();
+        currentReg++;
+        for(WACCParser.AssignRHSContext rhs: ctx.assignRHS()) {
+            assignList.add((LocatableInstruction) visit(rhs));
+        }
+        currentReg--;
+
+        return new StructListInstruction(assignList, currentReg);
     }
-    //TODO
 
     @Override
     public Instruction visitPairLiter(@NotNull WACCParser.PairLiterContext ctx) {
@@ -790,7 +814,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         String id = ctx.IDENTIFIER().getText();
         String locationString = stack.getOffsetString(id);
         Type type = stack.getType(id);
-        if (ctx.getParent() instanceof WACCParser.BaseExprContext) {
+        if (ctx.getParent() instanceof WACCParser.BaseExprContext || ctx.getParent() instanceof WACCParser.StructContentsExprContext) {
             return new IdentifierExprInstruction(locationString, type, currentReg);
         } else {
             return new IdentifierInstruction(locationString, type);

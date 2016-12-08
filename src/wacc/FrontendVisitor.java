@@ -604,19 +604,27 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
             typeList.add(visit(rhs));
             nameList.add("");
         }
-        return new StructType("#STRUCTLIST#",typeList, nameList);
+        return new StructType(StructType.structListName,typeList, nameList);
     }
 
     @Override
     public Type visitStructContents(@NotNull WACCParser.StructContentsContext ctx) {
-        StructType struct = structs.get(ctx.identifier(0));
+        StructType struct = (StructType) visit(ctx.structContentsExpr());
+
+
         if(struct == null) {
             throw new UndeclaredVariableException(ctx);
         }
 
-        Type conType = struct.getType(ctx.identifier(1).getText());
-        if(struct == null) {
-            throw new UndeclaredVariableException(ctx);
+        Type conType = struct.getType(ctx.identifier(0).getText());
+        for(int i = 1; i < ctx.identifier().size(); i++) {
+
+            try {
+                struct = (StructType) conType;
+            } catch (ClassCastException e) {
+                throw new InvalidTypeException(ctx);
+            }
+            conType = struct.getType(ctx.identifier(i).getText());
         }
 
         return conType;

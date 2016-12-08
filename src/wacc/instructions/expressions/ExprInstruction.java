@@ -7,7 +7,7 @@ public abstract class ExprInstruction implements LocatableInstruction {
 
 
     private int register;
-    private final Type type;
+    private Type type;
 
     public ExprInstruction(int register, Type type) {
         this.register = register;
@@ -31,5 +31,7 @@ public abstract class ExprInstruction implements LocatableInstruction {
         this.register = i;
     }
 
-
+    public void setType(Type type) {
+        this.type = type;
+    }
 }

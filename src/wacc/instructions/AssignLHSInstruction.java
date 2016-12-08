@@ -44,6 +44,6 @@ public class AssignLHSInstruction implements LocatableInstruction {
 
     @Override
     public boolean usesRegister() {
-        return ins instanceof DerefIdentLHSInstruction;
+        return !(ins instanceof DerefIdentLHSInstruction) ;
     }
 }
