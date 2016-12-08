@@ -864,6 +864,14 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     }
 
     @Override
+    public Instruction visitNewArray(@NotNull WACCParser.NewArrayContext ctx) {
+        currentReg++;
+        ExprInstruction expr = (ExprInstruction) visit(ctx.expr());
+        currentReg--;
+        return new NewArrayInstruction(expr, currentReg, parseType(ctx.type()));
+    }
+
+    @Override
     public Instruction visitArgList(@NotNull WACCParser.ArgListContext ctx) {
         return super.visitArgList(ctx);
     }

@@ -39,11 +39,14 @@ assignLHS: identifier
 assignRHS: expr
   | arrayLiter
   | newPair
+  | newArray
   | pairElem
   | callFunction
   ;
 
 newPair: NEWPAIR OPEN_PARENTHESES expr COMMA expr CLOSE_PARENTHESES;
+
+newArray: NEWARRAY type OPEN_SQUARE expr CLOSE_SQUARE ;
 
 callFunction: CALL identifier OPEN_PARENTHESES (argList)? CLOSE_PARENTHESES;
 

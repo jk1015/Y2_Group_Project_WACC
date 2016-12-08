@@ -72,6 +72,9 @@ FST: 'fst' ;
 SND: 'snd' ;
 NEWPAIR: 'newpair' ;
 
+//arrays
+NEWARRAY: 'newarray' ;
+
 //types
 INT_TYPE: 'int' ;
 BOOL_TYPE: 'bool' ;

@@ -599,5 +599,16 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
         return pair;
     }
 
+    @Override
+    public Type visitNewArray(@NotNull WACCParser.NewArrayContext ctx) {
+        Type exprType = visit(ctx.expr());
+        if (!(exprType.checkType(PrimType.INT))) {
+            throw new InvalidTypeException(ctx, "Expected int, got type " + exprType);
+        }
+
+        Type contentsType = visit(ctx.type());
+
+        return new ArrayType(contentsType);
+    }
 }
 
