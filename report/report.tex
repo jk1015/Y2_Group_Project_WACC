@@ -67,7 +67,8 @@ Control flow instructions use branching to navigate the program. This requires u
 
 
 \subsection{Anant}
-
+\subsubsection{break and continue}
+\subparagraph*{The compiler was extented to allow break and continue statement in if and while loops. In the Frontend, we check that the break or continue statements are in if or while loop, otherwise a semantic error will be thrown. For the Backend, we added 2 new instruction classes coresponding to both statements. The continue statement move the PC to the begining of the loop,which we have already set the label. For the break statement, it moves the PC to the end of the loop. So we set a new label at the end of a loop, then we can use the branch instruction to the label}
 
 
 \subsection{Jas}
