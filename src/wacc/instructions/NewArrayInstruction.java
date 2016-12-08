@@ -26,7 +26,7 @@ public class NewArrayInstruction implements LocatableInstruction {
         expr.toAssembly(out);
 
         // sets number of bytes required for allocation
-        out.println("ADD r0, #1, " + expr.getLocationString() + ", LSL #2");
+        out.println("ADD r0, " + expr.getLocationString() + ", #1, LSL #2");
 
         out.println("BL malloc");
 
