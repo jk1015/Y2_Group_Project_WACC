@@ -42,5 +42,6 @@ public class DataInstruction implements Instruction {
     public String getAscii(){
         return ascii;
     }
+    public String getName() {return name;}
 
 }

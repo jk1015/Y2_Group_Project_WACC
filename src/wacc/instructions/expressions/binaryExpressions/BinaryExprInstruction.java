@@ -5,21 +5,23 @@ import wacc.instructions.expressions.ExprInstruction;
 import wacc.types.Type;
 
 import java.io.PrintStream;
+import java.util.HashMap;
 
 /**
  * Created by jk1015 on 22/11/16.
  */
 public abstract class BinaryExprInstruction extends ExprInstruction {
+    protected HashMap<String, String> dataMap;
     protected ContainingDataOrLabelsInstruction errorPrint;
     private ExprInstruction expr1, expr2;
-    protected int numOfMsg;
 
-    public BinaryExprInstruction(ExprInstruction expr1, ExprInstruction expr2, int register, Type type, int numOfMsg) {
+    public BinaryExprInstruction(ExprInstruction expr1, ExprInstruction expr2, int register,
+                                 Type type, HashMap<String,String> dataMap) {
         super(register, type);
         this.expr1 = expr1;
         this.expr2 = expr2;
-        errorPrint = new ContainingDataOrLabelsInstruction();
-        this.numOfMsg = numOfMsg;
+        this.dataMap = dataMap;
+        this.errorPrint = new ContainingDataOrLabelsInstruction(dataMap);
     }
 
     public BinaryExprInstruction(ExprInstruction expr1, ExprInstruction expr2, int register, Type type) {
@@ -41,7 +43,7 @@ public abstract class BinaryExprInstruction extends ExprInstruction {
         }
     }
 
-    public abstract int setCheckError();
+    public abstract HashMap<String,String>  setCheckError();
 
     public String getExpr1String() {
         return expr1.getLocationString();
@@ -55,13 +57,9 @@ public abstract class BinaryExprInstruction extends ExprInstruction {
         return errorPrint;
     }
 
-    protected int addDataAndLabels(String name, String ascii) {
-        String prefix = "msg_";
-        String nameOfMsg = errorPrint.setData(prefix + numOfMsg, ascii);
-        numOfMsg++;
-        String[] namesOfMsg = {nameOfMsg};
-        errorPrint.setLabel(name, namesOfMsg);
-        return numOfMsg;
+    protected HashMap<String,String> addDataAndLabels(String name, String ascii) {
+        String[] asciis = {ascii};
+         dataMap = errorPrint.addDataAndLabels(name,asciis);
+        return dataMap;
     }
-
 }

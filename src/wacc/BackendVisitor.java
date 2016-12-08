@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collector;
 
 public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
@@ -29,7 +30,8 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     private List<DataInstruction> data = new ArrayList<>();
     private List<LabelInstruction> labels = new ArrayList<>();
-    private int numOfMsg = 0;
+    private HashMap<String,String> dataMap = new HashMap<>();
+    private HashMap<String,String> identifier = new HashMap<>();
 
     private int currentReg;
 
@@ -46,12 +48,11 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         ArrayList<LabelInstruction> labelInstructions = ins.getLabel();
 
         if (dataInstructions != null){
-            for (DataInstruction dataIns : dataInstructions){
-             if (true){
-                 data.add(dataIns);
-             }
+            for (DataInstruction dataInstruction : dataInstructions){
+                if (!data.contains(dataInstruction)){
+                    data.add(dataInstruction);
+                }
             }
-
         }
 
         if (labelInstructions != null){
@@ -186,7 +187,11 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         WACCParser.TypeContext type = ctx.type();
 
         Type varType = parseType(type);
-
+        if (varType.checkType(PrimType.STRING)){
+            StringLiterInstruction string = (StringLiterInstruction)expr;
+            String stringValue = string.getStringLiter();
+            identifier.put(var,stringValue);
+        }
         stack.add(var, varType);
         return new InitAssignInstruction(expr, stack.getOffsetString(var));
     }
@@ -360,6 +365,14 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitIfStat(@NotNull WACCParser.IfStatContext ctx) {
         ExprInstruction expr = (ExprInstruction) visit(ctx.expr());
+        if (expr instanceof BoolLiterInstruction) {
+            boolean exprValue = ((BoolLiterInstruction) expr).getValue();
+            if (exprValue) {
+                return visit(ctx.stat(0));
+            } else {
+                return visit(ctx.stat(1));
+            }
+        }
         stack.newScope();
         Instruction stat1 = visit(ctx.stat(0));
         int scopeSize1 = stack.descope();
@@ -373,9 +386,9 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitReadStat(@NotNull WACCParser.ReadStatContext ctx) {
         AssignLHSInstruction assignLHSInstruction = (AssignLHSInstruction) visitAssignLHS(ctx.assignLHS());
-        ReadInstruction readInstruction = new ReadInstruction(assignLHSInstruction,numOfMsg);
-        numOfMsg = readInstruction.addDataAndLabels();
-        addDataAndLabels(readInstruction);
+        ReadInstruction readInstruction = new ReadInstruction(assignLHSInstruction,dataMap);
+        dataMap = readInstruction.addDataAndLabels();
+        addDataAndLabels(readInstruction.getDataAndLabels());
         return readInstruction;
     }
 
@@ -391,19 +404,18 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitPrintStat(@NotNull WACCParser.PrintStatContext ctx) {
         ExprInstruction expr = (ExprInstruction) visitExpr(ctx.expr());
-        PrintInstruction print = new PrintInstruction(expr,numOfMsg);
-        numOfMsg = print.addDataAndLabels();
-        addDataAndLabels(print);
+        PrintInstruction print = new PrintInstruction(expr,dataMap);
+        dataMap = print.addDataAndLabels();
+        addDataAndLabels(print.getDataAndLabels());
         return print;
     }
 
     @Override
     public Instruction visitPrintlnStat(@NotNull WACCParser.PrintlnStatContext ctx) {
         ExprInstruction expr = (ExprInstruction) visitExpr(ctx.expr());
-        PrintlnInstruction print = new PrintlnInstruction(expr,numOfMsg);
-        print.addDataAndLabels();
-        numOfMsg += 3;
-        addDataAndLabels(print);
+        PrintlnInstruction print = new PrintlnInstruction(expr,dataMap);
+        dataMap = print.addDataAndLabels();
+        addDataAndLabels(print.getDataAndLabels());
         return print;
     }
 
@@ -419,6 +431,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         return new ExitInstruction(exInst);
     }
 
+    //TODO: Const eval 
     @Override
     public Instruction visitUnaryExpr(@NotNull WACCParser.UnaryExprContext ctx) {
         int op = ((TerminalNode) ctx.unaryOper().getChild(0)).getSymbol().getType();
@@ -427,8 +440,8 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
             return new NotInstruction(i, currentReg);
         } else if (op == WACCLexer.MINUS) {
 
-            NegInstruction negInstruction = new NegInstruction(i, currentReg,numOfMsg);
-            numOfMsg = negInstruction.setCheckError();
+            NegInstruction negInstruction = new NegInstruction(i, currentReg,dataMap);
+            dataMap = negInstruction.setCheckError();
             addDataAndLabels(negInstruction.getDataAndLabels());
             return negInstruction;
         } else if (op == WACCLexer.LEN){
@@ -448,12 +461,12 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitExpr6(@NotNull WACCParser.Expr6Context ctx) {
         WACCParser.Expr5Context e = ctx.expr5();
-        if(e != null) {
+        if (e != null) {
             return visit(e);
         }
         boolean capped = true;
         ExprInstruction i1 = (ExprInstruction) visit(ctx.expr6(0));
-        if(currentReg < 10) {
+        if (currentReg < 10) {
             currentReg++;
             capped = false;
         } else {
@@ -461,13 +474,36 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
             stack.add("", null);
         }
         ExprInstruction i2 = (ExprInstruction) visit(ctx.expr6(1));
-        if(capped) {
+        if (capped) {
             stack.descope();
         } else {
             currentReg--;
         }
 
-        return new ORInstruction(i1, i2, currentReg);
+        boolean lhsIsConst = isConst(i1);
+        boolean rhsIsConst = isConst(i2);
+
+        if (lhsIsConst && rhsIsConst) {
+            boolean lhsValue = ((BoolLiterInstruction) i1).getValue();
+            boolean rhsValue = ((BoolLiterInstruction) i2).getValue();
+            return new BoolLiterInstruction(lhsValue || rhsValue, currentReg);
+        } else if (lhsIsConst) {
+            boolean lhsValue = ((BoolLiterInstruction) i1).getValue();
+            if (lhsValue) {
+                return new BoolLiterInstruction(true, currentReg);
+            } else {
+                return i2;
+            }
+        } else if (rhsIsConst) {
+            boolean rhsValue = ((BoolLiterInstruction) i2).getValue();
+            if (rhsValue) {
+                return new BoolLiterInstruction(true, currentReg);
+            } else {
+                return i1;
+            }
+        } else {
+            return new ORInstruction(i1, i2, currentReg);
+        }
 
     }
 
@@ -492,7 +528,31 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         } else {
             currentReg--;
         }
-        return new ANDInstruction(i1, i2, currentReg);
+
+        boolean lhsIsConst = isConst(i1);
+        boolean rhsIsConst = isConst(i2);
+
+        if (lhsIsConst && rhsIsConst) {
+            boolean lhsValue = ((BoolLiterInstruction) i1).getValue();
+            boolean rhsValue = ((BoolLiterInstruction) i2).getValue();
+            return new BoolLiterInstruction(lhsValue && rhsValue, currentReg);
+        } else if (lhsIsConst) {
+            boolean lhsValue = ((BoolLiterInstruction) i1).getValue();
+            if (lhsValue) {
+                return i2;
+            } else {
+                return new BoolLiterInstruction(false, currentReg);
+            }
+        } else if (rhsIsConst) {
+            boolean rhsValue = ((BoolLiterInstruction) i2).getValue();
+            if (rhsValue) {
+                return i2;
+            } else {
+                return new BoolLiterInstruction(false, currentReg);
+            }
+        } else {
+            return new ANDInstruction(i1, i2, currentReg);
+        }
     }
 
     @Override
@@ -516,12 +576,46 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         } else {
             currentReg--;
         }
+
+        boolean lhsIsConst = isConst(i1);
+        boolean rhsIsConst = isConst(i2);
+
         int op = ((TerminalNode) ctx.binaryOper4().getChild(0)).getSymbol().getType();
-        if(op == WACCLexer.EQ) {
-            return new EQInstruction(i1, i2, currentReg);
+
+        if (lhsIsConst && rhsIsConst) {
+            if (i1 instanceof IntLiterInstruction) {
+                int lhsValue = ((IntLiterInstruction) i1).getValue();
+                int rhsValue = ((IntLiterInstruction) i2).getValue();
+                if(op == WACCLexer.EQ) {
+                    return new BoolLiterInstruction(lhsValue == rhsValue, currentReg);
+                } else {
+                    return new BoolLiterInstruction(lhsValue != rhsValue, currentReg);
+                }
+            } else if (i1 instanceof CharLiterInstruction) {
+                char lhsValue = ((CharLiterInstruction) i1).getValue();
+                char rhsValue = ((CharLiterInstruction) i2).getValue();
+                if(op == WACCLexer.EQ) {
+                    return new BoolLiterInstruction(lhsValue == rhsValue, currentReg);
+                } else {
+                    return new BoolLiterInstruction(lhsValue != rhsValue, currentReg);
+                }
+            } else {
+                boolean lhsValue = ((BoolLiterInstruction) i1).getValue();
+                boolean rhsValue = ((BoolLiterInstruction) i2).getValue();
+                if(op == WACCLexer.EQ) {
+                    return new BoolLiterInstruction(lhsValue == rhsValue, currentReg);
+                } else {
+                    return new BoolLiterInstruction(lhsValue != rhsValue, currentReg);
+                }
+            }
         } else {
-            return new NEQInstruction(i1, i2, currentReg);
+            if (op == WACCLexer.EQ) {
+                return new EQInstruction(i1, i2, currentReg);
+            } else {
+                return new NEQInstruction(i1, i2, currentReg);
+            }
         }
+
 
     }
 
@@ -546,15 +640,48 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         } else {
             currentReg--;
         }
+
+        boolean lhsIsConst = isConst(i1);
+        boolean rhsIsConst = isConst(i2);
+
         int op = ((TerminalNode) ctx.binaryOper3().getChild(0)).getSymbol().getType();
-        if(op == WACCLexer.GT) {
-            return new GTInstruction(i1, i2, currentReg);
-        } else if (op == WACCLexer.LT) {
-            return new LTInstruction(i1, i2, currentReg);
-        } else if (op == WACCLexer.LEQ) {
-            return new LEQInstruction(i1, i2, currentReg);
+
+        if (lhsIsConst && rhsIsConst) {
+            if (i1 instanceof  IntLiterInstruction) {
+                int lhsValue = ((IntLiterInstruction) i1).getValue();
+                int rhsValue = ((IntLiterInstruction) i2).getValue();
+                if (op == WACCLexer.GT) {
+                    return new BoolLiterInstruction(lhsValue > rhsValue, currentReg);
+                } else if (op == WACCLexer.LT) {
+                    return new BoolLiterInstruction(lhsValue < rhsValue, currentReg);
+                } else if (op == WACCLexer.LEQ) {
+                    return new BoolLiterInstruction(lhsValue <= rhsValue, currentReg);
+                } else {
+                    return new BoolLiterInstruction(lhsValue >= rhsValue, currentReg);
+                }
+            } else {
+                char lhsValue = ((CharLiterInstruction) i1).getValue();
+                char rhsValue = ((CharLiterInstruction) i2).getValue();
+                if (op == WACCLexer.GT) {
+                    return new BoolLiterInstruction(lhsValue > rhsValue, currentReg);
+                } else if (op == WACCLexer.LT) {
+                    return new BoolLiterInstruction(lhsValue < rhsValue, currentReg);
+                } else if (op == WACCLexer.LEQ) {
+                    return new BoolLiterInstruction(lhsValue <= rhsValue, currentReg);
+                } else {
+                    return new BoolLiterInstruction(lhsValue >= rhsValue, currentReg);
+                }
+            }
         } else {
-            return new GEQInstruction(i1, i2, currentReg);
+            if (op == WACCLexer.GT) {
+                return new GTInstruction(i1, i2, currentReg);
+            } else if (op == WACCLexer.LT) {
+                return new LTInstruction(i1, i2, currentReg);
+            } else if (op == WACCLexer.LEQ) {
+                return new LEQInstruction(i1, i2, currentReg);
+            } else {
+                return new GEQInstruction(i1, i2, currentReg);
+            }
         }
 
     }
@@ -565,70 +692,113 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         if(e != null) {
             return visit(e);
         }
+
         boolean capped = true;
         ExprInstruction i1 = (ExprInstruction) visit(ctx.expr2(0));
-        if(currentReg < 10) {
+        if (currentReg < 10) {
             currentReg++;
             capped = false;
         } else {
             stack.newScope();
             stack.add("", null);
         }
+
         ExprInstruction i2 = (ExprInstruction) visit(ctx.expr2(1));
-        if(capped) {
+        if (capped) {
             stack.descope();
         } else {
             currentReg--;
         }
+
+        boolean lhsIsConst = isConst(i1);
+        boolean rhsIsConst = isConst(i2);
         int op = ((TerminalNode) ctx.binaryOper2().getChild(0)).getSymbol().getType();
-        BinaryExprInstruction plusOrMinus;
-        if(op == WACCLexer.PLUS) {
-            plusOrMinus = new PlusInstruction(i1, i2, currentReg,numOfMsg);
+
+        if (lhsIsConst && rhsIsConst) {
+            IntLiterInstruction intLiter;
+            int lhsValue = ((IntLiterInstruction) i1).getValue();
+            int rhsValue = ((IntLiterInstruction) i2).getValue();
+            if (op == WACCLexer.PLUS) {
+                intLiter = new IntLiterInstruction(lhsValue + rhsValue, currentReg);
+            } else {
+                intLiter = new IntLiterInstruction(lhsValue - rhsValue, currentReg);
+            }
+            return intLiter;
         } else {
-            plusOrMinus = new MinusInstruction(i1, i2, currentReg,numOfMsg);
+            BinaryExprInstruction binOp;
+            if (op == WACCLexer.PLUS) {
+                binOp = new PlusInstruction(i1, i2, currentReg, dataMap);
+            } else {
+                binOp = new MinusInstruction(i1, i2, currentReg, dataMap);
+            }
+            dataMap = binOp.setCheckError();
+            ContainingDataOrLabelsInstruction dataAndLabels = binOp.getErrorPrint();
+            addDataAndLabels(dataAndLabels);
+            return binOp;
         }
-        numOfMsg = plusOrMinus.setCheckError();
-        ContainingDataOrLabelsInstruction dataAndLabels = plusOrMinus.getErrorPrint();
-        addDataAndLabels(dataAndLabels);
-        return plusOrMinus;
     }
 
     @Override
     public Instruction visitExpr1(@NotNull WACCParser.Expr1Context ctx) {
 
-        if(ctx.getChildCount() == 1) {
+        if (ctx.getChildCount() == 1) {
             return visit(ctx.getChild(0));
         }
 
         boolean capped = true;
+
         ExprInstruction i1 = (ExprInstruction) visit(ctx.expr1(0));
-        if(currentReg < 10) {
+        if (currentReg < 10) {
             currentReg++;
             capped = false;
         } else {
             stack.newScope();
             stack.add("", null);
         }
+
         ExprInstruction i2 = (ExprInstruction) visit(ctx.expr1(1));
-        if(capped) {
+        if (capped) {
             stack.descope();
         } else {
             currentReg--;
         }
+
+        boolean lhsIsConst = isConst(i1);
+        boolean rhsIsConst = isConst(i2);
         int op = ((TerminalNode) ctx.binaryOper1().getChild(0)).getSymbol().getType();
 
-        BinaryExprInstruction binaryOp;
-        if(op == WACCLexer.MULTIPLY) {
-            binaryOp = new MultiplyInstruction(i1, i2, currentReg, currentReg + 1,numOfMsg);
-        } else if (op == WACCLexer.DIVIDE) {
-            binaryOp = new DivideInstruction(i1, i2, currentReg,numOfMsg);
+        if (lhsIsConst && rhsIsConst) {
+            IntLiterInstruction intLiter;
+            int lhsValue = ((IntLiterInstruction) i1).getValue();
+            int rhsValue = ((IntLiterInstruction) i2).getValue();
+            if (op == WACCLexer.MULTIPLY) {
+                intLiter = new IntLiterInstruction(lhsValue * rhsValue, currentReg);
+            } else if (op == WACCLexer.DIVIDE) {
+                intLiter = new IntLiterInstruction(lhsValue / rhsValue, currentReg);
+            } else {
+                intLiter = new IntLiterInstruction(lhsValue % rhsValue, currentReg);
+            }
+            return intLiter;
         } else {
-            binaryOp = new ModInstruction(i1, i2, currentReg,numOfMsg);
+            BinaryExprInstruction binaryOp;
+            if (op == WACCLexer.MULTIPLY) {
+                binaryOp = new MultiplyInstruction(i1, i2, currentReg, currentReg + 1, dataMap);
+            } else if (op == WACCLexer.DIVIDE) {
+                binaryOp = new DivideInstruction(i1, i2, currentReg, dataMap);
+            } else {
+                binaryOp = new ModInstruction(i1, i2, currentReg, dataMap);
+            }
+            dataMap = binaryOp.setCheckError();
+            ContainingDataOrLabelsInstruction dataAndLabels = binaryOp.getErrorPrint();
+            addDataAndLabels(dataAndLabels);
+            return binaryOp;
         }
-        numOfMsg = binaryOp.setCheckError();
-        ContainingDataOrLabelsInstruction dataAndLabels = binaryOp.getErrorPrint();
-        addDataAndLabels(dataAndLabels);
-        return binaryOp;
+    }
+
+    private boolean isConst(ExprInstruction instruction) {
+        return  instruction instanceof IntLiterInstruction ||
+                instruction instanceof BoolLiterInstruction ||
+                instruction instanceof CharLiterInstruction;
     }
 
     @Override
@@ -657,10 +827,10 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         }
         stringList.add(literal);
         */
-        StringLiterInstruction stringLiterInstruction =  new StringLiterInstruction(numOfMsg, currentReg, literal);
+        StringLiterInstruction stringLiterInstruction =  new StringLiterInstruction(dataMap.size(), currentReg, literal);
         DataInstruction dataString = stringLiterInstruction.setData(literal);
         data.add(dataString);
-        numOfMsg++;
+        dataMap.put("msg_" + dataMap.size(), dataString.getAscii());
         return stringLiterInstruction;
     }
 
@@ -729,11 +899,8 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     public Instruction visitArrayElem(@NotNull WACCParser.ArrayElemContext ctx) {
 
         String id = ctx.identifier().getText();
-
         String locationString = "" + stack.get(id);
-
         Type type = stack.getType(id);
-
         for(TerminalNode c:ctx.CLOSE_SQUARE()) {
             type = ((ArrayType) type).getContentsType();
         }
@@ -744,22 +911,18 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
             exprs.add((ExprInstruction) visit(e));
         }
         currentReg -= 2;
-        CanThrowRuntimeError arrayIns;
         if (ctx.getParent() instanceof WACCParser.AssignLHSContext) {
             currentReg++;
             ArrayElemLHSInstruction array = new ArrayElemLHSInstruction(
-                    locationString, type, currentReg, exprs, numOfMsg);
-            numOfMsg = array.setErrorChecking();
-            arrayIns = array.getCanThrowRuntimeError();
-            addDataAndLabels(arrayIns);
+                    locationString, type, currentReg, exprs, dataMap);
+            dataMap = array.setErrorChecking();
+            addDataAndLabels(array.getDataAndLabels());
             currentReg--;
             return array;
         } else {
-            //TODO: why not currentReg++; here?
-            ArrayElemInstruction array = new ArrayElemInstruction(locationString, type, currentReg, exprs, numOfMsg);
-            numOfMsg = array.setErrorChecking();
-            arrayIns = array.getCanThrowRuntimeError();
-            addDataAndLabels(arrayIns);
+            ArrayElemInstruction array = new ArrayElemInstruction(locationString, type, currentReg, exprs, dataMap);
+            dataMap = array.setErrorChecking();
+            addDataAndLabels(array.getDataAndLabels());
             currentReg--;
             return array;
         }
@@ -780,13 +943,15 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         String id = ctx.IDENTIFIER().getText();
         String locationString = stack.getOffsetString(id);
         Type type = stack.getType(id);
+        if (type.checkType(PrimType.STRING)){
+            String stringValue = identifier.get(id);
+            return new IdentifierExprInstruction(locationString, type, currentReg,stringValue);
+        }
         if (ctx.getParent() instanceof WACCParser.BaseExprContext) {
             return new IdentifierExprInstruction(locationString, type, currentReg);
         } else {
             return new IdentifierInstruction(locationString, type);
         }
-
-
     }
 
     @Override
@@ -824,22 +989,18 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         TerminalNode pairOp = (TerminalNode) ctx.getChild(0);
         int pairOpToken = pairOp.getSymbol().getType();
         boolean isTokenFST = pairOpToken == WACCLexer.FST;
-
-        CanThrowRuntimeError pairIns;
         if (ctx.getParent() instanceof WACCParser.AssignRHSContext) {
             ExprInstruction expr = (ExprInstruction) visit(ctx.expr());
-            PairRHSInstruction pair = new PairRHSInstruction(isTokenFST, expr, numOfMsg);
-            numOfMsg = pair.setErrorChecking();
-            pairIns = pair.getCanThrowRuntimeError();
-            addDataAndLabels(pairIns);
+            PairRHSInstruction pair = new PairRHSInstruction(isTokenFST, expr, dataMap);
+            dataMap = pair.setErrorChecking();
+            addDataAndLabels(pair.getDataAndLabels());
             return pair;
         } else {
             currentReg++;
             ExprInstruction expr = (ExprInstruction) visit(ctx.expr());
-            PairLHSInstruction pair = new PairLHSInstruction(isTokenFST, expr, numOfMsg);
-            numOfMsg = pair.setErrorChecking();
-            pairIns = pair.getCanThrowRuntimeError();
-            addDataAndLabels(pairIns);
+            PairLHSInstruction pair = new PairLHSInstruction(isTokenFST, expr, dataMap);
+            dataMap = pair.setErrorChecking();
+            addDataAndLabels(pair.getDataAndLabels());
             currentReg--;
             return pair;
         }

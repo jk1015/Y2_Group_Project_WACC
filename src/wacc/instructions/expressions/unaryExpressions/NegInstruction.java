@@ -5,21 +5,22 @@ import wacc.instructions.expressions.ExprInstruction;
 import wacc.types.PrimType;
 
 import java.io.PrintStream;
+import java.util.HashMap;
 
 /**
  * Created by jk1015 on 22/11/16.
  */
 public class NegInstruction extends ExprInstruction {
 
+    private HashMap<String, String> dataMap;
     private ExprInstruction expr;
-    ContainingDataOrLabelsInstruction dataAndLabels;
-    private int numOfMsg;
+    private ContainingDataOrLabelsInstruction dataAndLabels;
 
-    public NegInstruction(ExprInstruction expr, int register,int numOfMsg) {
+    public NegInstruction(ExprInstruction expr, int register,HashMap<String,String> dataMap) {
         super(register, PrimType.INT);
         this.expr = expr;
-        this.numOfMsg =numOfMsg;
-        this.dataAndLabels = new ContainingDataOrLabelsInstruction(numOfMsg);
+        this.dataMap = dataMap;
+        this.dataAndLabels = new ContainingDataOrLabelsInstruction(dataMap);
     }
 
     @Override
@@ -29,32 +30,15 @@ public class NegInstruction extends ExprInstruction {
         out.println("BLVS p_throw_overflow_error");
     }
 
-    public int setDataAndLAbels(){
-        String nameOfMsg = dataAndLabels.setData("msg_" + numOfMsg,"\"%d\\0\"");
-        numOfMsg++;
-        String[] namesOfMsg = {nameOfMsg};
-        dataAndLabels.setLabel("p_throw_overflow_error", namesOfMsg);
-        return numOfMsg;
+    public HashMap<String, String> setCheckError() {
+        String[] overflow =
+                {"\"OverflowError: the result is too small/large to store in a 4-byte signed-integer.\\n\""};
+        String[] stringASCII = {"\"%.*s\\0\""};
+        dataMap = dataAndLabels.addDataAndLabels("p_throw_overflow_error", overflow);
+        dataMap = dataAndLabels.addDataAndLabels("p_throw_runtime_error", overflow);
+        dataMap = dataAndLabels.addDataAndLabels("p_print_string", stringASCII);
+        return dataMap;
     }
-
-    public int setCheckError() {
-        numOfMsg = addDataAndLabels("p_throw_overflow_error",
-                "\"OverflowError: the result is too small/large to store in a 4-byte signed-integer.\\n\"");
-        numOfMsg = addDataAndLabels("p_throw_runtime_error",
-                "\"OverflowError: the result is too small/large to store in a 4-byte signed-integer.\\n\"");
-        numOfMsg = addDataAndLabels("p_print_string", "\"%.*s\\0\"");
-        return numOfMsg;
-    }
-
-    private int addDataAndLabels(String name, String ascii) {
-        String prefix = "msg_";
-        String nameOfMsg = dataAndLabels.setData(prefix + numOfMsg, ascii);
-        numOfMsg++;
-        String[] namesOfMsg = {nameOfMsg};
-        dataAndLabels.setLabel(name, namesOfMsg);
-        return numOfMsg;
-    }
-
     public ContainingDataOrLabelsInstruction getDataAndLabels(){
         return dataAndLabels;
     }
