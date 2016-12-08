@@ -6,8 +6,10 @@ public class FunctionInstruction implements Instruction {
 
     private String functionLabel;
     private Instruction statement;
+    private final int scopeSize;
 
-    public FunctionInstruction(String functionLabel, Instruction statement) {
+    public FunctionInstruction(String functionLabel, Instruction statement, int scopeSize) {
+        this.scopeSize = scopeSize;
         this.functionLabel = functionLabel;
         this.statement = statement;
     }
@@ -22,6 +24,8 @@ public class FunctionInstruction implements Instruction {
 
         // function contents
         statement.toAssembly(out);
+
+        out.println("ADD sp, sp, #" + scopeSize);
 
         // set pc
         out.println("POP {pc}");

@@ -49,4 +49,9 @@ public class CallFunctionInstruction implements LocatableInstruction {
     public Type getType() {
         return null;
     }
+
+    @Override
+    public boolean usesRegister() {
+        return true;
+    }
 }

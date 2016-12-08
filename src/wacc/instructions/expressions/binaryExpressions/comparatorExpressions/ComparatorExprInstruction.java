@@ -5,6 +5,7 @@ import wacc.instructions.expressions.binaryExpressions.BinaryExprInstruction;
 import wacc.types.PrimType;
 
 import java.io.PrintStream;
+import java.util.HashMap;
 
 /**
  * Created by jk1015 on 22/11/16.
@@ -30,7 +31,7 @@ public class ComparatorExprInstruction extends BinaryExprInstruction {
     }
 
     @Override
-    public int setCheckError() {
-        return 0;
+    public HashMap<String, String> setCheckError() {
+        return null;
     }
 }

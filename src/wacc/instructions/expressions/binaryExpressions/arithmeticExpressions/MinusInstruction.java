@@ -5,6 +5,7 @@ import wacc.instructions.expressions.baseExpressions.FloatLiterInstruction;
 import wacc.types.PrimType;
 
 import java.io.PrintStream;
+import java.util.HashMap;
 
 /**
  * Created by jk1015 on 22/11/16.
@@ -13,8 +14,9 @@ public class MinusInstruction extends ArithmeticInstruction {
     private final int MAX = -(2^31);
     private boolean tooSmall;
 
-    public MinusInstruction(ExprInstruction expr1, ExprInstruction expr2, int register,int numOfMsg) {
-        super(expr1, expr2, register, PrimType.INT,numOfMsg);
+    public MinusInstruction(ExprInstruction expr1, ExprInstruction expr2,
+                            int register, HashMap<String,String> dataMap) {
+        super(expr1, expr2, register, PrimType.INT, dataMap);
         float f = operate(f1,f2);
         if (f > MAX){
             tooSmall = true;
@@ -36,16 +38,17 @@ public class MinusInstruction extends ArithmeticInstruction {
     }
 
     @Override
-    public int setCheckError() {
+    public HashMap<String,String>  setCheckError() {
         if (!(expr1 instanceof FloatLiterInstruction ||
                 expr2 instanceof FloatLiterInstruction)
                 || tooSmall) {
-            numOfMsg = addDataAndLabels("p_throw_overflow_error",
+
+            dataMap = addDataAndLabels("p_throw_overflow_error",
                     "\"OverflowError: the result is too small/large to store in a 4-byte signed-integer.\\n\"");
-            numOfMsg = addDataAndLabels("p_throw_runtime_error",
+            dataMap = addDataAndLabels("p_throw_runtime_error",
                     "\"OverflowError: the result is too small/large to store in a 4-byte signed-integer.\\n\"");
-            numOfMsg = addDataAndLabels("p_print_string", "\"%.*s\\0\"");
+            dataMap = addDataAndLabels("p_print_string", "\"%.*s\\0\"");
         }
-        return numOfMsg;
+        return dataMap;
     }
 }

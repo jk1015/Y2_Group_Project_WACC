@@ -1,17 +1,22 @@
 package wacc.instructions;
-
-
 import wacc.types.PrimType;
 import wacc.types.Type;
 
 import java.io.PrintStream;
+import java.util.HashMap;
 
-public class ReadInstruction extends ContainingDataOrLabelsInstruction {
-    AssignLHSInstruction lhsInstruction;
+public class ReadInstruction implements Instruction {
+    private final String nameOfLabel;
+    private final AssignLHSInstruction lhsInstruction;
+    private final Type type;
+    private HashMap<String, String> dataMap;
+    private ContainingDataOrLabelsInstruction dataAndLabels;
 
-    public ReadInstruction(AssignLHSInstruction assignLHSInstruction,int numOfMsg) {
-        super(assignLHSInstruction,numOfMsg);
+    public ReadInstruction(AssignLHSInstruction assignLHSInstruction,HashMap<String,String> dataMap) {
+        this.dataMap = dataMap;
         this.lhsInstruction = assignLHSInstruction;
+        this.dataAndLabels = new ContainingDataOrLabelsInstruction(dataMap);
+        this.type = assignLHSInstruction.getType();
         this.nameOfLabel = "p_read_" + readType(type);
     }
 
@@ -21,7 +26,6 @@ public class ReadInstruction extends ContainingDataOrLabelsInstruction {
         } else if (type.checkType(PrimType.INT)) {
                 return "int";
         }
-
         return null;
     }
 
@@ -38,21 +42,19 @@ public class ReadInstruction extends ContainingDataOrLabelsInstruction {
         }
     }
 
-    public int addDataAndLabels() {
-        String prefix = "msg_";
+    public HashMap<String,String> addDataAndLabels() {
         if (type.checkType(PrimType.CHAR)) {
-            String nameOfMsg = setData(prefix + numOfMsg,"\" %c\\0\"");
-            numOfMsg++;
-            String[] namesOfMsg = {nameOfMsg};
-            setLabel(nameOfLabel, namesOfMsg);
+            String[] ascii = {"\" %c\\0\""};
+            dataMap = dataAndLabels.addDataAndLabels(nameOfLabel,ascii);
         }else if (type.checkType(PrimType.INT)) {
-            String nameOfMsg = setData(prefix + numOfMsg,"\"%d\\0\"");
-            numOfMsg++;
-            String[] namesOfMsg = {nameOfMsg};
-            setLabel(nameOfLabel, namesOfMsg);
+            String[] ascii = {"\"%d\\0\""};
+            dataMap = dataAndLabels.addDataAndLabels(nameOfLabel,ascii);
         }
-        return numOfMsg;
+        return dataMap;
         }
 
+    public ContainingDataOrLabelsInstruction getDataAndLabels(){
+        return dataAndLabels;
+    }
 }
 

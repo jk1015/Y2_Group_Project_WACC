@@ -3,9 +3,10 @@ lexer grammar WACCLexer;
 //general operators (multiple uses)
 PLUS: '+' ;
 MINUS: '-' ;
+MULTIPLY: '*' ;
+AMP: '&' ;
 
 //binary operators
-MULTIPLY: '*' ;
 DIVIDE: '/' ;
 MOD: '%' ;
 GT: '>' ;
@@ -40,9 +41,8 @@ SEMICOLON : ';' ;
 
 COMMA : ',' ;
 
-DOT : '.';
-
 //blocks
+STRUCT: 'struct';
 BEGIN: 'begin';
 END: 'end' ;
 IS: 'is' ;
@@ -69,6 +69,9 @@ DO: 'do' ;
 DONE: 'done' ;
 BREAK: 'break' ;
 CONTINUE: 'continue' ;
+
+//structs
+DOT: '.';
 
 //pairs
 PAIR: 'pair' ;

@@ -1,0 +1,11 @@
+# Simple pointer use
+
+# Output:
+# #empty#
+
+# Program:
+
+begin
+  int x = 0;
+  int *y = &x
+end

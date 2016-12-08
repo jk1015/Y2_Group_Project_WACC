@@ -12,18 +12,28 @@ import java.io.PrintStream;
  */
 public class IdentifierExprInstruction extends ExprInstruction {
 
+    private String stringValue;
     private String var;
 
     //Takes string from MemoryStack getOffsetString
     public IdentifierExprInstruction(String var, Type t, int register) {
-        //TODO
         super(register, t);
         this.var = var;
+    }
+
+    public IdentifierExprInstruction(String var, Type t, int register,String stringValue) {
+        super(register, t);
+        this.var = var;
+        this.stringValue = stringValue;
     }
 
     @Override
     public void toAssembly(PrintStream out) {
         out.print("LDR " + getLocationString() + ", ");
         out.println(var);
+    }
+
+    public String getStringValue() {
+        return stringValue;
     }
 }

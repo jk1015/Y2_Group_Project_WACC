@@ -21,6 +21,7 @@ public enum PrimType implements Type {
 			case BOOL: return "bool";
 			case CHAR: return "char";
 			case INT: return "int";
+			case STRING: return "string";
 			case FLOAT: return  "float";
 			default: throw new IllegalArgumentException();
 		}

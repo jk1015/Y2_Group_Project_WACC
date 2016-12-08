@@ -4,9 +4,13 @@ options {
   tokenVocab=WACCLexer;
 }
 
-program: BEGIN function* stat END EOF;
+program: BEGIN struct* function* stat END EOF;
+
+header: function* EOF;
 
 function: type identifier OPEN_PARENTHESES paramList? CLOSE_PARENTHESES IS stat END;
+
+struct: STRUCT identifier IS (fixedSizeType identifier)* END;
 
 paramList: param (COMMA param)*;
 
@@ -34,6 +38,8 @@ stat: SKIPPER                           #skipStat
 assignLHS: identifier
   | arrayElem
   | pairElem
+  | structContents
+  | derefLHS
   ;
 
 assignRHS: expr
@@ -41,6 +47,7 @@ assignRHS: expr
   | newPair
   | pairElem
   | callFunction
+  | structContents
   ;
 
 newPair: NEWPAIR OPEN_PARENTHESES expr COMMA expr CLOSE_PARENTHESES;
@@ -56,6 +63,13 @@ pairElem: FST expr
 type: baseType
   | arrayType
   | pairType
+  | structType
+  | ptrType
+  ;
+
+fixedSizeType: baseType
+  | structType
+  | ptrType
   ;
 
 baseType: INT_TYPE
@@ -69,9 +83,19 @@ arrayType: (baseType | pairType) (OPEN_SQUARE CLOSE_SQUARE)+;
 
 pairType: PAIR OPEN_PARENTHESES pairElemType COMMA pairElemType CLOSE_PARENTHESES;
 
+structType: identifier;
+
+ptrType: ptrBaseType (MULTIPLY)+;
+
+ptrBaseType: baseType
+  | arrayType
+  | pairType
+  ;
+
 pairElemType: baseType
   | arrayType
   | pairNullType
+  | ptrType
   ;
 
 pairNullType: PAIR;
@@ -120,6 +144,8 @@ baseExpr: intLiter
   | stringLiter
   | pairLiter
   | identifier
+  | refLHS
+  | derefLHS
   | arrayElem
   | floatLiter
   ;
@@ -150,6 +176,13 @@ expr6: expr6 binaryOper6 expr6
   | expr5
   ;
 
+
+structContents: identifier DOT identifier;
+
+refLHS: AMP assignLHS;
+
+derefLHS: (MULTIPLY)+ assignLHS;
+
 arrayElem: identifier (OPEN_SQUARE expr CLOSE_SQUARE)+;
 
 arrayLiter: OPEN_SQUARE (expr (COMMA expr)*)? CLOSE_SQUARE;
@@ -165,3 +198,4 @@ stringLiter: STRING_LITERAL;
 pairLiter: PAIR_LITERAL;
 
 floatLiter: (PLUS | MINUS)? FLOAT_LITER;
+

@@ -28,4 +28,7 @@ public class BoolLiterInstruction extends ExprInstruction {
 
     }
 
+    public boolean getValue() {
+        return value == 1;
+    }
 }

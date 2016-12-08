@@ -1,0 +1,15 @@
+# Referencing fst and second
+
+# Output:
+# 1
+# 3
+
+# Program:
+
+begin
+  pair (int, int) a = newpair (1, 3);
+  int* b = &fst a;
+  int* c = &snd a;
+  println *b;
+  println *c
+end

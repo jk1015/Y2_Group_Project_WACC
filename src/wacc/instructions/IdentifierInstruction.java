@@ -27,12 +27,17 @@ public class IdentifierInstruction implements LocatableInstruction {
         if (location.length() == 4) {
             return "#0";
         } else {
-            return "#" + location.substring(7, location.length() - 1);
+            return "#" + location.substring(6, location.length() - 1);
         }
     }
 
     @Override
     public Type getType() {
         return type;
+    }
+
+    @Override
+    public boolean usesRegister() {
+        return false;
     }
 }

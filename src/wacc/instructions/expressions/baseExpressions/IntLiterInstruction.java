@@ -20,7 +20,7 @@ public class IntLiterInstruction extends ExprInstruction {
         out.println("=" + value);
     }
 
-    public int getValue(){
+    public int getValue() {
         return value;
     }
 }

@@ -1,9 +1,11 @@
 package wacc.instructions;
 
+
 import wacc.instructions.expressions.ExprInstruction;
 import wacc.types.Type;
 
 import java.io.PrintStream;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -16,19 +18,19 @@ public class ArrayElemInstruction extends ExprInstruction {
     private final Type type;
     private final int currentReg;
     private final List<ExprInstruction> exprs;
-    private CanThrowRuntimeError canThrowRuntimeError;
-    private int numOfMsg;
+    private HashMap<String, String> dataMap;
+    private ContainingDataOrLabelsInstruction dataAndLabels;
 
 
     public ArrayElemInstruction(String locationString, Type type,
-                                int currentReg, List<ExprInstruction> exprs, int numOfMsg) {
+                                int currentReg, List<ExprInstruction> exprs, HashMap<String, String> dataMap) {
         super(currentReg, type);
         this.locationString = locationString;
         this.type = type;
         this.currentReg = currentReg;
         this.exprs = exprs;
-        this.numOfMsg = numOfMsg;
-        this.canThrowRuntimeError = new CanThrowRuntimeError(numOfMsg);
+        this.dataMap = dataMap;
+        this.dataAndLabels = new ContainingDataOrLabelsInstruction(dataMap);
     }
 
     @Override
@@ -57,18 +59,19 @@ public class ArrayElemInstruction extends ExprInstruction {
         return type;
     }
 
-    public int setErrorChecking() {
+
+    public HashMap<String, String> setErrorChecking() {
         String[] ascii = {"\"ArrayIndexOutOfBoundsError: negative index\\n\\0\"",
                 "\"ArrayIndexOutOfBoundsError: index too large\\n\\0\""};
-        numOfMsg = canThrowRuntimeError.addDataAndLabels("p_check_array_bounds", ascii);
+        dataMap = dataAndLabels.addDataAndLabels("p_check_array_bounds", ascii);
+        dataMap = dataAndLabels.addDataAndLabels("p_throw_runtime_error", ascii);
 
-        numOfMsg = canThrowRuntimeError.addDataAndLabels("p_throw_runtime_error", ascii);
         String[] stringAscii = {"\"%.*s\\0\""};
-        numOfMsg = canThrowRuntimeError.addDataAndLabels("p_print_string", stringAscii);
-        return numOfMsg;
+        dataMap = dataAndLabels.addDataAndLabels("p_print_string", stringAscii);
+        return dataMap;
     }
 
-    public CanThrowRuntimeError getCanThrowRuntimeError(){
-        return canThrowRuntimeError;
+    public ContainingDataOrLabelsInstruction getDataAndLabels(){
+        return dataAndLabels;
     }
 }

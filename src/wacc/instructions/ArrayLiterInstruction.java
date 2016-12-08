@@ -45,4 +45,9 @@ public class ArrayLiterInstruction implements LocatableInstruction {
     public Type getType() {
         return new ArrayType(elems.get(0).getType());
     }
+
+    @Override
+    public boolean usesRegister() {
+        return true;
+    }
 }
