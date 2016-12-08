@@ -1,3 +1,4 @@
+
 package wacc;
 
 import antlr.WACCLexer;
@@ -20,7 +21,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collector;
 
 public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
@@ -249,7 +249,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         } else if (t == WACCLexer.INT_TYPE) {
             varType = PrimType.INT;
         } else if (t == WACCLexer.CHAR_TYPE) {
-           varType = PrimType.CHAR;
+            varType = PrimType.CHAR;
         } else {
             varType = PrimType.STRING;
         }
@@ -364,7 +364,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     }
 
     private int getIdentOfStat(@NotNull WACCParser.StatContext ctx) {
-       return ctx.hashCode();
+        return ctx.hashCode();
     }
 
     private WACCParser.StatContext getParentStatContext(@NotNull WACCParser.StatContext ctx) {
@@ -456,7 +456,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         return new ExitInstruction(exInst);
     }
 
-    //TODO: Const eval 
+    //TODO: Const eval
     @Override
     public Instruction visitUnaryExpr(@NotNull WACCParser.UnaryExprContext ctx) {
         int op = ((TerminalNode) ctx.unaryOper().getChild(0)).getSymbol().getType();
@@ -1135,3 +1135,4 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     }
 
 }
+

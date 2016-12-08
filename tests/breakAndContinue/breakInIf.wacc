@@ -1,0 +1,18 @@
+# Output:
+# Can you count to 10?
+# 1
+# 2
+
+# Program:
+
+begin
+  int i = 1 ;
+      if i == 1
+      then
+        continue ;
+        println i
+      else
+        println i
+      fi ;
+       println i + 2
+end

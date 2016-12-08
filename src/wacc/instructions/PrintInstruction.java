@@ -50,7 +50,7 @@ public class PrintInstruction implements Instruction {
             String[] ascii = {"\"%d\\0\""};
             dataMap = dataAndLabels.addDataAndLabels(nameOfLabel,ascii);
         } else if (type.checkType(PrimType.STRING) ||
-                type.checkType(PrimType.BOOL)){
+                type.checkType(PrimType.BOOL) || type.checkType(PrimType.FLOAT)){
             String[] ascii = new String[2];
             if (type.checkType(PrimType.STRING)) {
                 String ascii0;
@@ -60,6 +60,16 @@ public class PrintInstruction implements Instruction {
                     ascii0 = ((StringLiterInstruction) expr).getStringLiter();
                 }
                 ascii[0] = ascii0;
+                ascii[1] = "\"%.*s\\0\"";
+                dataMap = dataAndLabels.addDataAndLabels(nameOfLabel,ascii);
+            } else if(type.checkType(PrimType.FLOAT)) {
+                float value;
+                if (expr instanceof BinaryExprInstruction){
+                    value = ((BinaryExprInstruction) expr).getFloatValue();
+                }else {
+                    value = ((FloatLiterInstruction) expr).getValueInFloat();
+                }
+                ascii[0] = "\"" + value + "f\"";
                 ascii[1] = "\"%.*s\\0\"";
                 dataMap = dataAndLabels.addDataAndLabels(nameOfLabel,ascii);
             } else {
