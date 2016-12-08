@@ -218,6 +218,8 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
             varType = parsePtrType(type.ptrType());
         } else if (type.baseType() != null) {
             varType = parseBaseType(type.baseType());
+        } else if (type.funcPtrType() != null) {
+            varType = parseFuncPtrType(type.funcPtrType());
         } else {
             varType = parseStructType(type.structType());
         }
@@ -327,6 +329,10 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         return varType;
     }
 
+    private Type parseFuncPtrType(@NotNull WACCParser.FuncPtrTypeContext ctx) {
+        return new PtrType(new FunctionType());
+    }
+
     @Override
     public Instruction visitAssignStat(@NotNull WACCParser.AssignStatContext ctx) {
         AssignLHSInstruction lhs = ((AssignLHSInstruction) visitAssignLHS(ctx.assignLHS()));
@@ -381,6 +387,12 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitRefLHS(@NotNull WACCParser.RefLHSContext ctx) {
+        if (ctx.funcIdent() != null) {
+            String ident = ctx.funcIdent().IDENTIFIER().getText();
+            LocatableInstruction ins = new FuncRefIdentInstruction(ident, currentReg, new PtrType(new FunctionType()));
+            AssignLHSInstruction ins2 = new AssignLHSInstruction(ins);
+            return new RefIdentInstruction(currentReg, ins2);
+        }
 
         AssignLHSInstruction ins = (AssignLHSInstruction) visit(ctx.assignLHS());
         Type type = ins.getType();
@@ -935,4 +947,8 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         return super.visitParam(ctx);
     }
 
+    @Override
+    public Instruction visitFuncIdent(@NotNull WACCParser.FuncIdentContext ctx) {
+        return super.visitFuncIdent(ctx);
+    }
 }
