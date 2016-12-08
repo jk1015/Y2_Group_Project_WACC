@@ -1,0 +1,7 @@
+begin
+import importFiles/hello.wah
+import importFiles/sup.wah
+int b = call f() ;
+int a = call g() ;
+print a
+end

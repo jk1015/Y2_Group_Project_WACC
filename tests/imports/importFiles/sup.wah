@@ -1,0 +1,5 @@
+import hello2.wah
+import notFound.wah
+int f2() is 
+  return 68
+end
