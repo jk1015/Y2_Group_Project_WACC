@@ -5,20 +5,20 @@ import wacc.types.PairType;
 import wacc.types.Type;
 
 import java.io.PrintStream;
+import java.util.HashMap;
 
 public class PairLHSInstruction implements LocatableInstruction {
 
     private final boolean isTokenFST;
     private final ExprInstruction expr;
-    private CanThrowRuntimeError canThrowRuntimeError;
-    private int numOfMsg;
+    private HashMap<String, String> dataMap;
+    private ContainingDataOrLabelsInstruction dataAndLabels;
 
-    public PairLHSInstruction(boolean isTokenFST, ExprInstruction expr, int numOfMsg) {
-
+    public PairLHSInstruction(boolean isTokenFST, ExprInstruction expr, HashMap<String, String> dataMap) {
         this.isTokenFST = isTokenFST;
         this.expr = expr;
-        this.numOfMsg = numOfMsg;
-        this.canThrowRuntimeError = new CanThrowRuntimeError(numOfMsg);
+        this.dataMap = dataMap;
+        this.dataAndLabels = new ContainingDataOrLabelsInstruction(dataMap);
     }
 
     @Override
@@ -47,17 +47,17 @@ public class PairLHSInstruction implements LocatableInstruction {
         }
     }
 
-    public int setErrorChecking() {
+    public HashMap<String, String> setErrorChecking() {
         String[] ascii = {"\"NullReferenceError: dereference a null reference\\n\\0\""};
-        numOfMsg = canThrowRuntimeError.addDataAndLabels("p_check_null_pointer", ascii);
+        dataMap = dataAndLabels.addDataAndLabels("p_check_null_pointer", ascii);
+        dataMap = dataAndLabels.addDataAndLabels("p_throw_runtime_error", ascii);
 
-        numOfMsg = canThrowRuntimeError.addDataAndLabels("p_throw_runtime_error", ascii);
         String[] stringAscii = {"\"%.*s\\0\""};
-        numOfMsg = canThrowRuntimeError.addDataAndLabels("p_print_string", stringAscii);
-        return numOfMsg;
+        dataMap = dataAndLabels.addDataAndLabels("p_print_string", stringAscii);
+        return dataMap;
     }
 
-    public CanThrowRuntimeError getCanThrowRuntimeError(){
-        return canThrowRuntimeError;
+    public ContainingDataOrLabelsInstruction getDataAndLabels(){
+        return dataAndLabels;
     }
 }

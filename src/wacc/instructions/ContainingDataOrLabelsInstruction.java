@@ -1,47 +1,25 @@
 package wacc.instructions;
 
-
-import wacc.instructions.expressions.ExprInstruction;
-import wacc.types.Type;
-
-import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashMap;
+public  class ContainingDataOrLabelsInstruction {
+    private HashMap<String,String> dataMap;
+    private ArrayList<LabelInstruction> labels = new ArrayList<>();
+    private ArrayList<DataInstruction> data = new ArrayList<>();
+    private int numOfMsg;
 
-public  class ContainingDataOrLabelsInstruction implements Instruction {
-    protected ArrayList<DataInstruction> data = new ArrayList<>();
-    protected ArrayList<LabelInstruction> labels = new ArrayList<>();
-
-    protected ExprInstruction expr;
-    protected int numOfMsg;
-    protected String nameOfLabel;
-    protected Type type;
-
-    ContainingDataOrLabelsInstruction(AssignLHSInstruction assignLHSInstruction,int numOfMsg){
-        this.numOfMsg = numOfMsg;
-        this.type = assignLHSInstruction.getType();
-
+    public ContainingDataOrLabelsInstruction(HashMap<String, String> dataMap){
+        this.dataMap = dataMap;
+        this.numOfMsg = dataMap.size();
     }
-    ContainingDataOrLabelsInstruction(ExprInstruction expr, int numOfMsg){
-        this.expr = expr;
-        this.numOfMsg = numOfMsg;
-        this.type = expr.getType();
-    }
-
-    public ContainingDataOrLabelsInstruction(int numOfMsg) {
-        this.numOfMsg = numOfMsg;
-    }
-
     public ContainingDataOrLabelsInstruction() {
-
     }
 
     public ArrayList<DataInstruction> getData() {
-
         return data;
     }
 
     public ArrayList<LabelInstruction> getLabel() {
-
         return labels;
     }
 
@@ -59,14 +37,28 @@ public  class ContainingDataOrLabelsInstruction implements Instruction {
         addLabel(labelInstruction);
     }
 
-    public String setData(String name,String ascii) {
+    public void setData(String ascii,String name) {
         DataInstruction dataInstruction = new DataInstruction(name, ascii);
         addData(dataInstruction);
-        return name;
+        dataMap.put(ascii,name);
     }
 
-    @Override
-    public void toAssembly(PrintStream out) {
-
+    public HashMap<String,String> addDataAndLabels(String name, String[] ascii) {
+        String[] namesOfMsg = new String[ascii.length];
+        String prefix = "msg_";
+        String nameOfMsg;
+        for (int i = 0; i < ascii.length; i++) {
+            if (!dataMap.containsKey(ascii[i])) {
+                nameOfMsg = prefix + numOfMsg;
+                setData(ascii[i],nameOfMsg);
+                numOfMsg++;
+            } else {
+                nameOfMsg = dataMap.get(ascii[i]);
+            }
+            namesOfMsg[i] = nameOfMsg;
+        }
+        setLabel(name, namesOfMsg);
+        return dataMap;
     }
+
 }

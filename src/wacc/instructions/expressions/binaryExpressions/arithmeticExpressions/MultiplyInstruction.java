@@ -5,6 +5,7 @@ import wacc.instructions.expressions.binaryExpressions.BinaryExprInstruction;
 import wacc.types.PrimType;
 
 import java.io.PrintStream;
+import java.util.HashMap;
 
 /**
  * Created by jk1015 on 22/11/16.
@@ -13,8 +14,9 @@ public class MultiplyInstruction extends BinaryExprInstruction {
 
     private int extraReg;
 
-    public MultiplyInstruction(ExprInstruction expr1, ExprInstruction expr2, int register1, int register2,int numOfMsg) {
-        super(expr1, expr2, register1, PrimType.INT,numOfMsg);
+    public MultiplyInstruction(ExprInstruction expr1, ExprInstruction expr2, int register1,
+                               int register2, HashMap<String,String> dataMap) {
+        super(expr1, expr2, register1, PrimType.INT,dataMap);
         this.extraReg = register2;
     }
 
@@ -28,12 +30,12 @@ public class MultiplyInstruction extends BinaryExprInstruction {
     }
 
     @Override
-    public int setCheckError() {
-        numOfMsg = addDataAndLabels("p_throw_overflow_error",
+    public HashMap<String,String> setCheckError() {
+        dataMap = addDataAndLabels("p_throw_overflow_error",
                     "\"OverflowError: the result is too small/large to store in a 4-byte signed-integer.\\n\"");
-        numOfMsg = addDataAndLabels("p_throw_runtime_error",
+        dataMap = addDataAndLabels("p_throw_runtime_error",
                 "\"OverflowError: the result is too small/large to store in a 4-byte signed-integer.\\n\"");
-        numOfMsg = addDataAndLabels("p_print_string", "\"%.*s\\0\"");
-        return numOfMsg;
+        dataMap = addDataAndLabels("p_print_string", "\"%.*s\\0\"");
+        return dataMap;
     }
 }
