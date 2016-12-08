@@ -78,7 +78,7 @@ baseType: INT_TYPE
   | STRING_TYPE
   ;
 
-arrayType: (baseType | pairType) (OPEN_SQUARE CLOSE_SQUARE)+;
+arrayType: (baseType | pairType | funcPtrType) (OPEN_SQUARE CLOSE_SQUARE)+;
 
 pairType: PAIR OPEN_PARENTHESES pairElemType COMMA pairElemType CLOSE_PARENTHESES;
 
@@ -98,6 +98,7 @@ pairElemType: baseType
   | arrayType
   | pairNullType
   | ptrType
+  | funcPtrType
   ;
 
 pairNullType: PAIR;
