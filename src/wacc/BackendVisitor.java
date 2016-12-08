@@ -369,7 +369,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     private WACCParser.StatContext getParentStatContext(@NotNull WACCParser.StatContext ctx) {
         WACCParser.StatContext parent = (WACCParser.StatContext) ctx.getParent();
-        if (parent instanceof WACCParser.SeqStatContext){
+        while (!(parent instanceof WACCParser.WhileStatContext)){
             parent = (WACCParser.StatContext) parent.getParent();
         }
         return parent;
@@ -889,7 +889,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
         FloatLiterInstruction floatLiterInstruction =  new FloatLiterInstruction(dataMap.size(),
                 currentReg, valueInFloat);
-        DataInstruction dataString = floatLiterInstruction.setData("\"" + valueInFloat + "\"");
+        DataInstruction dataString = floatLiterInstruction.setData("\"" + valueInFloat + "f\"");
         data.add(dataString);
         dataMap.put("msg_" + dataMap.size(), dataString.getAscii());
         return floatLiterInstruction;

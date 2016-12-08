@@ -27,7 +27,7 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
     private HashMap<String, FunctionType> calledFunctions;
     private HashMap<String, StructType> structs;
     private Type lhsRequiredType;
-    private boolean inALoopOrIfStat;
+    private boolean inALoop;
 
 	public FrontendVisitor() {
 		symbolTable = new ScopedSymbolTable();
@@ -247,7 +247,7 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
     }
 
     private void breakOrIfError(@NotNull WACCParser.StatContext ctx, String name) {
-        if (!inALoopOrIfStat){
+        if (!inALoop){
             throw new InvalidBreakOrContinueException(ctx, name + " statement must be in a loop or if statement");
         }
     }
@@ -257,17 +257,19 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
         // Check condition is boolean, check children are valid.
         Type type = visit(ctx.expr());
         if (type.checkType(PrimType.BOOL)) {
-            enterLoopOrStat(ctx.stat());
+            enterLoopOrIfStat(ctx.stat(),ctx);
             return null;
         }
         throw new InvalidTypeException(ctx, PrimType.BOOL, type);
     }
 
-    private void enterLoopOrStat(WACCParser.StatContext ctx) {
+    private void enterLoopOrIfStat(WACCParser.StatContext ctx, WACCParser.StatContext ctxP) {
         symbolTable.enterNewScope();
-        inALoopOrIfStat = true;
+        if (ctxP instanceof WACCParser.WhileStatContext) {
+            inALoop = true;
+        }
         visit(ctx);
-        inALoopOrIfStat = false;
+        inALoop = false;
         symbolTable.exitScope();
     }
 
@@ -279,10 +281,10 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
         if (!PrimType.BOOL.checkType(type)){
             throw new InvalidTypeException(ctx, PrimType.BOOL, type);
         }
-        enterLoopOrStat(ctx.stat(0));
+        enterLoopOrIfStat(ctx.stat(0),ctx);
         boolean tempReturn = hasReturn;
         hasReturn = false;
-        enterLoopOrStat(ctx.stat(1));
+        enterLoopOrIfStat(ctx.stat(1),ctx);
         hasReturn = tempReturn && hasReturn;
         return null;
     }

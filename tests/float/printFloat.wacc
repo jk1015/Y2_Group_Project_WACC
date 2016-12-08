@@ -1,0 +1,8 @@
+# Output:
+# 2.5f
+
+# Program:
+
+begin
+  println 2.5f
+end
