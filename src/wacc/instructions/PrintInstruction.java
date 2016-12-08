@@ -31,6 +31,7 @@ public class PrintInstruction implements Instruction {
         out.println("BL " + nameOfLabel);
     }
 
+
     public HashMap<String,String> addDataAndLabels() {
         if (type.checkType(PrimType.CHAR)) {
 

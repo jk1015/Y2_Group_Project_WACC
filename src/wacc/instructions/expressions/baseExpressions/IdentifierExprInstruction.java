@@ -17,7 +17,6 @@ public class IdentifierExprInstruction extends ExprInstruction {
 
     //Takes string from MemoryStack getOffsetString
     public IdentifierExprInstruction(String var, Type t, int register) {
-        //TODO
         super(register, t);
         this.var = var;
     }

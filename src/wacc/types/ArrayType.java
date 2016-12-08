@@ -20,6 +20,9 @@ public class ArrayType implements Type {
 		if (type2 instanceof ArrayType) {
 			 return contentsType.checkType(((ArrayType)type2).contentsType);
 		}
+		if (type2 == PrimType.STRING) {
+			return contentsType == PrimType.CHAR;
+		}
 		return false;
 	}
 

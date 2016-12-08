@@ -103,11 +103,13 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
         // error string that symbolises the branch link for the function
         stack.add("@!$%", new NullType());
+        stack.newScope();
         Instruction statement = visit(ctx.stat());
 
-        stack.descope();
+        int scopeSize = stack.descope();
 
-        return new FunctionInstruction(functionLabel, statement);
+        stack.descope();
+        return new FunctionInstruction(functionLabel, statement, scopeSize);
     }
 
     @Override
