@@ -293,7 +293,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         AssignInstruction incrementId = new AssignInstruction(idLHS, addIncrement);
 
         Instruction stat = visit(ctx.stat());
-        currentReg -= 2;
+        
         int scopeSize = stack.descope();
         stack.add(id, PrimType.INT);
         return new ForInstruction(counterInit, idExpr, endExpr, stat, incrementId, scopeSize);
