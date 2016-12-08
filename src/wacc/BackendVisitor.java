@@ -825,7 +825,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
             currentReg--;
             return array;
         } else {
-            //TODO: why not currentReg++; here?
+            currentReg++;
             ArrayElemInstruction array = new ArrayElemInstruction(locationString, type, currentReg, exprs, numOfMsg);
             numOfMsg = array.setErrorChecking();
             arrayIns = array.getCanThrowRuntimeError();
