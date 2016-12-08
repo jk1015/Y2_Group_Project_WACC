@@ -13,6 +13,7 @@ import java.util.*;
 public class ScopedSymbolTable {
     private Deque<Map<String, Type>> scopes;
     private Map<String, Type> currentScope;
+    private final String prefix = "/";
 
     public ScopedSymbolTable() {
         Map<String, Type> symbolTable = new HashMap<String, Type>();
@@ -30,7 +31,7 @@ public class ScopedSymbolTable {
     }
 
     public void addFunction(String name, FunctionType elem) {
-        String funcName = '\\' + name;
+        String funcName = prefix + name;
         try {
             add(funcName, elem);
         } catch (RedeclaredVariableException e) {
@@ -51,7 +52,7 @@ public class ScopedSymbolTable {
     }
 
     public FunctionType getFunction(String name){
-        String funcName = '\\' + name;
+        String funcName = prefix + name;
         return (FunctionType) get(funcName);
     }
 
@@ -68,7 +69,7 @@ public class ScopedSymbolTable {
     }
 
     public boolean hasFunction(String name) {
-        return hasName('\\' + name);
+        return hasName(prefix + name);
     }
 
 

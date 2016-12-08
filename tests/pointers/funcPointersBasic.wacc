@@ -1,0 +1,13 @@
+# Basic function pointer
+
+# Output:
+# #empty#
+
+# Program:
+
+begin
+  int zero() is
+    return 0
+  end
+  (int <- ())* f = &/zero
+end

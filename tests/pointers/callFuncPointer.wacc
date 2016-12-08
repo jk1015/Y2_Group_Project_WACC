@@ -1,0 +1,15 @@
+# Can call func pointer
+
+# Output:
+# 10
+
+# Program:
+
+begin
+  int ten() is
+    return 10
+  end
+  (int <- ())* f = &/ten;
+  int x = call *f ();
+  println x
+end

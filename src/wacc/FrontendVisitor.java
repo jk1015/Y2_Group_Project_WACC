@@ -12,11 +12,8 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import wacc.exceptions.*;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import wacc.types.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+
+import java.util.*;
 
 
 public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
@@ -149,6 +146,8 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
 
         List<Type> types = new ArrayList<>();
 
+        types.add(lhsRequiredType);
+
         WACCParser.ArgListContext argList = ctx.argList();
 
         if (argList != null) {
@@ -157,15 +156,16 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
             }
         }
 
-        Type[] typesArray = new Type[types.size() + 1];
-        typesArray[0] = lhsRequiredType;
-        for(int i = 1; i < typesArray.length; i++) {
-            typesArray[i] = types.get(i - 1);
+        FunctionType calledFunctionType = new FunctionType(types);
+
+        if (ctx.identifier() != null) {
+            calledFunctions.put(ctx.identifier().getText(), calledFunctionType);
+        } else {
+            Type derefType = visitDerefLHS(ctx.derefLHS());
+            if (!calledFunctionType.checkType(derefType)) {
+                throw new InvalidTypeException(ctx, calledFunctionType, derefType);
+            }
         }
-
-        FunctionType calledFunctionType = new FunctionType(typesArray);
-
-        calledFunctions.put(ctx.identifier().getText(), calledFunctionType);
 
         return lhsRequiredType;
     }
@@ -279,7 +279,7 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
 
     @Override
     public Type visitRefLHS(@NotNull WACCParser.RefLHSContext ctx) {
-        return new PtrType(visit(ctx.assignLHS()));
+        return new PtrType(visit(ctx.getChild(1)));
     }
 
     @Override
@@ -666,5 +666,22 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
         return pair;
     }
 
+    @Override
+    public Type visitFuncPtrType(@NotNull WACCParser.FuncPtrTypeContext ctx) {
+        List<Type> args = new LinkedList<Type>();
+        for (WACCParser.TypeContext typeCtx : ctx.type()) {
+            args.add(visit(typeCtx));
+        }
+        return new PtrType(new FunctionType(args));
+    }
+
+    @Override
+    public Type visitFuncIdent(@NotNull WACCParser.FuncIdentContext ctx) {
+        try {
+            return symbolTable.getFunction(ctx.IDENTIFIER().getText());
+        } catch (UndeclaredVariableException e) {
+            throw new UndeclaredVariableException(ctx, e.getMessage());
+        }
+    }
 }
 
