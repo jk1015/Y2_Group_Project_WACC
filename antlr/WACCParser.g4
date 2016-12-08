@@ -29,6 +29,7 @@ stat: SKIPPER                           #skipStat
   | WHILE expr DO stat DONE             #whileStat
   | BEGIN stat END                      #blockStat
   | stat SEMICOLON stat                 #seqStat
+  | FOR identifier FROM expr TO expr BY expr DO stat DONE #forStat
   ;
 
 assignLHS: identifier

@@ -40,12 +40,15 @@ class Importer {
         this.fout = new File(sourceBasePath+outputFolder+outputFileLocation);
     }
 
+    // used to recursively import dependencies of dependencies into temp files
     private Importer(InputStream in, int n, String dependencyPath, Set<String> importedFilePaths) {
         this.in = in;
         fileNum = n;
         this.currentBasePath = dependencyPath;
         this.importedFilePaths = importedFilePaths;
-        this.fout = new File(sourceBasePath+outputFolder+ fileNum +outputFileLocation);
+
+        // sets output file to temp file
+        this.fout = new File(sourceBasePath+outputFolder+fileNum+outputFileLocation);
     }
 
     public File importDependencies() {
@@ -54,12 +57,27 @@ class Importer {
             FileOutputStream fos = new FileOutputStream(fout);
             BufferedWriter outputWriter = new BufferedWriter(new OutputStreamWriter(fos));
             String inputLine;
+
+            // read line from current input file
             while ((inputLine = br.readLine()) != null) {
+
+                // check for import statement using regex
                 Pattern r = Pattern.compile("(?<=import)\\s+(\\S+)");
                 Matcher m = r.matcher(inputLine);
+
+                // if import found, try to import the given file into current output file
+                // else, copy current line into current output file
                 if (m.find()) {
                     String dependencyName = m.group(1);
-                    copyAndCheckImport(dependencyName, outputWriter);
+
+                    // if import statement is a wildcard, import files in folders in given directory
+                    // else import file normally
+                    char lastChar = dependencyName.charAt(dependencyName.length() - 1);
+                    if (lastChar == '*')  {
+                        importFilesinFolder(dependencyName, outputWriter);
+                    } else {
+                        checkAndImportFile(dependencyName, outputWriter);
+                    }
                 } else {
                     outputWriter.write(inputLine);
                     outputWriter.newLine();
@@ -74,11 +92,28 @@ class Importer {
         return fout;
     }
 
-    private void copyAndCheckImport(String dependencyName, BufferedWriter outputWriter) throws IOException {
+    private void importFilesinFolder(String dependencyName, BufferedWriter outputWriter) throws IOException {
+        // get folder file
+        File folder = new File(currentBasePath+dependencyName.substring(0, dependencyName.length()-1)+"/");
+
+        // get files in folder
+        File[] filesInFolder = folder.listFiles();
+
+        // recursively import files in folder
+        for (int i = 0; i < filesInFolder.length; i++) {
+            File file = filesInFolder[i];
+            if (file.isDirectory()) {
+                importFilesinFolder(file.getPath(), outputWriter);
+            } else if (file.isFile()) {
+                checkAndImportFile(getRelativePath(file.getPath()), outputWriter);
+            }
+        }
+    }
+
+    private void checkAndImportFile(String dependencyName, BufferedWriter outputWriter) throws IOException {
         // get dependency paths
         String dependencyFilePath = currentBasePath + dependencyName;
         String dependencyParentPath = new File(dependencyFilePath).getParentFile().getAbsolutePath()+"/";
-
         if (!importedFilePaths.contains(dependencyFilePath)) {
             // import sub-dependencies recursively into temporary file
             FileInputStream in;

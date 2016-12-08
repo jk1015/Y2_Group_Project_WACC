@@ -220,6 +220,21 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
     }
 
     @Override
+    public Type visitForStat(@NotNull WACCParser.ForStatContext ctx) {
+        for (ExprContext expr : ctx.expr()) {
+            Type exprType = visit(expr);
+            if (!exprType.checkType(PrimType.INT)) {
+                throw new InvalidTypeException(ctx, PrimType.INT, exprType);
+            }
+        }
+        symbolTable.enterNewScope();
+        symbolTable.add(ctx.identifier().getText(), PrimType.INT);
+        visit(ctx.stat());
+        symbolTable.exitScope();
+        return null;
+    }
+
+    @Override
     public Type visitIfStat(WACCParser.IfStatContext ctx) {
         // Check condition is boolean, check statements are valid.
 
@@ -603,7 +618,7 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
     public Type visitNewArray(@NotNull WACCParser.NewArrayContext ctx) {
         Type exprType = visit(ctx.expr());
         if (!(exprType.checkType(PrimType.INT))) {
-            throw new InvalidTypeException(ctx, "Expected int, got type " + exprType);
+            throw new InvalidTypeException(ctx, PrimType.INT, exprType);
         }
 
         Type contentsType = visit(ctx.type());

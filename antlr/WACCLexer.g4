@@ -65,6 +65,10 @@ FI: 'fi' ;
 WHILE: 'while' ;
 DO: 'do' ;
 DONE: 'done' ;
+FOR: 'for' ;
+TO: 'to' ;
+FROM: 'from' ;
+BY: 'by' ;
 
 //pairs
 PAIR: 'pair' ;

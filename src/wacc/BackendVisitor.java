@@ -20,7 +20,6 @@ import wacc.types.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collector;
 
 public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
@@ -268,6 +267,36 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         Instruction stat = visit(ctx.stat());
         int scopeSize = stack.descope();
         return new WhileInstruction(expr, stat, scopeSize);
+    }
+
+    // TODO: Add break and continue to for loops
+    @Override
+    public Instruction visitForStat(@NotNull WACCParser.ForStatContext ctx) {
+        stack.newScope();
+        String id = ctx.identifier().getText();
+
+        ExprInstruction startExpr = (ExprInstruction) visit(ctx.expr(0));
+
+        stack.add(id, PrimType.INT);
+        String locationString = stack.getOffsetString(id);
+        Type type = stack.getType(id);
+
+        InitAssignInstruction counterInit = new InitAssignInstruction(startExpr, locationString);
+        ExprInstruction idExpr = new IdentifierExprInstruction(locationString, type, currentReg);
+        currentReg++;
+        ExprInstruction endExpr =  (ExprInstruction) visit(ctx.expr(1));
+        ExprInstruction increment = (ExprInstruction) visit(ctx.expr(2));
+        currentReg--;
+
+        LocatableInstruction addIncrement = new PlusInstruction(idExpr, increment, currentReg, numOfMsg);
+        LocatableInstruction idLHS = (LocatableInstruction) visit(ctx.identifier());
+        AssignInstruction incrementId = new AssignInstruction(idLHS, addIncrement);
+
+        Instruction stat = visit(ctx.stat());
+        currentReg -= 2;
+        int scopeSize = stack.descope();
+        stack.add(id, PrimType.INT);
+        return new ForInstruction(counterInit, idExpr, endExpr, stat, incrementId, scopeSize);
     }
 
     @Override
