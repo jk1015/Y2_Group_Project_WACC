@@ -1169,18 +1169,12 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
             type = ((PtrType) type).deref();
         }
 
-        if(ins.usesRegister()) {
-            currentReg++;
-        }
         Instruction retIns;
         if (ctx.getParent() instanceof WACCParser.AssignLHSContext
                 || ctx.getParent() instanceof WACCParser.CallFunctionContext) {
             retIns = new DerefIdentLHSInstruction(ins, location, type,currentReg, derefNum);
         } else {
             retIns = new DerefIdentInstruction(currentReg, location, type, derefNum, ins);
-        }
-        if(ins.usesRegister()) {
-            currentReg--;
         }
         return retIns;
     }

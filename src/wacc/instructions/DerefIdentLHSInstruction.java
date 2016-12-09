@@ -42,6 +42,7 @@ public class DerefIdentLHSInstruction implements LocatableInstruction {
 
     @Override
     public boolean usesRegister() {
+        System.out.println("TRUE");
         return true;
     }
 
