@@ -240,7 +240,9 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
         Type lhs = visitAssignLHS(ctx.assignLHS());
         lhsRequiredType = lhs;
         Type rhs = visitAssignRHS(ctx.assignRHS());
+        System.out.println(lhs + " " + rhs);
         if (!rhs.checkType(lhs)) {
+            System.out.println("Threw here");
             throw new InvalidTypeException(ctx, rhs, lhs);
         }
         return null;
@@ -737,6 +739,7 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
         // Returns type from symbol table.
         try {
             return symbolTable.get(ctx.getText());
+
         } catch (UndeclaredVariableException e) {
             throw new UndeclaredVariableException(ctx, e.getMessage());
         }
