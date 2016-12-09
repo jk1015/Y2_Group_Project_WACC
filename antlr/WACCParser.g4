@@ -164,6 +164,13 @@ baseExpr: intLiter
   | floatLiter
   ;
 
+structContentsExpr: identifier
+                  | derefLHS
+                  | arrayElem
+                  | OPEN_PARENTHESES structContentsExpr CLOSE_PARENTHESES
+                  ;
+
+structContents: structContentsExpr (DOT identifier)+;
 
 expr1: expr1 binaryOper1 expr1
   | baseExpr

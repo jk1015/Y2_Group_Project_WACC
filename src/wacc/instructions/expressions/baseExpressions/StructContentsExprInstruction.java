@@ -17,6 +17,7 @@ public class StructContentsExprInstruction extends ExprInstruction {
     private final ExprInstruction getStructIns;
     private final String currentReg;
     private final List<String> fieldIds;
+    private final int exprReg;
 
     public StructContentsExprInstruction(ExprInstruction getStructIns, List<String> fieldIds, int currentReg) {
         super(currentReg, null);
@@ -24,6 +25,7 @@ public class StructContentsExprInstruction extends ExprInstruction {
         this.getStructIns = getStructIns;
         this.fieldIds = fieldIds;
         this.currentReg = getStructIns.getLocationString();
+        this.exprReg = currentReg;
         StructType struct = (StructType) getStructIns.getType();
         for(int i = 0; i < fieldIds.size() - 1; i++) {
             struct = (StructType) struct.getType(fieldIds.get(i));
@@ -48,5 +50,7 @@ public class StructContentsExprInstruction extends ExprInstruction {
         if(!(getType() instanceof StructType)) {
             out.println("LDR " + currentReg + ", [" + currentReg + "]");
         }
+        out.println("MOV r" + exprReg + ", " + currentReg);
+
     }
 }
