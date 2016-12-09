@@ -1,0 +1,16 @@
+# Runs swapInt in stdarray.wah
+
+# Output:
+# 3668
+
+# Program:
+
+begin
+  import ../../../std/arrays/stdarray.wah
+  int[] a = [6, 3, 8, 6];
+  bool ret = call sort(a);
+  print a[0];
+  print a[1];
+  print a[2];
+  print a[3]
+end
