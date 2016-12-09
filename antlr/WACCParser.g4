@@ -150,6 +150,13 @@ baseExpr: intLiter
   | structContents
   ;
 
+structContentsExpr: identifier
+                  | derefLHS
+                  | arrayElem
+                  | OPEN_PARENTHESES structContentsExpr CLOSE_PARENTHESES
+                  ;
+
+structContents: structContentsExpr (DOT identifier)+;
 
 expr1: expr1 binaryOper1 expr1
   | baseExpr
@@ -176,13 +183,6 @@ expr5: expr5 binaryOper5 expr5
 expr6: expr6 binaryOper6 expr6
   | expr5
   ;
-
-structContentsExpr: identifier
-                  | derefLHS
-                  | arrayElem
-                  ;
-
-structContents: structContentsExpr (DOT identifier)+;
 
 refLHS: AMP assignLHS;
 

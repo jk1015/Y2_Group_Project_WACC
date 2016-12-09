@@ -166,6 +166,14 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     }
 
     @Override
+    public Instruction visitStructContentsExpr(@NotNull WACCParser.StructContentsExprContext ctx) {
+        if(ctx.structContentsExpr() != null) {
+            return visit(ctx.structContentsExpr());
+        }
+        return visitChildren(ctx);
+    }
+
+    @Override
     public Instruction visitStructContents(@NotNull WACCParser.StructContentsContext ctx) {
         WACCParser.StructContentsExprContext structExpr = ctx.structContentsExpr();
 
@@ -334,8 +342,10 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
             varType = parseArrayType(type.arrayType());
         } else if(type.pairType() != null) {
             varType = parsePairType(type.pairType());
-        } else {
+        } else if (type.baseType() != null) {
             varType = parseBaseType(type.baseType());
+        } else {
+            varType =parseStructType(type.structType());
         }
 
         return varType;

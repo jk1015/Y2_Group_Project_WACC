@@ -5,5 +5,11 @@ begin
   end
 
   A nil = null;
-  A test = {1, &nil}
+  A test = {1, &nil};
+  test.a = &test;
+  println (*test.a).x
+  #println &test;
+  #println test.x; 
+  #println &test.a
+  
 end

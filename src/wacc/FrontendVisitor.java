@@ -77,6 +77,7 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
             }
             type = ((PtrType) type).deref();
         }
+        System.out.println(type);
         return type;
     }
 
@@ -608,9 +609,16 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
     }
 
     @Override
+    public Type visitStructContentsExpr(@NotNull WACCParser.StructContentsExprContext ctx) {
+        if(ctx.structContentsExpr() != null) {
+            return visit(ctx.structContentsExpr());
+        }
+        return visitChildren(ctx);
+    }
+
+    @Override
     public Type visitStructContents(@NotNull WACCParser.StructContentsContext ctx) {
         StructType struct = (StructType) visit(ctx.structContentsExpr());
-
 
         if(struct == null) {
             throw new UndeclaredVariableException(ctx);
