@@ -958,6 +958,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
             currentReg--;
             return array;
         } else {
+            currentReg++;
             ArrayElemInstruction array = new ArrayElemInstruction(locationString, type, currentReg, exprs, dataMap);
             dataMap = array.setErrorChecking();
             addDataAndLabels(array.getDataAndLabels());
