@@ -1,0 +1,11 @@
+# Can do
+
+# Output:
+# #empty#
+
+# Program:
+
+begin
+  int x = 5;
+  int* y = &x + 1
+end
