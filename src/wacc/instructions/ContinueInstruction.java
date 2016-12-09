@@ -19,6 +19,6 @@ public class ContinueInstruction implements Instruction {
 
     @Override
     public void toAssembly(PrintStream out) {
-        out.println("B " + labelMaker.getLabel(ctx, 0));
+        out.println("B " + labelMaker.getLabel(ctx, 1));
     }
 }

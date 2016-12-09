@@ -6,7 +6,7 @@ options {
 
 program: BEGIN struct* function* stat END EOF;
 
-header: function* EOF;
+header: struct* function* EOF;
 
 function: type identifier OPEN_PARENTHESES paramList? CLOSE_PARENTHESES IS stat END;
 
@@ -34,6 +34,7 @@ stat: SKIPPER                           #skipStat
   | CONTINUE                            #continueStat
   | BEGIN stat END                      #blockStat
   | stat SEMICOLON stat                 #seqStat
+  | FOR identifier FROM expr TO expr BY expr DO stat DONE #forStat
   ;
 
 assignLHS: identifier
@@ -46,12 +47,17 @@ assignLHS: identifier
 assignRHS: expr
   | arrayLiter
   | newPair
+  | newArray
   | pairElem
   | callFunction
-  | structContents
+  | structList
   ;
 
+structList: OPEN_CURLY (assignRHS (COMMA assignRHS)*)? CLOSE_CURLY;
+
 newPair: NEWPAIR OPEN_PARENTHESES expr COMMA expr CLOSE_PARENTHESES;
+
+newArray: NEWARRAY type OPEN_SQUARE expr CLOSE_SQUARE ;
 
 callFunction: CALL (identifier | derefLHS) OPEN_PARENTHESES (argList)? CLOSE_PARENTHESES;
 
@@ -92,6 +98,7 @@ ptrType: ptrBaseType (MULTIPLY)+;
 ptrBaseType: baseType
   | arrayType
   | pairType
+  | structType
   | funcPtrType
   ;
 
@@ -153,8 +160,17 @@ baseExpr: intLiter
   | refLHS
   | derefLHS
   | arrayElem
+  | structContents
   | floatLiter
   ;
+
+structContentsExpr: identifier
+                  | derefLHS
+                  | arrayElem
+                  | OPEN_PARENTHESES structContentsExpr CLOSE_PARENTHESES
+                  ;
+
+structContents: structContentsExpr (DOT identifier)+;
 
 expr1: expr1 binaryOper1 expr1
   | baseExpr
@@ -182,9 +198,6 @@ expr6: expr6 binaryOper6 expr6
   | expr5
   ;
 
-
-structContents: identifier DOT identifier;
-
 refLHS: AMP (assignLHS | funcIdent);
 
 derefLHS: (MULTIPLY)+ assignLHS;
@@ -204,4 +217,3 @@ stringLiter: STRING_LITERAL;
 pairLiter: PAIR_LITERAL;
 
 floatLiter: (PLUS | MINUS)? FLOAT_LITER;
-

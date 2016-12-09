@@ -1,0 +1,3 @@
+int g() is
+  return 4
+end

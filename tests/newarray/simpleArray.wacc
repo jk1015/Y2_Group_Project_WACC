@@ -1,0 +1,5 @@
+begin
+  int[] a = newarray int[5] ; 
+  a[0] = 4 ;
+  print a[0]
+end

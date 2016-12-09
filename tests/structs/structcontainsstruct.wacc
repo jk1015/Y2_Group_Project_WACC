@@ -1,0 +1,18 @@
+begin
+  struct A is
+    int x
+    int y
+  end
+
+  struct B is
+    A a
+  end
+
+  A testA = {1, 2};
+  B testB = {testA};
+
+  println testB.a.x;
+  testB.a.x = testB.a.y;
+  println testB.a.x 
+end
+  

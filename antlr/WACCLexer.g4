@@ -67,6 +67,10 @@ FI: 'fi' ;
 WHILE: 'while' ;
 DO: 'do' ;
 DONE: 'done' ;
+FOR: 'for' ;
+TO: 'to' ;
+FROM: 'from' ;
+BY: 'by' ;
 BREAK: 'break' ;
 CONTINUE: 'continue' ;
 
@@ -78,6 +82,9 @@ PAIR: 'pair' ;
 FST: 'fst' ;
 SND: 'snd' ;
 NEWPAIR: 'newpair' ;
+
+//arrays
+NEWARRAY: 'newarray' ;
 
 //types
 INT_TYPE: 'int' ;

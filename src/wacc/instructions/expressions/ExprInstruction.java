@@ -5,7 +5,6 @@ import wacc.types.Type;
 
 public abstract class ExprInstruction implements LocatableInstruction {
 
-
     protected int register;
     protected Type type;
 
@@ -31,5 +30,7 @@ public abstract class ExprInstruction implements LocatableInstruction {
         this.register = i;
     }
 
-
+    public void setType(Type type) {
+        this.type = type;
+    }
 }

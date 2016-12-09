@@ -11,14 +11,14 @@ import java.util.HashMap;
  * Created by jk1015 on 22/11/16.
  */
 public class MinusInstruction extends ArithmeticInstruction {
-    private final int MAX = -(2^31);
+    private final int MIN = -(2^31);
     private boolean tooSmall;
 
     public MinusInstruction(ExprInstruction expr1, ExprInstruction expr2,
                             int register, HashMap<String,String> dataMap) {
         super(expr1, expr2, register, PrimType.INT, dataMap);
         float f = operate(f1,f2);
-        if (f > MAX){
+        if (f < MIN){
             tooSmall = true;
         }
     }

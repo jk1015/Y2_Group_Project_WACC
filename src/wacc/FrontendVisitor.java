@@ -26,9 +26,10 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
     private List<WACCParser.CallFunctionContext> calledFuncCtxs;
     private HashMap<String, StructType> structs;
     private Type lhsRequiredType;
-    private boolean inALoopOrIfStat;
+    private boolean inALoop;
 
-	public FrontendVisitor() {
+
+    public FrontendVisitor() {
 		symbolTable = new ScopedSymbolTable();
 		currentFunction = "";
 		hasReturn = false;
@@ -81,6 +82,7 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
             }
             type = ((PtrType) type).deref();
         }
+        System.out.println(type);
         return type;
     }
 
@@ -89,11 +91,21 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
         String id = ctx.identifier(0).getText();
         List<Type> typeList = new ArrayList<>();
         List<String> idList = new ArrayList<>();
+        StructType tempStruct = new StructType(id, typeList, idList);
+        structs.put(id, tempStruct);
         for(int i = 1; i < ctx.identifier().size(); i++) {
-            idList.add(ctx.identifier(i).getText());
-            typeList.add(visit(ctx.fixedSizeType(i - 1)));
+            String nextId = ctx.identifier(i).getText();
+            if(idList.contains(nextId)) {
+                throw new RedeclaredVariableException(ctx);
+            }
+            idList.add(nextId);
+
+            Type t = visit(ctx.fixedSizeType(i - 1));
+            if(t.checkType(tempStruct)) {
+                throw new WACCSemanticErrorException(ctx, "Structs may not contain themselves");
+            }
+            typeList.add(t);
         }
-        structs.put(id, new StructType(id, typeList, idList));
         return null;
     }
 
@@ -255,7 +267,7 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
     }
 
     private void breakOrIfError(@NotNull WACCParser.StatContext ctx, String name) {
-        if (!inALoopOrIfStat){
+        if (!inALoop){
             throw new InvalidBreakOrContinueException(ctx, name + " statement must be in a loop or if statement");
         }
     }
@@ -265,18 +277,36 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
         // Check condition is boolean, check children are valid.
         Type type = visit(ctx.expr());
         if (type.checkType(PrimType.BOOL)) {
-            enterLoopOrStat(ctx.stat());
+            enterLoopOrIfStat(ctx.stat(),ctx);
             return null;
         }
         throw new InvalidTypeException(ctx, PrimType.BOOL, type);
     }
 
-    private void enterLoopOrStat(WACCParser.StatContext ctx) {
+    private void enterLoopOrIfStat(WACCParser.StatContext ctx, WACCParser.StatContext ctxP) {
         symbolTable.enterNewScope();
-        inALoopOrIfStat = true;
+        if (ctxP instanceof WACCParser.WhileStatContext) {
+            inALoop = true;
+        }
+        if (ctxP instanceof WACCParser.ForStatContext) {
+            inALoop = true;
+            symbolTable.add(((WACCParser.ForStatContext) ctxP).identifier().getText(), PrimType.INT);
+        }
         visit(ctx);
-        inALoopOrIfStat = false;
+        inALoop = false;
         symbolTable.exitScope();
+    }
+
+    @Override
+    public Type visitForStat(@NotNull WACCParser.ForStatContext ctx) {
+        for (ExprContext expr : ctx.expr()) {
+            Type exprType = visit(expr);
+            if (!exprType.checkType(PrimType.INT)) {
+                throw new InvalidTypeException(ctx, PrimType.INT, exprType);
+            }
+        }
+        enterLoopOrIfStat(ctx.stat(), ctx);
+        return null;
     }
 
     @Override
@@ -287,10 +317,10 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
         if (!PrimType.BOOL.checkType(type)){
             throw new InvalidTypeException(ctx, PrimType.BOOL, type);
         }
-        enterLoopOrStat(ctx.stat(0));
+        enterLoopOrIfStat(ctx.stat(0),ctx);
         boolean tempReturn = hasReturn;
         hasReturn = false;
-        enterLoopOrStat(ctx.stat(1));
+        enterLoopOrIfStat(ctx.stat(1),ctx);
         hasReturn = tempReturn && hasReturn;
         return null;
     }
@@ -632,15 +662,41 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
     // OTHER
 
     @Override
+    public Type visitStructList(@NotNull WACCParser.StructListContext ctx) {
+        List<Type> typeList = new ArrayList<>();
+        List<String> nameList = new ArrayList<>();
+        for(WACCParser.AssignRHSContext rhs: ctx.assignRHS()) {
+            typeList.add(visit(rhs));
+            nameList.add("");
+        }
+        return new StructType(StructType.structListName,typeList, nameList);
+    }
+
+    @Override
+    public Type visitStructContentsExpr(@NotNull WACCParser.StructContentsExprContext ctx) {
+        if(ctx.structContentsExpr() != null) {
+            return visit(ctx.structContentsExpr());
+        }
+        return visitChildren(ctx);
+    }
+
+    @Override
     public Type visitStructContents(@NotNull WACCParser.StructContentsContext ctx) {
-        StructType struct = structs.get(ctx.identifier(0));
+        StructType struct = (StructType) visit(ctx.structContentsExpr());
+
         if(struct == null) {
             throw new UndeclaredVariableException(ctx);
         }
 
-        Type conType = struct.getType(ctx.identifier(1).getText());
-        if(struct == null) {
-            throw new UndeclaredVariableException(ctx);
+        Type conType = struct.getType(ctx.identifier(0).getText());
+        for(int i = 1; i < ctx.identifier().size(); i++) {
+
+            try {
+                struct = (StructType) conType;
+            } catch (ClassCastException e) {
+                throw new InvalidTypeException(ctx);
+            }
+            conType = struct.getType(ctx.identifier(i).getText());
         }
 
         return conType;
@@ -710,6 +766,18 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
         Type pair = new PairType(fst,snd);
 
         return pair;
+    }
+
+    @Override
+    public Type visitNewArray(@NotNull WACCParser.NewArrayContext ctx) {
+        Type exprType = visit(ctx.expr());
+        if (!(exprType.checkType(PrimType.INT))) {
+            throw new InvalidTypeException(ctx, PrimType.INT, exprType);
+        }
+
+        Type contentsType = visit(ctx.type());
+
+        return new ArrayType(contentsType);
     }
 
     @Override
