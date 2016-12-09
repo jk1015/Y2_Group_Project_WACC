@@ -166,8 +166,6 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         structs.put(id, new StructType(id, typeList, idList));
         for(int i = 1; i < ctx.identifier().size(); i++) {
             idList.add(ctx.identifier(i).getText());
-            System.out.print(ctx.fixedSizeType(i - 1).getText());
-            System.out.println(ctx.identifier(i).getText());
             typeList.add(parseFixedSizeType(ctx.fixedSizeType(i - 1)));
         }
         return null;
@@ -374,7 +372,6 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         AssignLHSInstruction lhs = ((AssignLHSInstruction) visitAssignLHS(ctx.assignLHS()));
 
         if (lhs.usesRegister()) {
-            System.out.println(ctx.getText());
             currentReg++;
         }
         LocatableInstruction rhs = ((LocatableInstruction) visit(ctx.assignRHS()));
