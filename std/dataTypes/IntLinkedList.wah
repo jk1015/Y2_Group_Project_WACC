@@ -1,0 +1,7 @@
+begin
+  struct Node is
+    int x
+    Node* node
+  end
+
+  
