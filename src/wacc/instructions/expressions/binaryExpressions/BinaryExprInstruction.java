@@ -2,6 +2,8 @@ package wacc.instructions.expressions.binaryExpressions;
 
 import wacc.instructions.ContainingDataOrLabelsInstruction;
 import wacc.instructions.expressions.ExprInstruction;
+import wacc.instructions.expressions.baseExpressions.FloatLiterInstruction;
+import wacc.types.PrimType;
 import wacc.types.Type;
 
 import java.io.PrintStream;
@@ -11,13 +13,20 @@ import java.util.HashMap;
  * Created by jk1015 on 22/11/16.
  */
 public abstract class BinaryExprInstruction extends ExprInstruction {
-    protected HashMap<String, String> dataMap;
     protected ContainingDataOrLabelsInstruction errorPrint;
-    private ExprInstruction expr1, expr2;
+
+    protected ExprInstruction expr1, expr2;
+    protected HashMap<String,String>  dataMap;
+    protected float floatValue;
+
 
     public BinaryExprInstruction(ExprInstruction expr1, ExprInstruction expr2, int register,
                                  Type type, HashMap<String,String> dataMap) {
         super(register, type);
+        if ((expr1 instanceof FloatLiterInstruction ||
+                expr2 instanceof FloatLiterInstruction)){
+            this.type = PrimType.FLOAT;
+        }
         this.expr1 = expr1;
         this.expr2 = expr2;
         this.dataMap = dataMap;
@@ -59,7 +68,13 @@ public abstract class BinaryExprInstruction extends ExprInstruction {
 
     protected HashMap<String,String> addDataAndLabels(String name, String ascii) {
         String[] asciis = {ascii};
-         dataMap = errorPrint.addDataAndLabels(name,asciis);
+        dataMap = errorPrint.addDataAndLabels(name,asciis);
         return dataMap;
     }
+
+
+    public float getFloatValue(){
+        return floatValue;
+    }
+
 }

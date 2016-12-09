@@ -1,0 +1,17 @@
+# Can do
+
+# Output:
+# 1
+# 2
+
+# Program:
+
+begin
+  int[] a = newarray int[2];
+  int *x = &a[0];
+  *x = 1;
+  x = x + 4;
+  *x = 2;
+  println a[0];
+  println a[1]
+end

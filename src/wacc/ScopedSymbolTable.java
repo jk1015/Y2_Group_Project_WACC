@@ -1,6 +1,7 @@
 package wacc;
 import wacc.exceptions.RedeclaredFunctionException;
 import wacc.exceptions.RedeclaredVariableException;
+import wacc.exceptions.UndeclaredFunctionException;
 import wacc.exceptions.UndeclaredVariableException;
 import wacc.types.FunctionType;
 import wacc.types.Type;
@@ -13,6 +14,7 @@ import java.util.*;
 public class ScopedSymbolTable {
     private Deque<Map<String, Type>> scopes;
     private Map<String, Type> currentScope;
+    private final String prefix = "/";
 
     public ScopedSymbolTable() {
         Map<String, Type> symbolTable = new HashMap<String, Type>();
@@ -24,13 +26,13 @@ public class ScopedSymbolTable {
     public void add(String name, Type elem) {
         if (currentScope.containsKey(name)) {
             throw new RedeclaredVariableException(
-            		"Variable " + name + " has already been declared in this movePointer.");
+            		"Variable " + name + " has already been declared in this scope.");
         }
         currentScope.put(name, elem);
     }
 
     public void addFunction(String name, FunctionType elem) {
-        String funcName = '\\' + name;
+        String funcName = prefix + name;
         try {
             add(funcName, elem);
         } catch (RedeclaredVariableException e) {
@@ -51,8 +53,13 @@ public class ScopedSymbolTable {
     }
 
     public FunctionType getFunction(String name){
-        String funcName = '\\' + name;
-        return (FunctionType) get(funcName);
+        String funcName = prefix + name;
+        Type type = get(funcName);
+        if (type instanceof FunctionType) {
+            return (FunctionType) type;
+        } else {
+            throw new UndeclaredFunctionException(name + " is undefined.");
+        }
     }
 
     public boolean hasName(String name) {
@@ -68,7 +75,7 @@ public class ScopedSymbolTable {
     }
 
     public boolean hasFunction(String name) {
-        return hasName('\\' + name);
+        return hasName(prefix + name);
     }
 
 

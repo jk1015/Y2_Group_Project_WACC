@@ -1,0 +1,8 @@
+begin
+  struct A is
+    int x
+    int y
+  end
+
+  A test = {1, 2}
+end

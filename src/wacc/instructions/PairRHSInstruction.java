@@ -50,6 +50,11 @@ public class PairRHSInstruction implements LocatableInstruction {
         }
     }
 
+    @Override
+    public boolean usesRegister() {
+        return true;
+    }
+
     public HashMap<String, String> setErrorChecking() {
         String[] ascii = {"\"NullReferenceError: dereference a null reference\\n\\0\""};
         dataMap = dataAndLabels.addDataAndLabels("p_check_null_pointer", ascii);

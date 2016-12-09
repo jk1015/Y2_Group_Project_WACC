@@ -1,0 +1,6 @@
+begin
+  for i from 5 to 0 by -1 do
+    print i
+  done
+end
+    

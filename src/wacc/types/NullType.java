@@ -6,6 +6,6 @@ package wacc.types;
 public class NullType implements Type {
     @Override
     public boolean checkType(Type type2) {
-        return true;
+        return !(type2 instanceof FailType);
     }
 }

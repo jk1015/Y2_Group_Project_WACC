@@ -13,6 +13,10 @@ public class FunctionType implements Type {
 			argList.add(type);
 		}
 	}
+
+	public FunctionType(List<Type> types) {
+		argList.addAll(types);
+	}
 	
 	public Type getReturnType() {
 		return argList.get(0);

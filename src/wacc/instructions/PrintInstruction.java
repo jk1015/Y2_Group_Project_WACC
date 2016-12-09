@@ -1,7 +1,12 @@
 package wacc.instructions;
+
+
 import wacc.instructions.expressions.ExprInstruction;
-import wacc.instructions.expressions.baseExpressions.IdentifierExprInstruction;
+import wacc.instructions.expressions.baseExpressions.FloatLiterInstruction;
 import wacc.instructions.expressions.baseExpressions.StringLiterInstruction;
+import wacc.instructions.expressions.binaryExpressions.BinaryExprInstruction;
+import wacc.instructions.expressions.baseExpressions.IdentifierExprInstruction;
+
 import wacc.types.PrimType;
 import wacc.types.Type;
 import java.io.PrintStream;
@@ -26,20 +31,26 @@ public class PrintInstruction implements Instruction {
     @Override
     public void toAssembly(PrintStream out) {
         expr.toAssembly(out);
-        String reg =expr.getLocationString();
-        out.println("MOV r0, " + reg);
+        String reg;
+        //if (isFloat){
+          //  reg ="s0";
+            //out.println("FMRS r0, " + reg);
+        //}else {
+            reg = expr.getLocationString();
+            out.println("MOV r0, " + reg);
+        //}
         out.println("BL " + nameOfLabel);
     }
 
 
+
     public HashMap<String,String> addDataAndLabels() {
         if (type.checkType(PrimType.CHAR)) {
-
         } else if (type.checkType(PrimType.INT)) {
             String[] ascii = {"\"%d\\0\""};
             dataMap = dataAndLabels.addDataAndLabels(nameOfLabel,ascii);
         } else if (type.checkType(PrimType.STRING) ||
-                type.checkType(PrimType.BOOL)){
+                type.checkType(PrimType.BOOL) || type.checkType(PrimType.FLOAT)){
             String[] ascii = new String[2];
             if (type.checkType(PrimType.STRING)) {
                 String ascii0;
@@ -49,6 +60,16 @@ public class PrintInstruction implements Instruction {
                     ascii0 = ((StringLiterInstruction) expr).getStringLiter();
                 }
                 ascii[0] = ascii0;
+                ascii[1] = "\"%.*s\\0\"";
+                dataMap = dataAndLabels.addDataAndLabels(nameOfLabel,ascii);
+            } else if(type.checkType(PrimType.FLOAT)) {
+                float value;
+                if (expr instanceof BinaryExprInstruction){
+                    value = ((BinaryExprInstruction) expr).getFloatValue();
+                }else {
+                    value = ((FloatLiterInstruction) expr).getValueInFloat();
+                }
+                ascii[0] = "\"" + value + "f\"";
                 ascii[1] = "\"%.*s\\0\"";
                 dataMap = dataAndLabels.addDataAndLabels(nameOfLabel,ascii);
             } else {
@@ -75,6 +96,8 @@ public class PrintInstruction implements Instruction {
                 return string + "bool";
         } else if (type.checkType(PrimType.STRING)){
                 return string + "string";
+        } else if (type.checkType(PrimType.FLOAT)){
+            return string + "float";
         }else {
             return "p_print_reference";
         }

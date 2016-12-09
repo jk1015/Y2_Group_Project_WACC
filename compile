@@ -3,7 +3,15 @@
 # You are free to change the language used for this script,
 # but do *not* change its name.
 
+# Compile script makes temporary folder to put temporary wacc files in.
+# This script deletes this folder in case of an exception in the java program
+
+require 'fileutils'
+
+begin 
 cmd = 'java -cp bin:lib/antlr-4.4-complete.jar wacc.Compiler'
+Dir.mkdir('.temp/') unless File.exists?('.temp/')
+
 if (ARGV.empty?) then
   puts `#{cmd}`
 elsif (ARGV.length == 1) then
@@ -13,5 +21,12 @@ else
   puts `#{cmd} #{ARGV[0]} #{ARGV[1]}`
 end
 
+FileUtils.remove_dir('.temp/')
+
 eStatus = $?.exitstatus
 exit eStatus
+
+rescue Interrupt => e 
+  FileUtils.remove_dir('.temp/')
+end
+

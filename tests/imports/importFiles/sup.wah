@@ -1,0 +1,4 @@
+import hello2.wah
+int f2() is 
+  return 68
+end

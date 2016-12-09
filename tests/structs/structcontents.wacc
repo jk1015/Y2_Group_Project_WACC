@@ -1,0 +1,13 @@
+begin
+  struct A is
+    int x
+    int y
+  end
+
+  A test = {1, 2};
+  test.x = 3;
+  int z = test.y;
+  
+  println test.x;
+  println z
+end

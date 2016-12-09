@@ -1,0 +1,4 @@
+import hello.wah
+int g() is
+  return 4
+end

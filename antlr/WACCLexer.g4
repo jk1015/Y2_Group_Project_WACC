@@ -3,9 +3,10 @@ lexer grammar WACCLexer;
 //general operators (multiple uses)
 PLUS: '+' ;
 MINUS: '-' ;
+MULTIPLY: '*' ;
+AMP: '&' ;
 
 //binary operators
-MULTIPLY: '*' ;
 DIVIDE: '/' ;
 MOD: '%' ;
 GT: '>' ;
@@ -41,6 +42,7 @@ SEMICOLON : ';' ;
 COMMA : ',' ;
 
 //blocks
+STRUCT: 'struct';
 BEGIN: 'begin';
 END: 'end' ;
 IS: 'is' ;
@@ -65,6 +67,15 @@ FI: 'fi' ;
 WHILE: 'while' ;
 DO: 'do' ;
 DONE: 'done' ;
+FOR: 'for' ;
+TO: 'to' ;
+FROM: 'from' ;
+BY: 'by' ;
+BREAK: 'break' ;
+CONTINUE: 'continue' ;
+
+//structs
+DOT: '.';
 
 //pairs
 PAIR: 'pair' ;
@@ -72,11 +83,15 @@ FST: 'fst' ;
 SND: 'snd' ;
 NEWPAIR: 'newpair' ;
 
+//arrays
+NEWARRAY: 'newarray' ;
+
 //types
 INT_TYPE: 'int' ;
 BOOL_TYPE: 'bool' ;
 CHAR_TYPE: 'char' ;
 STRING_TYPE: 'string' ;
+FLOAT_TYPE: 'float' ;
 
 //null
 fragment NULL: 'null' ;
@@ -94,12 +109,21 @@ fragment ALPHANUMERIC: (LETTER | DIGIT);
 //numbers
 fragment DIGIT : '0'..'9' ;
 
+//hexadecimals
+fragment HEXADECIMAL : '0'..'9' | 'a'..'f' | 'A'..'F' ;
 
-INT: DIGIT+;
+//octals
+fragment OCTAL : '0'..'7' ;
+
+//binary
+fragment BINARY : '0' | '1' ;
+
+INT: DIGIT+ | (HEXADECIMAL)+'h' | (OCTAL)+'o' | (BINARY)+'b' ;
 BOOL_LITERAL: 'true' | 'false';
 PAIR_LITERAL: NULL;
 CHAR_LITERAL: '\'' CHARACTER '\'' ;
 STRING_LITERAL: '"' CHARACTER* '"' ;
+FLOAT_LITER: (DIGIT)+ DOT (DIGIT)+ 'f';
 
 IDENTIFIER: ('_' | LETTER) ('_' | ALPHANUMERIC)* ;
 

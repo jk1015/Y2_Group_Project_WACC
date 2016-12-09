@@ -4,15 +4,20 @@ options {
   tokenVocab=WACCLexer;
 }
 
-program: BEGIN function* stat END EOF;
+program: BEGIN struct* function* stat END EOF;
+
+header: struct* function* EOF;
 
 function: type identifier OPEN_PARENTHESES paramList? CLOSE_PARENTHESES IS stat END;
+
+struct: STRUCT identifier IS (fixedSizeType identifier)* END;
 
 paramList: param (COMMA param)*;
 
 param: type identifier;
 
 identifier: IDENTIFIER;
+funcIdent: DIVIDE IDENTIFIER;
 
 stat: SKIPPER                           #skipStat
   | type identifier ASSIGN assignRHS    #initAssignStat
@@ -25,25 +30,36 @@ stat: SKIPPER                           #skipStat
   | PRINTLN expr                        #printlnStat
   | IF expr THEN stat ELSE stat FI      #ifStat
   | WHILE expr DO stat DONE             #whileStat
+  | BREAK                               #breakStat
+  | CONTINUE                            #continueStat
   | BEGIN stat END                      #blockStat
   | stat SEMICOLON stat                 #seqStat
+  | FOR identifier FROM expr TO expr BY expr DO stat DONE #forStat
   ;
 
 assignLHS: identifier
   | arrayElem
   | pairElem
+  | structContents
+  | derefLHS
   ;
 
 assignRHS: expr
   | arrayLiter
   | newPair
+  | newArray
   | pairElem
   | callFunction
+  | structList
   ;
+
+structList: OPEN_CURLY (assignRHS (COMMA assignRHS)*)? CLOSE_CURLY;
 
 newPair: NEWPAIR OPEN_PARENTHESES expr COMMA expr CLOSE_PARENTHESES;
 
-callFunction: CALL identifier OPEN_PARENTHESES (argList)? CLOSE_PARENTHESES;
+newArray: NEWARRAY type OPEN_SQUARE expr CLOSE_SQUARE ;
+
+callFunction: CALL (identifier | derefLHS) OPEN_PARENTHESES (argList)? CLOSE_PARENTHESES;
 
 argList: expr (COMMA expr)*;
 
@@ -54,21 +70,45 @@ pairElem: FST expr
 type: baseType
   | arrayType
   | pairType
+  | structType
+  | ptrType
+  | funcPtrType
+  ;
+
+fixedSizeType: baseType
+  | structType
+  | ptrType
   ;
 
 baseType: INT_TYPE
   | BOOL_TYPE
   | CHAR_TYPE
   | STRING_TYPE
+  | FLOAT_TYPE
   ;
 
-arrayType: (baseType | pairType) (OPEN_SQUARE CLOSE_SQUARE)+;
+arrayType: (baseType | pairType | funcPtrType) (OPEN_SQUARE CLOSE_SQUARE)+;
 
 pairType: PAIR OPEN_PARENTHESES pairElemType COMMA pairElemType CLOSE_PARENTHESES;
+
+structType: identifier;
+
+ptrType: ptrBaseType (MULTIPLY)+;
+
+ptrBaseType: baseType
+  | arrayType
+  | pairType
+  | structType
+  | funcPtrType
+  ;
+
+funcPtrType: OPEN_PARENTHESES type LT MINUS OPEN_PARENTHESES (type (COMMA type)*)? CLOSE_PARENTHESES CLOSE_PARENTHESES MULTIPLY;
 
 pairElemType: baseType
   | arrayType
   | pairNullType
+  | ptrType
+  | funcPtrType
   ;
 
 pairNullType: PAIR;
@@ -117,8 +157,20 @@ baseExpr: intLiter
   | stringLiter
   | pairLiter
   | identifier
+  | refLHS
+  | derefLHS
   | arrayElem
+  | structContents
+  | floatLiter
   ;
+
+structContentsExpr: identifier
+                  | derefLHS
+                  | arrayElem
+                  | OPEN_PARENTHESES structContentsExpr CLOSE_PARENTHESES
+                  ;
+
+structContents: structContentsExpr (DOT identifier)+;
 
 expr1: expr1 binaryOper1 expr1
   | baseExpr
@@ -146,6 +198,10 @@ expr6: expr6 binaryOper6 expr6
   | expr5
   ;
 
+refLHS: AMP (assignLHS | funcIdent);
+
+derefLHS: (MULTIPLY)+ assignLHS;
+
 arrayElem: identifier (OPEN_SQUARE expr CLOSE_SQUARE)+;
 
 arrayLiter: OPEN_SQUARE (expr (COMMA expr)*)? CLOSE_SQUARE;
@@ -159,3 +215,5 @@ charLiter: CHAR_LITERAL;
 stringLiter: STRING_LITERAL;
 
 pairLiter: PAIR_LITERAL;
+
+floatLiter: (PLUS | MINUS)? FLOAT_LITER;

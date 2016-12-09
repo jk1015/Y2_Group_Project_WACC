@@ -1,0 +1,53 @@
+begin
+  struct IntNode is
+    int val
+    IntNode* nextNode
+  end
+
+  struct IntLinkedList is
+    int size
+    IntNode* node
+  end
+
+  IntLinkedList newIntLinkedList() is
+    IntLinkedList list = {0, null};
+    return list
+  end
+
+  int printIntLinkedList(IntLinkedList list) is
+    print '{';
+    IntNode* tailptr = list.node;
+    for i from list.size to 0 by -1 do
+      print (*tailptr).val;
+      print ", ";
+      tailptr = (*tailptr).nextNode
+    done;
+    print '}';
+
+    return 1
+  end
+
+  int addElemIntLinkedList(int n, IntLinkedList list) is
+
+    IntNode newNode = {n, null};
+
+    if list.size == 0 then
+      list.node = &newNode
+    else
+      IntNode tail = *list.node;
+      for i from list.size to 0 by -1 do
+        tail = *tail.nextNode
+      done;
+      tail.nextNode = &newNode
+    fi;
+
+    list.size = list.size + 1;
+    return 1
+  end
+
+  IntLinkedList list = call newIntLinkedList();
+  int res = call addElemIntLinkedList(1, list);
+  res = call addElemIntLinkedList(2, list);
+  res = call printIntLinkedList(list)
+
+end

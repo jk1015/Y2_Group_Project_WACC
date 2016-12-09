@@ -36,15 +36,21 @@ public class PairLHSInstruction implements LocatableInstruction {
     }
 
     @Override
+    public boolean usesRegister() {
+        return true;
+    }
+
+    @Override
     public void toAssembly(PrintStream out) {
         String exprLocation = expr.getLocationString();
         expr.toAssembly(out);
         out.println("MOV r0, " + exprLocation);
         out.println("BL p_check_null_pointer");
-        out.println("LDR " + exprLocation + ", [" + exprLocation + "]");
+
         if (!isTokenFST) {
             out.println("ADD " + exprLocation + ", " + exprLocation + ", #4");
         }
+        out.println("LDR " + exprLocation + ", [" + exprLocation + "]");
     }
 
     public HashMap<String, String> setErrorChecking() {

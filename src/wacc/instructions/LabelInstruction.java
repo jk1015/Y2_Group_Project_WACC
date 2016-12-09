@@ -78,6 +78,7 @@ public class LabelInstruction implements Instruction{
                 out.println("MOV r0, #0");
                 out.println("BL fflush");
                 break;
+            case "p_print_float":
             case "p_print_string":
                 out.println("LDR r1, [r0]");
                 out.println("ADD r2, r0, #4");

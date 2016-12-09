@@ -1,0 +1,16 @@
+begin
+  int a = 8 ;
+  char[] b = newarray char[a] ;
+  int count = 0 ; 
+  while count < a do
+    int character = ord 'a' ;
+    b[count] = chr (character + count) ; 
+    count = count + 1
+  done ;
+  b[7] = 'c' ; 
+  count = 0 ;
+  while count < a do
+   print b[count] ;
+   count = count + 1 
+  done
+end
