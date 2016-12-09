@@ -21,7 +21,9 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
 	private ScopedSymbolTable symbolTable;
 	private String currentFunction; 
 	private boolean hasReturn;
-    private HashMap<String, FunctionType> calledFunctions;
+    private List<String> calledFuncNames;
+    private List<FunctionType> calledFuncTypes;
+    private List<WACCParser.CallFunctionContext> calledFuncCtxs;
     private HashMap<String, StructType> structs;
     private Type lhsRequiredType;
 
@@ -29,7 +31,9 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
 		symbolTable = new ScopedSymbolTable();
 		currentFunction = "";
 		hasReturn = false;
-        calledFunctions = new HashMap<>();
+        calledFuncNames = new LinkedList<>();
+        calledFuncTypes = new LinkedList<>();
+        calledFuncCtxs = new LinkedList<>();
         structs = new HashMap<>();
     }
 
@@ -50,15 +54,18 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
     }
 
     private void checkThatFunctionsHaveBeenDefinedCorrectly() {
-        Set<String> functionNames = calledFunctions.keySet();
-
-        for(String name: functionNames) {
-            FunctionType fType = calledFunctions.get(name);
-            if(!fType.checkType(symbolTable.getFunction(name))) {
-                if (symbolTable.hasFunction(name)) {
-                    throw new InvalidTypeException(name + " is only defined for type " + fType);
+        Iterator<FunctionType> iter = calledFuncTypes.iterator();
+        Iterator<WACCParser.CallFunctionContext> ctxIter = calledFuncCtxs.iterator();
+        for (String name : calledFuncNames) {
+            WACCParser.CallFunctionContext ctx = ctxIter.next();
+            try {
+                FunctionType type = iter.next();
+                FunctionType actualType = symbolTable.getFunction(name);
+                if (!actualType.checkType(type)) {
+                    throw new InvalidTypeException(ctx, "Function " + name + " is undefined for type " + type);
                 }
-                throw new UndeclaredFunctionException(name + " is undefined should be of type " + fType);
+            } catch (UndeclaredFunctionException e) {
+                throw new UndeclaredFunctionException(ctx, e.getMessage());
             }
         }
     }
@@ -157,9 +164,10 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
         }
 
         FunctionType calledFunctionType = new FunctionType(types);
-
         if (ctx.identifier() != null) {
-            calledFunctions.put(ctx.identifier().getText(), calledFunctionType);
+            calledFuncNames.add(ctx.identifier().getText());
+            calledFuncTypes.add(calledFunctionType);
+            calledFuncCtxs.add(ctx);
         } else {
             Type derefType = visitDerefLHS(ctx.derefLHS());
             if (!calledFunctionType.checkType(derefType)) {

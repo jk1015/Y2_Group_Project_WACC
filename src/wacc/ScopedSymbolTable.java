@@ -1,6 +1,7 @@
 package wacc;
 import wacc.exceptions.RedeclaredFunctionException;
 import wacc.exceptions.RedeclaredVariableException;
+import wacc.exceptions.UndeclaredFunctionException;
 import wacc.exceptions.UndeclaredVariableException;
 import wacc.types.FunctionType;
 import wacc.types.Type;
@@ -53,7 +54,12 @@ public class ScopedSymbolTable {
 
     public FunctionType getFunction(String name){
         String funcName = prefix + name;
-        return (FunctionType) get(funcName);
+        Type type = get(funcName);
+        if (type instanceof FunctionType) {
+            return (FunctionType) type;
+        } else {
+            throw new UndeclaredFunctionException(name + " is undefined.");
+        }
     }
 
     public boolean hasName(String name) {
