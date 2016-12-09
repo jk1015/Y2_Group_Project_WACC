@@ -82,7 +82,6 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
             }
             type = ((PtrType) type).deref();
         }
-        System.out.println(type);
         return type;
     }
 
