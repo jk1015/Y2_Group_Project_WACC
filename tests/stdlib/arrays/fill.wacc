@@ -1,0 +1,15 @@
+# Runs fillInt in stdarray.wah
+
+# Output:
+# 0
+# 0
+
+# Program:
+
+begin
+  import ../../../std/arrays/stdarray.wah
+  int[] a = [1, 2];
+  bool ret = call fillInt(a, 0);
+  println a[0];
+  println a[1]
+end

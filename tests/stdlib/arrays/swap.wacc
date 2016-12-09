@@ -1,0 +1,20 @@
+# Runs swapInt in stdarray.wah
+
+# Output:
+# 1234567
+
+# Program:
+
+begin
+  import ../../../std/arrays/stdarray.wah
+  int[] a = [1, 2, 3, 4];
+  int[] b = [5, 6, 7];
+  bool ret = call swapInt(a, b);
+  print b[0];
+  print b[1];
+  print b[2];
+  print a[3];
+  print a[0];
+  print a[1];
+  print a[2]
+end
