@@ -1,0 +1,7 @@
+import hello2.wah
+
+int f() is
+  int a = call g() ;
+  int b = call f() ;
+  return 0
+end

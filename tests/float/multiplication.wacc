@@ -1,0 +1,10 @@
+# Output:
+# 0.6f
+# 4.6f
+
+# Program:
+
+begin
+  println 0.3f * 2 ;
+  println 2.0f * 2.3f
+end

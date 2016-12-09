@@ -1,0 +1,25 @@
+# Function takes function pointer as argument
+
+# Output:
+# 7
+# 12
+
+# Program:
+
+begin
+  int operate((int <- (int, int))* f, int a, int b) is
+    int ret = call *f (a, b);
+    return ret
+  end
+  int add(int a, int b) is
+    return a + b
+  end
+  int mul(int a, int b) is
+    return a * b
+  end
+  (int <- (int, int))* op = &/add;
+  int x = call operate (op, 3, 4);
+  int y = call operate (&/mul, 3, 4);
+  println x;
+  println y
+end

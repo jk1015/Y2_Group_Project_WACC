@@ -17,6 +17,7 @@ paramList: param (COMMA param)*;
 param: type identifier;
 
 identifier: IDENTIFIER;
+funcIdent: DIVIDE IDENTIFIER;
 
 stat: SKIPPER                           #skipStat
   | type identifier ASSIGN assignRHS    #initAssignStat
@@ -29,8 +30,11 @@ stat: SKIPPER                           #skipStat
   | PRINTLN expr                        #printlnStat
   | IF expr THEN stat ELSE stat FI      #ifStat
   | WHILE expr DO stat DONE             #whileStat
+  | BREAK                               #breakStat
+  | CONTINUE                            #continueStat
   | BEGIN stat END                      #blockStat
   | stat SEMICOLON stat                 #seqStat
+  | FOR identifier FROM expr TO expr BY expr DO stat DONE #forStat
   ;
 
 assignLHS: identifier
@@ -43,6 +47,7 @@ assignLHS: identifier
 assignRHS: expr
   | arrayLiter
   | newPair
+  | newArray
   | pairElem
   | callFunction
   | structList
@@ -52,7 +57,9 @@ structList: OPEN_CURLY (assignRHS (COMMA assignRHS)*)? CLOSE_CURLY;
 
 newPair: NEWPAIR OPEN_PARENTHESES expr COMMA expr CLOSE_PARENTHESES;
 
-callFunction: CALL identifier OPEN_PARENTHESES (argList)? CLOSE_PARENTHESES;
+newArray: NEWARRAY type OPEN_SQUARE expr CLOSE_SQUARE ;
+
+callFunction: CALL (identifier | derefLHS) OPEN_PARENTHESES (argList)? CLOSE_PARENTHESES;
 
 argList: expr (COMMA expr)*;
 
@@ -65,6 +72,7 @@ type: baseType
   | pairType
   | structType
   | ptrType
+  | funcPtrType
   ;
 
 fixedSizeType: baseType
@@ -76,9 +84,10 @@ baseType: INT_TYPE
   | BOOL_TYPE
   | CHAR_TYPE
   | STRING_TYPE
+  | FLOAT_TYPE
   ;
 
-arrayType: (baseType | pairType) (OPEN_SQUARE CLOSE_SQUARE)+;
+arrayType: (baseType | pairType | funcPtrType) (OPEN_SQUARE CLOSE_SQUARE)+;
 
 pairType: PAIR OPEN_PARENTHESES pairElemType COMMA pairElemType CLOSE_PARENTHESES;
 
@@ -90,12 +99,16 @@ ptrBaseType: baseType
   | arrayType
   | pairType
   | structType
+  | funcPtrType
   ;
+
+funcPtrType: OPEN_PARENTHESES type LT MINUS OPEN_PARENTHESES (type (COMMA type)*)? CLOSE_PARENTHESES CLOSE_PARENTHESES MULTIPLY;
 
 pairElemType: baseType
   | arrayType
   | pairNullType
   | ptrType
+  | funcPtrType
   ;
 
 pairNullType: PAIR;
@@ -148,6 +161,7 @@ baseExpr: intLiter
   | derefLHS
   | arrayElem
   | structContents
+  | floatLiter
   ;
 
 
@@ -184,7 +198,7 @@ structContentsExpr: identifier
 
 structContents: structContentsExpr (DOT identifier)+;
 
-refLHS: AMP assignLHS;
+refLHS: AMP (assignLHS | funcIdent);
 
 derefLHS: (MULTIPLY)+ assignLHS;
 
@@ -202,3 +216,4 @@ stringLiter: STRING_LITERAL;
 
 pairLiter: PAIR_LITERAL;
 
+floatLiter: (PLUS | MINUS)? FLOAT_LITER;

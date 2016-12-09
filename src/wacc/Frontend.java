@@ -3,7 +3,6 @@ package wacc;
 import static java.lang.System.exit;
 
 import java.io.*;
-import java.nio.file.Path;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -18,8 +17,8 @@ import wacc.exceptions.WACCSyntaxErrorException;
 
 public class Frontend {
 	
-	public CompilerStatus run(InputStream in, PrintStream out) throws IOException {
-        ImporterWriter iw = new ImporterWriter(in);
+	public CompilerStatus run(InputStream in, PrintStream out, String sourcePath) throws IOException {
+        Importer iw = new Importer(in, sourcePath);
 
         CompilerStatus compilerStatus = CompilerStatus.SUCCESS;
 
