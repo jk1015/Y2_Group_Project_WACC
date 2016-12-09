@@ -46,4 +46,9 @@ public class NewArrayInstruction implements LocatableInstruction {
     public Type getType() {
         return type;
     }
+
+    @Override
+    public boolean usesRegister() {
+        return true;
+    }
 }

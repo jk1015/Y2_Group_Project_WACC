@@ -417,7 +417,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         Instruction stat = visit(ctx.stat());
         
         int scopeSize = stack.descope();
-        return new ForInstruction(counterInit, idExpr, endExpr, stat, incrementId, scopeSize);
+        return new ForInstruction(counterInit, idExpr, endExpr, stat, incrementId, scopeSize, getIdentOfStat(ctx));
     }
 
     @Override
