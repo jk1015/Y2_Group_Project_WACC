@@ -128,7 +128,25 @@ public class LabelInstruction implements Instruction{
                 out.println("LDREQ r0, =" + msg[0]);
                 out.println("BLEQ p_throw_runtime_error");
                 break;
-
+            case "p_free_pair" :
+                out.println("CMP r0, #0");
+                out.println("LDREQ r0, =" + msg[0]);
+                out.println("BEQ p_throw_runtime_error");
+                out.println("PUSH {r0}");
+                out.println("LDR r0, [r0]");
+                out.println("BL free");
+                out.println("LDR r0, [sp]");
+                out.println("LDR r0, [r0, #4]");
+                out.println("BL free");
+                out.println("POP {r0}");
+                out.println("BL free");
+                break;
+            case "p_free_array" :
+                out.println("CMP r0, #0");
+                out.println("LDREQ r0, =" + msg[0]);
+                out.println("BEQ p_throw_runtime_error");
+                out.println("BL free");
+                break;
         }
 
     }

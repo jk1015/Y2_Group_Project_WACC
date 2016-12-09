@@ -317,7 +317,11 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     @Override
     public Instruction visitFreeStat(@NotNull WACCParser.FreeStatContext ctx) {
         ExprInstruction expr = (ExprInstruction) visit(ctx.expr());
-        return new FreeInstruction(expr);
+        FreeInstruction freeInstruction= new FreeInstruction(expr,dataMap);
+        dataMap = freeInstruction.setCheckError();
+        ContainingDataOrLabelsInstruction dataAndLabels = freeInstruction.getErrorPrint();
+        addDataAndLabels(dataAndLabels);
+        return freeInstruction;
     }
 
     @Override
