@@ -198,13 +198,6 @@ expr6: expr6 binaryOper6 expr6
   | expr5
   ;
 
-structContentsExpr: identifier
-                  | derefLHS
-                  | arrayElem
-                  ;
-
-structContents: structContentsExpr (DOT identifier)+;
-
 refLHS: AMP (assignLHS | funcIdent);
 
 derefLHS: (MULTIPLY)+ assignLHS;
