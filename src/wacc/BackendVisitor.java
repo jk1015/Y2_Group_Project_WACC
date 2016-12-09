@@ -1043,12 +1043,10 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         }
         currentReg -= 2;
         if (ctx.getParent() instanceof WACCParser.AssignLHSContext) {
-            currentReg++;
             ArrayElemLHSInstruction array = new ArrayElemLHSInstruction(
                     locationString, type, currentReg, exprs, dataMap);
             dataMap = array.setErrorChecking();
             addDataAndLabels(array.getDataAndLabels());
-            currentReg--;
             return array;
         } else {
             currentReg++;
