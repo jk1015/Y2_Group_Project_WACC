@@ -188,7 +188,11 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         WACCParser.TypeContext type = ctx.type();
 
         Type varType = parseType(type);
-        if (varType.checkType(PrimType.STRING)){
+        if (expr instanceof FloatLiterInstruction){
+            FloatLiterInstruction string = (FloatLiterInstruction) expr;
+            String stringValue = "\"" +string.getValueInFloat()+ "f\"";
+            identifier.put(var,stringValue);
+        }else if (varType.checkType(PrimType.STRING)){
             StringLiterInstruction string = (StringLiterInstruction)expr;
             String stringValue = string.getStringLiter();
             identifier.put(var,stringValue);

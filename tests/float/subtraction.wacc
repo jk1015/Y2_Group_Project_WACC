@@ -1,10 +1,10 @@
 # Output:
 # 0.5f
-# 1.0f
+# 2.0f
 
 # Program:
 
 begin
   println 2.5f - 2;
-  println 2 - 1.0f
+  println 3 - 1.0f
 end

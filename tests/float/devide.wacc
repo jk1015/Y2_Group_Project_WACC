@@ -1,12 +1,12 @@
 # Output:
 # 1.0f
-# 2.5f
-# 5.0f
+# 4.0f
+# 10.0f
 
 # Program:
 
 begin
   println 2.5f / 2.5f;
-  println 5.0f / 2;
-  println 10 / 2.0f
+  println 8.0f / 2;
+  println 20 / 2.0f
 end

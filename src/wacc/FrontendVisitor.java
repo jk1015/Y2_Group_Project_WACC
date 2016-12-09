@@ -200,7 +200,8 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
     @Override
     public Type visitInitAssignStat(WACCParser.InitAssignStatContext ctx) {
         // Check type against rhs, add to symbol table
-        Type type = visit(ctx.type());
+        WACCParser.TypeContext tCTX = ctx.type();
+        Type type = visit(tCTX);
         lhsRequiredType = type;
         Type rhs = visit(ctx.assignRHS());
         if (type.checkType(rhs)) {
@@ -551,6 +552,12 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
         return PrimType.BOOL;
     }
 
+    @Override
+    public Type visitFloatLiter(WACCParser.FloatLiterContext ctx) {
+        Type type = PrimType.FLOAT;
+        return type;
+    }
+
     // TYPES
 
     @Override
@@ -570,6 +577,7 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
             case WACCLexer.INT_TYPE: return PrimType.INT;
             case WACCLexer.CHAR_TYPE: return PrimType.CHAR;
             case WACCLexer.STRING_TYPE: return new ArrayType(PrimType.CHAR);
+            case WACCLexer.FLOAT_TYPE: return PrimType.FLOAT;
         }
         return null;
     }
@@ -691,9 +699,5 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
         return pair;
     }
 
-    @Override
-    public Type visitFloatLiter(@NotNull WACCParser.FloatLiterContext ctx) {
-        return PrimType.FLOAT;
-    }
 }
 

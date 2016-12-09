@@ -64,12 +64,15 @@ public class PrintInstruction implements Instruction {
                 dataMap = dataAndLabels.addDataAndLabels(nameOfLabel,ascii);
             } else if(type.checkType(PrimType.FLOAT)) {
                 float value;
-                if (expr instanceof BinaryExprInstruction){
+                if (expr instanceof BinaryExprInstruction) {
                     value = ((BinaryExprInstruction) expr).getFloatValue();
+                    ascii[0] = "\"" + value + "f\"";
+                } else if (expr instanceof IdentifierExprInstruction){
+                    ascii[0] = ((IdentifierExprInstruction) expr).getStringValue();
                 }else {
                     value = ((FloatLiterInstruction) expr).getValueInFloat();
+                    ascii[0] = "\"" + value + "f\"";
                 }
-                ascii[0] = "\"" + value + "f\"";
                 ascii[1] = "\"%.*s\\0\"";
                 dataMap = dataAndLabels.addDataAndLabels(nameOfLabel,ascii);
             } else {

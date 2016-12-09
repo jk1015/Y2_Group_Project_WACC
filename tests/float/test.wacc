@@ -1,0 +1,10 @@
+# Output:
+# 0.5f
+# 1.0f
+
+# Program:
+
+begin
+  float a = 0.1f;
+  print a
+end
