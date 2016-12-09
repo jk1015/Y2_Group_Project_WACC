@@ -371,11 +371,11 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     public Instruction visitAssignStat(@NotNull WACCParser.AssignStatContext ctx) {
         AssignLHSInstruction lhs = ((AssignLHSInstruction) visitAssignLHS(ctx.assignLHS()));
 
-        if (lhs.usesRegister()) {
+        if (lhs.usesRegister() || true) {
             currentReg++;
         }
         LocatableInstruction rhs = ((LocatableInstruction) visit(ctx.assignRHS()));
-        if (lhs.usesRegister()) {
+        if (lhs.usesRegister() || true) {
             currentReg--;
         }
         if(rhs.getType() instanceof StructType && !(rhs instanceof StructListInstruction)) {
