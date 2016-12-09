@@ -1,0 +1,21 @@
+# Simple pointer use
+
+# Output:
+# 2
+# 1
+
+# Program:
+
+begin
+  int swap(int *x, int* y) is
+    int z = *x;
+    *x = *y;
+    *y = z;
+    return 1
+  end
+  int x = 1;
+  int y = 2;
+  int func = call swap(&x, &y);
+  println x;
+  println y
+end
