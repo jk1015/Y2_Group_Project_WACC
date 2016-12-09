@@ -85,9 +85,12 @@ If an import file has not been found, an error message will be displayed and the
 \subsubsection{Constant Evaluation and Control Flow Analysis} { The compiler can now replace expressions consisting of literals with a literal equal to the result of the expression. This applies to both expressions and sub-expressions. The compiler is also able to use lazy evaluation on boolean expressions contain boolean literals. This process occurs automatically during compilation.
 
 Similarly if the expression in an if statement is evaluated to be a boolean literal, the compiler simply converts the first statement in the if statement to assembly or the second statement depending on whether the boolean is {\tt true} or {\tt false}. The rest of the if statement can therefore be ignored. This process also happens automatically during compilation. }
-\subsubsection{•}
 
 \subsection{James}
+\subsubsection{Structs} { We also extended the compiler to support C-Style structs. These are user defined data types declared at the head of the WACC file by combining a set of previously defined or primative types. Importantly structs have a fixed size at compile time, therefore the only types which they can contain are the primative, pointer and other struct types which are of fixed size, this automatically allows pair types to be stored since pairs in WACC are defined to be pointers. Array types required the most consideration in how they would be stored within a struct, ultimately since we had already extended WACC to use dynamic arrays we opted to not allow structs to store arrays in place but rather to store a pointer to their head. Structs in WACC act very much like C structs, with assignment via copying rather than reference and inline initialisation, they only differ in that they must be assigned a value when they are initialised (although this value may be null), this was done mainitain a consistency of style within WACC since all other types must be assigned a value on initialisation and to break this style would confuse a user of the language.       
+
+}
+\subsubsection{}
 
 
 
