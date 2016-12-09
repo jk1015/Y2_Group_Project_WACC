@@ -457,11 +457,26 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
         Type rhsType = visit(ctx.getChild(0));
         Type lhsType = visit(ctx.getChild(2));
         if(!(rhsType.checkType(PrimType.INT)
-        || rhsType.checkType(PrimType.FLOAT))) {
+        || rhsType.checkType(PrimType.FLOAT)
+        || rhsType instanceof PtrType)) {
             throw new InvalidTypeException(ctx, PrimType.INT, rhsType);
         } else if (!(lhsType.checkType(PrimType.INT)
-        || lhsType.checkType(PrimType.FLOAT))) {
+        || lhsType.checkType(PrimType.FLOAT)
+        || lhsType instanceof PtrType)) {
             throw new InvalidTypeException(ctx, PrimType.INT, lhsType);
+        }
+        if ((rhsType instanceof PtrType) && (lhsType instanceof PtrType)) {
+            if (rhsType.checkType(lhsType)) {
+                return rhsType;
+            } else {
+                throw new InvalidTypeException(ctx, rhsType, lhsType);
+            }
+        }
+        if (rhsType instanceof PtrType) {
+            return rhsType;
+        }
+        if (lhsType instanceof PtrType) {
+            return lhsType;
         }
         return PrimType.INT;
     }
