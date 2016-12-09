@@ -44,6 +44,6 @@ public class AssignLHSInstruction implements LocatableInstruction {
 
     @Override
     public boolean usesRegister() {
-        return !(isOnHeap) || (ins instanceof DerefIdentLHSInstruction) ;
+        return ins.usesRegister() ;
     }
 }
