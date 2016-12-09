@@ -44,7 +44,7 @@ public class ForInstruction implements Instruction {
         out.println("CMP " + idExpr.getLocationString() + ", " + endExpr.getLocationString());
         out.println("BEQ " + labelMaker.getLabel(ctx, 2));
         stat.toAssembly(out);
-        if (scopeSize > 1) {
+        if (scopeSize > 4) {
             out.println("ADD sp, sp, #" + (scopeSize-4));
         }
         out.println("B " + labelMaker.getLabel(ctx, 1));
