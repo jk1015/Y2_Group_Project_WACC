@@ -93,4 +93,8 @@ public class StructType implements Type {
         return offset;
     }
 
+    @Override
+    public String toString() {
+        return name;
+    }
 }
