@@ -12,11 +12,8 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import wacc.exceptions.*;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import wacc.types.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+
+import java.util.*;
 
 
 public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
@@ -24,7 +21,9 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
 	private ScopedSymbolTable symbolTable;
 	private String currentFunction; 
 	private boolean hasReturn;
-    private HashMap<String, FunctionType> calledFunctions;
+    private List<String> calledFuncNames;
+    private List<FunctionType> calledFuncTypes;
+    private List<WACCParser.CallFunctionContext> calledFuncCtxs;
     private HashMap<String, StructType> structs;
     private Type lhsRequiredType;
     private boolean inALoop;
@@ -33,7 +32,9 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
 		symbolTable = new ScopedSymbolTable();
 		currentFunction = "";
 		hasReturn = false;
-        calledFunctions = new HashMap<>();
+        calledFuncNames = new LinkedList<>();
+        calledFuncTypes = new LinkedList<>();
+        calledFuncCtxs = new LinkedList<>();
         structs = new HashMap<>();
     }
 
@@ -54,15 +55,18 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
     }
 
     private void checkThatFunctionsHaveBeenDefinedCorrectly() {
-        Set<String> functionNames = calledFunctions.keySet();
-
-        for(String name: functionNames) {
-            FunctionType fType = calledFunctions.get(name);
-            if(!fType.checkType(symbolTable.getFunction(name))) {
-                if (symbolTable.hasFunction(name)) {
-                    throw new InvalidTypeException(name + " is only defined for type " + fType);
+        Iterator<FunctionType> iter = calledFuncTypes.iterator();
+        Iterator<WACCParser.CallFunctionContext> ctxIter = calledFuncCtxs.iterator();
+        for (String name : calledFuncNames) {
+            WACCParser.CallFunctionContext ctx = ctxIter.next();
+            try {
+                FunctionType type = iter.next();
+                FunctionType actualType = symbolTable.getFunction(name);
+                if (!actualType.checkType(type)) {
+                    throw new InvalidTypeException(ctx, "Function " + name + " is undefined for type " + type);
                 }
-                throw new UndeclaredFunctionException(name + " is undefined should be of type " + fType);
+            } catch (UndeclaredFunctionException e) {
+                throw new UndeclaredFunctionException(ctx, e.getMessage());
             }
         }
     }
@@ -150,6 +154,8 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
 
         List<Type> types = new ArrayList<>();
 
+        types.add(lhsRequiredType);
+
         WACCParser.ArgListContext argList = ctx.argList();
 
         if (argList != null) {
@@ -158,15 +164,17 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
             }
         }
 
-        Type[] typesArray = new Type[types.size() + 1];
-        typesArray[0] = lhsRequiredType;
-        for(int i = 1; i < typesArray.length; i++) {
-            typesArray[i] = types.get(i - 1);
+        FunctionType calledFunctionType = new FunctionType(types);
+        if (ctx.identifier() != null) {
+            calledFuncNames.add(ctx.identifier().getText());
+            calledFuncTypes.add(calledFunctionType);
+            calledFuncCtxs.add(ctx);
+        } else {
+            Type derefType = visitDerefLHS(ctx.derefLHS());
+            if (!calledFunctionType.checkType(derefType)) {
+                throw new InvalidTypeException(ctx, calledFunctionType, derefType);
+            }
         }
-
-        FunctionType calledFunctionType = new FunctionType(typesArray);
-
-        calledFunctions.put(ctx.identifier().getText(), calledFunctionType);
 
         return lhsRequiredType;
     }
@@ -316,7 +324,7 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
 
     @Override
     public Type visitRefLHS(@NotNull WACCParser.RefLHSContext ctx) {
-        return new PtrType(visit(ctx.assignLHS()));
+        return new PtrType(visit(ctx.getChild(1)));
     }
 
     @Override
@@ -717,6 +725,24 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
         Type contentsType = visit(ctx.type());
 
         return new ArrayType(contentsType);
+    }
+
+    @Override
+    public Type visitFuncPtrType(@NotNull WACCParser.FuncPtrTypeContext ctx) {
+        List<Type> args = new LinkedList<Type>();
+        for (WACCParser.TypeContext typeCtx : ctx.type()) {
+            args.add(visit(typeCtx));
+        }
+        return new PtrType(new FunctionType(args));
+    }
+
+    @Override
+    public Type visitFuncIdent(@NotNull WACCParser.FuncIdentContext ctx) {
+        try {
+            return symbolTable.getFunction(ctx.IDENTIFIER().getText());
+        } catch (UndeclaredVariableException e) {
+            throw new UndeclaredVariableException(ctx, e.getMessage());
+        }
     }
 
     @Override

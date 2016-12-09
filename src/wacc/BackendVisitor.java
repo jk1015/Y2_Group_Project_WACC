@@ -117,10 +117,6 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitCallFunction(@NotNull WACCParser.CallFunctionContext ctx) {
-        // get corresponding function label of function
-
-        String functionLabel = LabelMaker.getFunctionLabel(ctx.identifier().getText());
-
         // arglist adds args to stack
         List<ExprInstruction> args = new LinkedList<>();
         List<WACCParser.ExprContext> exprs = new LinkedList<>();
@@ -131,15 +127,25 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
         stack.newScope();
 
+        currentReg++;
         for (WACCParser.ExprContext expr : exprs) {
             ExprInstruction exprIns = (ExprInstruction) visit(expr);
             args.add(exprIns);
             stack.add(expr.getText(), exprIns.getType());
         }
+        currentReg--;
 
         stack.descope();
 
-        return new CallFunctionInstruction(functionLabel, args);
+        // get corresponding function label of function
+
+        if (ctx.derefLHS() != null) {
+            DerefIdentLHSInstruction ins = (DerefIdentLHSInstruction) visit(ctx.derefLHS());
+            return new CallFunctionInstruction(ins, args);
+        } else {
+            String functionLabel = LabelMaker.getFunctionLabel(ctx.identifier().getText());
+            return new CallFunctionInstruction(functionLabel, args);
+        }
     }
 
     @Override
@@ -224,6 +230,8 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
             varType = parsePtrType(type.ptrType());
         } else if (type.baseType() != null) {
             varType = parseBaseType(type.baseType());
+        } else if (type.funcPtrType() != null) {
+            varType = parseFuncPtrType(type.funcPtrType());
         } else {
             varType = parseStructType(type.structType());
         }
@@ -331,6 +339,10 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         }
 
         return varType;
+    }
+
+    private Type parseFuncPtrType(@NotNull WACCParser.FuncPtrTypeContext ctx) {
+        return new PtrType(new FunctionType());
     }
 
     @Override
@@ -453,6 +465,12 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     @Override
     public Instruction visitRefLHS(@NotNull WACCParser.RefLHSContext ctx) {
+        if (ctx.funcIdent() != null) {
+            String ident = ctx.funcIdent().IDENTIFIER().getText();
+            LocatableInstruction ins = new FuncRefIdentInstruction(ident, currentReg, new PtrType(new FunctionType()));
+            AssignLHSInstruction ins2 = new AssignLHSInstruction(ins);
+            return new RefIdentInstruction(currentReg, ins2);
+        }
 
         AssignLHSInstruction ins = (AssignLHSInstruction) visit(ctx.assignLHS());
         Type type = ins.getType();
@@ -1115,7 +1133,8 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
             currentReg++;
         }
         Instruction retIns;
-        if (ctx.getParent() instanceof WACCParser.AssignLHSContext) {
+        if (ctx.getParent() instanceof WACCParser.AssignLHSContext
+                || ctx.getParent() instanceof WACCParser.CallFunctionContext) {
             retIns = new DerefIdentLHSInstruction(ins, location, type,currentReg, derefNum);
         } else {
             retIns = new DerefIdentInstruction(currentReg, location, type, derefNum, ins);
@@ -1177,5 +1196,9 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         return super.visitParam(ctx);
     }
 
+    @Override
+    public Instruction visitFuncIdent(@NotNull WACCParser.FuncIdentContext ctx) {
+        return super.visitFuncIdent(ctx);
+    }
 }
 

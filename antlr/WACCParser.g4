@@ -17,6 +17,7 @@ paramList: param (COMMA param)*;
 param: type identifier;
 
 identifier: IDENTIFIER;
+funcIdent: DIVIDE IDENTIFIER;
 
 stat: SKIPPER                           #skipStat
   | type identifier ASSIGN assignRHS    #initAssignStat
@@ -56,7 +57,7 @@ newPair: NEWPAIR OPEN_PARENTHESES expr COMMA expr CLOSE_PARENTHESES;
 
 newArray: NEWARRAY type OPEN_SQUARE expr CLOSE_SQUARE ;
 
-callFunction: CALL identifier OPEN_PARENTHESES (argList)? CLOSE_PARENTHESES;
+callFunction: CALL (identifier | derefLHS) OPEN_PARENTHESES (argList)? CLOSE_PARENTHESES;
 
 argList: expr (COMMA expr)*;
 
@@ -69,6 +70,7 @@ type: baseType
   | pairType
   | structType
   | ptrType
+  | funcPtrType
   ;
 
 fixedSizeType: baseType
@@ -83,7 +85,7 @@ baseType: INT_TYPE
   | FLOAT_TYPE
   ;
 
-arrayType: (baseType | pairType) (OPEN_SQUARE CLOSE_SQUARE)+;
+arrayType: (baseType | pairType | funcPtrType) (OPEN_SQUARE CLOSE_SQUARE)+;
 
 pairType: PAIR OPEN_PARENTHESES pairElemType COMMA pairElemType CLOSE_PARENTHESES;
 
@@ -94,12 +96,16 @@ ptrType: ptrBaseType (MULTIPLY)+;
 ptrBaseType: baseType
   | arrayType
   | pairType
+  | funcPtrType
   ;
+
+funcPtrType: OPEN_PARENTHESES type LT MINUS OPEN_PARENTHESES (type (COMMA type)*)? CLOSE_PARENTHESES CLOSE_PARENTHESES MULTIPLY;
 
 pairElemType: baseType
   | arrayType
   | pairNullType
   | ptrType
+  | funcPtrType
   ;
 
 pairNullType: PAIR;
@@ -183,7 +189,7 @@ expr6: expr6 binaryOper6 expr6
 
 structContents: identifier DOT identifier;
 
-refLHS: AMP assignLHS;
+refLHS: AMP (assignLHS | funcIdent);
 
 derefLHS: (MULTIPLY)+ assignLHS;
 

@@ -1,0 +1,15 @@
+# Can call func pointer with args
+
+# Output:
+# 5
+
+# Program:
+
+begin
+  int add(int x, int y) is
+    return x + y
+  end
+  (int <- (int, int))* f = &/add;
+  int x = call *f (2, 3);
+  println x
+end
