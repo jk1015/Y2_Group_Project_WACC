@@ -268,6 +268,10 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
         if (ctxP instanceof WACCParser.WhileStatContext) {
             inALoop = true;
         }
+        if (ctxP instanceof WACCParser.ForStatContext) {
+            inALoop = true;
+            symbolTable.add(((WACCParser.ForStatContext) ctxP).identifier().getText(), PrimType.INT);
+        }
         visit(ctx);
         inALoop = false;
         symbolTable.exitScope();
@@ -281,10 +285,7 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
                 throw new InvalidTypeException(ctx, PrimType.INT, exprType);
             }
         }
-        symbolTable.enterNewScope();
-        symbolTable.add(ctx.identifier().getText(), PrimType.INT);
-        visit(ctx.stat());
-        symbolTable.exitScope();
+        enterLoopOrIfStat(ctx.stat(), ctx);
         return null;
     }
 

@@ -34,6 +34,6 @@ public class WhileInstruction implements Instruction {
         expr.toAssembly(out);
         out.println("CMP " + expr.getLocationString() + ", #1");
         out.println("BEQ " + labelMaker.getLabel(ctx, 1));
-        out.println(labelMaker.getLabel(ctx, 3) + ":");
+        out.println(labelMaker.getLabel(ctx, 2) + ":");
     }
 }

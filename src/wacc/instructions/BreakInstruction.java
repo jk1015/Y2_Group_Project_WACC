@@ -19,6 +19,6 @@ public class BreakInstruction implements Instruction {
 
     @Override
     public void toAssembly(PrintStream out) {
-        out.println("B " + labelMaker.getLabel(ctx, 3));
+        out.println("B " + labelMaker.getLabel(ctx, 2));
     }
 }

@@ -369,7 +369,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
     private WACCParser.StatContext getParentStatContext(@NotNull WACCParser.StatContext ctx) {
         WACCParser.StatContext parent = (WACCParser.StatContext) ctx.getParent();
-        while (!(parent instanceof WACCParser.WhileStatContext)){
+        while (!(parent instanceof WACCParser.WhileStatContext || parent instanceof WACCParser.ForStatContext)){
             parent = (WACCParser.StatContext) parent.getParent();
         }
         return parent;
