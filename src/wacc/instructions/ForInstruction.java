@@ -38,8 +38,8 @@ public class ForInstruction implements Instruction {
         out.println("B " + labelMaker.getLabel(ctx, 0));
         out.println(labelMaker.getLabel(ctx, 1) + ":");
         stat.toAssembly(out);
-        if (scopeSize > 0) {
-            out.println("ADD sp, sp, #" + scopeSize);
+        if (scopeSize > 1) {
+            out.println("ADD sp, sp, #" + (scopeSize-4));
         }
         out.println(labelMaker.getLabel(ctx, 0) + ":");
         idExpr.toAssembly(out);
@@ -49,5 +49,6 @@ public class ForInstruction implements Instruction {
         incrementId.toAssembly(out);
         out.println("B " + labelMaker.getLabel(ctx, 1));
         out.println(labelMaker.getLabel(ctx, 2) + ':');
+        out.println("ADD sp, sp, #4");
     }
 }
