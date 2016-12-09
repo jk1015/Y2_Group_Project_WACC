@@ -31,21 +31,25 @@ class Importer {
     private File fout;
 
     private Set<String> importedFilePaths;
+    private Set<String> parentFilePaths;
 
     public Importer(InputStream in, String sourcePath) {
         this.in = in;
         fileNum = 0;
         currentBasePath = sourcePath;
         importedFilePaths = new HashSet<>();
+        parentFilePaths = new HashSet<>();
         this.fout = new File(sourceBasePath+outputFolder+outputFileLocation);
     }
 
     // used to recursively import dependencies of dependencies into temp files
-    private Importer(InputStream in, int n, String dependencyPath, Set<String> importedFilePaths) {
+    private Importer(InputStream in, int n, String dependencyPath,
+                     Set<String> importedFilePaths, Set<String> parentFilePaths) {
         this.in = in;
         fileNum = n;
         this.currentBasePath = dependencyPath;
         this.importedFilePaths = importedFilePaths;
+        this.parentFilePaths = parentFilePaths;
 
         // sets output file to temp file
         this.fout = new File(sourceBasePath+outputFolder+fileNum+outputFileLocation);
@@ -78,6 +82,7 @@ class Importer {
                     } else {
                         checkAndImportFile(dependencyName, outputWriter);
                     }
+                    outputWriter.newLine();
                 } else {
                     outputWriter.write(inputLine);
                     outputWriter.newLine();
@@ -114,7 +119,7 @@ class Importer {
         // get dependency paths
         String dependencyFilePath = currentBasePath + dependencyName;
         String dependencyParentPath = new File(dependencyFilePath).getParentFile().getAbsolutePath()+"/";
-        if (!importedFilePaths.contains(dependencyFilePath)) {
+        if (!importedFilePaths.contains(dependencyFilePath) && !parentFilePaths.contains(dependencyFilePath)) {
             // import sub-dependencies recursively into temporary file
             FileInputStream in;
             try {
@@ -125,9 +130,10 @@ class Importer {
                 System.out.println(dnfe.getMessage());
                 throw dnfe;
             }
-            Importer iw = new Importer(in, ++fileNum, dependencyParentPath, importedFilePaths);
-            
+            parentFilePaths.add(dependencyFilePath);
+            Importer iw = new Importer(in, ++fileNum, dependencyParentPath, importedFilePaths, parentFilePaths);
             File dependency = iw.importDependencies();
+            parentFilePaths.remove(dependencyFilePath);
             errorCheck(dependency, dependencyFilePath);
             // copy contents of temporary file into output file
             BufferedReader inputReader = new BufferedReader(new FileReader(dependency));
@@ -186,8 +192,7 @@ class Importer {
                 break;
             }
         }
-
-        bw.newLine();
+        bw.write(" ");
     }
 
     private void printErrorInHeader(WACCCompilerException e, String dependencyName) {
