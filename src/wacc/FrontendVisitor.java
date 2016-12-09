@@ -240,9 +240,7 @@ public class FrontendVisitor extends WACCParserBaseVisitor<Type> {
         Type lhs = visitAssignLHS(ctx.assignLHS());
         lhsRequiredType = lhs;
         Type rhs = visitAssignRHS(ctx.assignRHS());
-        System.out.println(lhs + " " + rhs);
         if (!rhs.checkType(lhs)) {
-            System.out.println("Threw here");
             throw new InvalidTypeException(ctx, rhs, lhs);
         }
         return null;
