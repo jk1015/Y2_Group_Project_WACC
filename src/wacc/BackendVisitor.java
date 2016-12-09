@@ -1,3 +1,4 @@
+
 package wacc;
 
 import antlr.WACCLexer;
@@ -248,7 +249,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         } else if (t == WACCLexer.INT_TYPE) {
             varType = PrimType.INT;
         } else if (t == WACCLexer.CHAR_TYPE) {
-           varType = PrimType.CHAR;
+            varType = PrimType.CHAR;
         } else {
             varType = PrimType.STRING;
         }
@@ -363,12 +364,12 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     }
 
     private int getIdentOfStat(@NotNull WACCParser.StatContext ctx) {
-       return ctx.hashCode();
+        return ctx.hashCode();
     }
 
     private WACCParser.StatContext getParentStatContext(@NotNull WACCParser.StatContext ctx) {
         WACCParser.StatContext parent = (WACCParser.StatContext) ctx.getParent();
-        if (parent instanceof WACCParser.SeqStatContext){
+        while (!(parent instanceof WACCParser.WhileStatContext)){
             parent = (WACCParser.StatContext) parent.getParent();
         }
         return parent;
@@ -489,7 +490,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
         return new ExitInstruction(exInst);
     }
 
-    //TODO: Const eval 
+    //TODO: Const eval
     @Override
     public Instruction visitUnaryExpr(@NotNull WACCParser.UnaryExprContext ctx) {
         int op = ((TerminalNode) ctx.unaryOper().getChild(0)).getSymbol().getType();
@@ -922,7 +923,7 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
 
         FloatLiterInstruction floatLiterInstruction =  new FloatLiterInstruction(dataMap.size(),
                 currentReg, valueInFloat);
-        DataInstruction dataString = floatLiterInstruction.setData("\"" + valueInFloat + "\"");
+        DataInstruction dataString = floatLiterInstruction.setData("\"" + valueInFloat + "f\"");
         data.add(dataString);
         dataMap.put("msg_" + dataMap.size(), dataString.getAscii());
         return floatLiterInstruction;
@@ -1177,3 +1178,4 @@ public class BackendVisitor extends WACCParserBaseVisitor<Instruction> {
     }
 
 }
+

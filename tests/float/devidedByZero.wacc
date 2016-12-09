@@ -1,0 +1,8 @@
+# Output:
+# DivideByZeroError:divide or modulo by zero
+
+# Program:
+
+begin
+  println 8.80f / 0.0f
+end

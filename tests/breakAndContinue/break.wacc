@@ -1,0 +1,18 @@
+
+# Output:
+# Can you count to 10?
+# 1
+# 2
+
+# Program:
+
+begin
+  int i = 1 ;
+  println "Can you count to 10?" ;
+  while i <= 10 do
+    println i ;
+    i = i + 1 ;
+    println i ;
+    break
+  done
+end
